@@ -1,0 +1,116 @@
+/* GlamGo Theme Configuration */
+
+:root {
+    /* Primary Colors */
+    --primary-pink: #ec4899;
+    --primary-purple: #9333ea;
+    --primary-pink-dark: #db2777;
+    --primary-purple-dark: #7e22ce;
+
+    /* Text Colors */
+    --text-primary: #1f2937;
+    --text-secondary: #4b5563;
+    --text-light: #9ca3af;
+
+    /* Background Colors */
+    --bg-white-transparent: rgba(255, 255, 255, 0.9);
+    --bg-white-light: rgba(255, 255, 255, 0.1);
+    --bg-success: #f0fdf4;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 8px 30px rgb(0, 0, 0, 0.12);
+
+    /* Border Radius */
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-2xl: 1rem;
+    --radius-3xl: 1.5rem;
+    --radius-full: 9999px;
+
+    /* Transitions */
+    --transition-all: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-transform: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-opacity: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glass-morphism Effects */
+.glass {
+    background: var(--bg-white-transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow-lg);
+}
+
+.glass-light {
+    background: var(--bg-white-light);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Button Styles */
+.btn-primary {
+    background: linear-gradient(to right, var(--primary-pink), var(--primary-purple));
+    color: white;
+    border-radius: var(--radius-xl);
+    transition: var(--transition-all);
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(to right, var(--primary-pink-dark), var(--primary-purple-dark));
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Form Styles */
+.form-input {
+    border-radius: var(--radius-xl);
+    border-color: #e5e7eb;
+    background: rgba(249, 250, 251, 0.5);
+    transition: var(--transition-all);
+}
+
+.form-input:hover {
+    background: white;
+}
+
+.form-input:focus {
+    border-color: var(--primary-purple);
+    ring-color: var(--primary-purple);
+    ring-width: 2px;
+}
+
+/* Card Styles */
+.card {
+    @apply glass;
+    border-radius: var(--radius-2xl);
+    transition: var(--transition-all);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Typography */
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-primary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.gradient-text {
+    background: linear-gradient(to right, var(--primary-pink), var(--primary-purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
