@@ -9,6 +9,11 @@ Route::get('/', function () {
     return view('modern-home');
 });
 
+// Services route
+Route::get('/services', function () {
+    return view('services');
+});
+
 // Booking Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');

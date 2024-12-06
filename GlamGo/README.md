@@ -70,6 +70,127 @@ A sophisticated salon booking platform built with Laravel 11, featuring a modern
    - Category organization
    - Quick navigation
 
+## 📑 Page Structure
+
+### 1. Customer-Facing Pages
+- **Home Page** (`/`)
+  - Hero section with booking CTA
+  - Featured services
+  - Testimonials
+  - Latest work gallery
+  - Team highlights
+
+- **Services Page** (`/services`)
+  - Service categories
+  - Detailed service listings
+  - Pricing information
+  - Booking integration
+
+- **Booking Page** (`/booking`)
+  - Service selection
+  - Stylist selection
+  - Date/time picker
+  - Customer details form
+  - Payment integration
+
+- **Gallery Page** (`/gallery`)
+  - Work showcase
+  - Before/after transformations
+  - Category filters
+  - Lightbox view
+
+- **Specialists Page** (`/specialists`)
+  - Team profiles
+  - Expertise details
+  - Available time slots
+  - Direct booking option
+
+- **Blog Page** (`/blog`)
+  - Beauty articles
+  - Style tips
+  - Industry news
+  - Category filters
+
+- **Contact Page** (`/contact`)
+  - Contact form
+  - Location map
+  - Business hours
+  - Social media links
+
+- **About Us Page** (`/about`)
+  - Salon story
+  - Mission & vision
+  - Team overview
+  - Achievements
+
+### 2. Customer Account Pages
+- **Profile** (`/profile`)
+  - Personal details
+  - Booking history
+  - Favorite services
+  - Saved stylists
+
+- **Appointments** (`/appointments`)
+  - Upcoming bookings
+  - Past appointments
+  - Cancellation/Rescheduling
+  - Reviews & ratings
+
+### 3. Authentication Pages
+- **Login** (`/login`)
+- **Register** (`/register`)
+- **Password Reset** (`/password/reset`)
+- **Email Verification** (`/email/verify`)
+
+### 4. Admin Dashboard Pages
+- **Dashboard** (`/admin`)
+  - Overview statistics
+  - Recent bookings
+  - Revenue charts
+  - Quick actions
+
+- **Appointment Management** (`/admin/appointments`)
+  - Booking calendar
+  - Schedule management
+  - Customer details
+  - Service history
+
+- **Service Management** (`/admin/services`)
+  - Service CRUD
+  - Pricing updates
+  - Category management
+  - Special offers
+
+- **Staff Management** (`/admin/staff`)
+  - Staff profiles
+  - Schedule setting
+  - Performance metrics
+  - Commission tracking
+
+- **Customer Management** (`/admin/customers`)
+  - Customer database
+  - Booking history
+  - Communication logs
+  - Loyalty points
+
+- **Reports** (`/admin/reports`)
+  - Revenue reports
+  - Service analytics
+  - Staff performance
+  - Customer insights
+
+## 🚀 Development Status
+- ✅ Project Setup
+- ✅ Design System Implementation
+- ✅ Home Page Development
+- ✅ Services Page Development
+- 🟡 Booking System Integration
+- 🟡 Authentication System
+- ⭕ Admin Dashboard
+- ⭕ Payment Integration
+- ⭕ Email Notifications
+- ⭕ SMS Notifications
+
 ## 🛠 Technical Stack
 
 ### Frontend
