@@ -1,163 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Specialists - GlamGo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.lordicon.com/lordicon.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="min-h-screen bg-[url('https://images.pexels.com/photos/7130555/pexels-photo-7130555.jpeg?cs=srgb&dl=pexels-codioful-7130555.jpg&fm=jpg')] bg-cover bg-fixed bg-center">
-    @include('partials.header')
+@extends('layouts.app')
 
-    <main class="pt-32 pb-20 px-4">
-        <!-- Hero Section -->
-        <section class="max-w-7xl mx-auto text-center mb-16">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Meet Our Expert Team</h1>
-            <p class="text-gray-600 text-lg max-w-2xl mx-auto">Our talented team of beauty professionals is dedicated to making you look and feel your best.</p>
-        </section>
+@section('title', 'Our Specialists - GlamGo')
 
-        <!-- Specialists Grid -->
-        <section class="max-w-7xl mx-auto">
+@section('content')
+    <!-- Hero Section -->
+    <div class="pt-32 pb-16 text-center">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">Meet Our Expert Team</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto mb-8">Our talented specialists bring years of experience and passion to every service, ensuring you receive the highest quality care and stunning results.</p>
+            <div class="flex justify-center gap-4">
+                <a href="{{ route('booking') }}" class="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300">Book Appointment</a>
+                <a href="#team" class="px-6 py-3 border border-purple-300 text-purple-600 rounded-full hover:bg-purple-50 transition-all duration-300">Meet the Team</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Categories -->
+    <div class="py-16 bg-white/80 backdrop-blur-md">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Our Departments</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Hair Styling -->
+                <div class="p-6 rounded-2xl bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <lord-icon src="https://cdn.lordicon.com/dqxvvqzi.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:32px;height:32px"></lord-icon>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-2">Hair Styling</h3>
+                    <p class="text-gray-600 text-center">Expert hair stylists specializing in cuts, colors, and treatments.</p>
+                </div>
+                <!-- Makeup -->
+                <div class="p-6 rounded-2xl bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <lord-icon src="https://cdn.lordicon.com/rqsvgwdj.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:32px;height:32px"></lord-icon>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-2">Makeup Artistry</h3>
+                    <p class="text-gray-600 text-center">Professional makeup artists for any occasion.</p>
+                </div>
+                <!-- Skincare -->
+                <div class="p-6 rounded-2xl bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <lord-icon src="https://cdn.lordicon.com/usjxhgcp.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:32px;height:32px"></lord-icon>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-2">Skincare</h3>
+                    <p class="text-gray-600 text-center">Licensed estheticians providing premium skin treatments.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Members -->
+    <div id="team" class="py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Our Specialists</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Specialist Card 1 -->
-                <div class="specialist-card rounded-2xl p-6 text-center">
-                    <div class="relative mb-6 group">
-                        <img src="https://randomuser.me/api/portraits/women/1.jpg" alt="Sarah Johnson" class="w-48 h-48 rounded-full mx-auto object-cover transition-transform duration-300 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-purple-600/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Sarah Johnson</h3>
-                    <p class="text-pink-500 font-medium mb-4">Senior Hair Stylist</p>
-                    <p class="text-gray-600 mb-6">Specializing in creative cuts and color transformations with over 8 years of experience.</p>
-                    <div class="flex justify-center space-x-4 mb-6">
-                        <div class="flex items-center space-x-1">
-                            <lord-icon src="https://cdn.lordicon.com/mdgrhyca.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:20px;height:20px"></lord-icon>
-                            <span class="text-gray-600">Hair Styling</span>
+                <!-- Specialist 1 -->
+                <div class="group">
+                    <div class="relative overflow-hidden rounded-2xl bg-white/90 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <img src="https://images.pexels.com/photos/2681751/pexels-photo-2681751.jpeg" alt="Sarah Johnson" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
+                        <h3 class="text-xl font-semibold text-center mb-2">Sarah Johnson</h3>
+                        <p class="text-pink-500 text-center mb-4">Senior Hair Stylist</p>
+                        <div class="space-y-2 text-gray-600 text-sm">
+                            <p>✨ 10+ years of experience</p>
+                            <p>🏆 Award-winning colorist</p>
+                            <p>📚 Certified in advanced cutting techniques</p>
                         </div>
-                        <div class="flex items-center space-x-1">
-                            <lord-icon src="https://cdn.lordicon.com/dqxvvqzi.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:20px;height:20px"></lord-icon>
-                            <span class="text-gray-600">Coloring</span>
+                        <div class="mt-4 flex justify-center space-x-4">
+                            <a href="{{ route('booking.services') }}" class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300">Book Now</a>
                         </div>
                     </div>
-                    <button class="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300">
-                        Book Appointment
-                    </button>
                 </div>
 
-                <!-- Specialist Card 2 -->
-                <div class="specialist-card rounded-2xl p-6 text-center">
-                    <div class="relative mb-6 group">
-                        <img src="https://randomuser.me/api/portraits/women/2.jpg" alt="Emily Chen" class="w-48 h-48 rounded-full mx-auto object-cover transition-transform duration-300 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-purple-600/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Emily Chen</h3>
-                    <p class="text-pink-500 font-medium mb-4">Makeup Artist</p>
-                    <p class="text-gray-600 mb-6">Expert in bridal makeup and special occasion looks with attention to detail.</p>
-                    <div class="flex justify-center space-x-4 mb-6">
-                        <div class="flex items-center space-x-1">
-                            <lord-icon src="https://cdn.lordicon.com/rjzlnunf.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:20px;height:20px"></lord-icon>
-                            <span class="text-gray-600">Makeup</span>
+                <!-- Specialist 2 -->
+                <div class="group">
+                    <div class="relative overflow-hidden rounded-2xl bg-white/90 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <img src="https://images.pexels.com/photos/3065015/pexels-photo-3065015.jpeg" alt="Emily Chen" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
+                        <h3 class="text-xl font-semibold text-center mb-2">Emily Chen</h3>
+                        <p class="text-pink-500 text-center mb-4">Makeup Artist</p>
+                        <div class="space-y-2 text-gray-600 text-sm">
+                            <p>✨ Celebrity makeup artist</p>
+                            <p>🏆 Featured in Vogue</p>
+                            <p>📚 Specialized in bridal makeup</p>
                         </div>
-                        <div class="flex items-center space-x-1">
-                            <lord-icon src="https://cdn.lordicon.com/hdiorcun.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:20px;height:20px"></lord-icon>
-                            <span class="text-gray-600">Skincare</span>
+                        <div class="mt-4 flex justify-center space-x-4">
+                            <a href="{{ route('booking.services') }}" class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300">Book Now</a>
                         </div>
                     </div>
-                    <button class="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300">
-                        Book Appointment
-                    </button>
                 </div>
 
-                <!-- Specialist Card 3 -->
-                <div class="specialist-card rounded-2xl p-6 text-center">
-                    <div class="relative mb-6 group">
-                        <img src="https://randomuser.me/api/portraits/women/3.jpg" alt="Maria Rodriguez" class="w-48 h-48 rounded-full mx-auto object-cover transition-transform duration-300 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-purple-600/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Maria Rodriguez</h3>
-                    <p class="text-pink-500 font-medium mb-4">Nail Artist</p>
-                    <p class="text-gray-600 mb-6">Creating stunning nail art and providing luxurious manicure experiences.</p>
-                    <div class="flex justify-center space-x-4 mb-6">
-                        <div class="flex items-center space-x-1">
-                            <lord-icon src="https://cdn.lordicon.com/nocovwne.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:20px;height:20px"></lord-icon>
-                            <span class="text-gray-600">Manicure</span>
+                <!-- Specialist 3 -->
+                <div class="group">
+                    <div class="relative overflow-hidden rounded-2xl bg-white/90 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <img src="https://images.pexels.com/photos/3220360/pexels-photo-3220360.jpeg" alt="Maria Rodriguez" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
+                        <h3 class="text-xl font-semibold text-center mb-2">Maria Rodriguez</h3>
+                        <p class="text-pink-500 text-center mb-4">Skincare Specialist</p>
+                        <div class="space-y-2 text-gray-600 text-sm">
+                            <p>✨ Licensed esthetician</p>
+                            <p>🏆 Advanced skin treatment certified</p>
+                            <p>📚 Holistic skincare expert</p>
                         </div>
-                        <div class="flex items-center space-x-1">
-                            <lord-icon src="https://cdn.lordicon.com/rjzlnunf.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:20px;height:20px"></lord-icon>
-                            <span class="text-gray-600">Nail Art</span>
+                        <div class="mt-4 flex justify-center space-x-4">
+                            <a href="{{ route('booking.services') }}" class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300">Book Now</a>
                         </div>
                     </div>
-                    <button class="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300">
-                        Book Appointment
-                    </button>
                 </div>
             </div>
-        </section>
+        </div>
+    </div>
 
-        <!-- Testimonials Section -->
-        <section class="max-w-7xl mx-auto mt-20">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">What Our Clients Say</h2>
-            <div class="swiper testimonials-swiper">
-                <div class="swiper-wrapper pb-8">
-                    <!-- Testimonial 1 -->
-                    <div class="swiper-slide">
-                        <div class="specialist-card rounded-2xl p-6">
-                            <div class="flex items-center mb-4">
-                                <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Client" class="w-12 h-12 rounded-full">
-                                <div class="ml-4">
-                                    <h4 class="font-bold text-gray-800">Jessica Williams</h4>
-                                    <p class="text-gray-500 text-sm">Regular Client</p>
-                                </div>
-                            </div>
-                            <p class="text-gray-600">"Sarah is amazing! She understood exactly what I wanted and gave me the perfect haircut. Highly recommend!"</p>
-                        </div>
-                    </div>
-                    <!-- Add more testimonials -->
+    <!-- Team Achievements -->
+    <div class="py-16 bg-white/80 backdrop-blur-md">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Why Choose Our Team?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+                <div>
+                    <div class="text-4xl font-bold text-pink-500 mb-2">15+</div>
+                    <p class="text-gray-600">Years of Experience</p>
                 </div>
-                <div class="swiper-pagination"></div>
+                <div>
+                    <div class="text-4xl font-bold text-pink-500 mb-2">5000+</div>
+                    <p class="text-gray-600">Happy Clients</p>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-pink-500 mb-2">25+</div>
+                    <p class="text-gray-600">Expert Specialists</p>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-pink-500 mb-2">100%</div>
+                    <p class="text-gray-600">Satisfaction Rate</p>
+                </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </div>
+@endsection
 
-    @include('partials.footer')
-
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
-        .specialist-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            transition: all 0.3s ease;
-        }
-        .specialist-card:hover {
-            transform: translateY(-4px);
-        }
-    </style>
-
-    <script>
-        // Initialize Swiper
-        new Swiper('.testimonials-swiper', {
-            slidesPerView: 1,
-            spaceBetween: 30,
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            breakpoints: {
-                640: {
-                    slidesPerView: 2,
-                },
-                1024: {
-                    slidesPerView: 3,
-                },
-            },
+@section('scripts')
+<script>
+    // Add smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+@endsection

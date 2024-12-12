@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Booking;
 use App\Models\Service;
+use App\Models\Appointment;
 
 class Staff extends Model
 {
@@ -35,5 +36,13 @@ class Staff extends Model
     public function services()
     {
         return $this->belongsToMany(Service::class);
+    }
+
+    /**
+     * Get the appointments for the staff member.
+     */
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
     }
 }

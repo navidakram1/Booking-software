@@ -1,155 +1,190 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Appointment - GlamGo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.lordicon.com/lordicon.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="min-h-screen bg-[url('https://images.pexels.com/photos/7130555/pexels-photo-7130555.jpeg?cs=srgb&dl=pexels-codioful-7130555.jpg&fm=jpg')] bg-cover bg-fixed bg-center">
-    @include('partials.header')
+@extends('layouts.app')
 
-    <main class="pt-32 pb-20 px-4">
-        <div class="max-w-4xl mx-auto">
-            <!-- Booking Form -->
-            <div class="booking-form rounded-3xl p-8 md:p-12">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8">Book Your Appointment</h1>
-                
-                <form x-data="{ step: 1 }" class="space-y-8">
-                    <!-- Step 1: Service Selection -->
-                    <div x-show="step === 1" class="space-y-6">
-                        <h2 class="text-xl font-semibold text-gray-700">Choose Your Service</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label class="relative flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-pink-500 transition-all duration-300">
-                                <input type="radio" name="service" class="absolute inset-0 opacity-0" value="haircut">
-                                <div class="flex items-center space-x-4">
+@section('title', 'Book Appointment - GlamGo')
+
+@section('content')
+    <!-- Booking Hero Section -->
+    <section class="relative py-20 bg-gradient-to-br from-pink-500 to-purple-600">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-gradient-to-r from-pink-500/90 to-purple-600/90"></div>
+        </div>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+            <h1 class="text-4xl sm:text-5xl font-bold mb-4">Book Your Appointment</h1>
+            <p class="text-lg sm:text-xl text-gray-100 max-w-2xl mx-auto">
+                Schedule your next beauty transformation with our expert stylists
+            </p>
+        </div>
+    </section>
+
+    <!-- Booking Form Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="glass-card rounded-2xl p-8 md:p-12">
+                <!-- Progress Steps -->
+                <div class="flex items-center justify-between mb-12 relative">
+                    <div class="absolute left-0 top-1/2 w-full h-1 bg-gray-200 -translate-y-1/2"></div>
+                    <div class="relative z-10 flex justify-between w-full">
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center font-semibold">1</div>
+                            <span class="text-sm font-medium mt-2">Services</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-semibold">2</div>
+                            <span class="text-sm font-medium mt-2">Date & Time</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-semibold">3</div>
+                            <span class="text-sm font-medium mt-2">Details</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-semibold">4</div>
+                            <span class="text-sm font-medium mt-2">Confirm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Selection -->
+                <div class="space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Service Card 1 -->
+                        <div class="glass-card rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all border-2 border-transparent hover:border-pink-500">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
                                     <lord-icon
                                         src="https://cdn.lordicon.com/dqxvvqzi.json"
                                         trigger="hover"
-                                        colors="primary:#ec4899,secondary:#9333ea"
-                                        style="width:48px;height:48px">
+                                        colors="primary:#ec4899"
+                                        style="width:24px;height:24px">
                                     </lord-icon>
-                                    <div>
-                                        <h3 class="font-medium text-gray-900">Haircut & Styling</h3>
-                                        <p class="text-sm text-gray-500">45-60 minutes</p>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold mb-1">Haircut & Styling</h3>
+                                    <p class="text-gray-600 text-sm mb-2">Professional cut and style by our experts</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-pink-600 font-semibold">$50</span>
+                                        <span class="text-sm text-gray-500">45 mins</span>
                                     </div>
                                 </div>
-                            </label>
-                            <!-- Add more service options -->
+                            </div>
                         </div>
-                        <button type="button" @click="step = 2" class="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300">
-                            Continue
+
+                        <!-- Service Card 2 -->
+                        <div class="glass-card rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all border-2 border-transparent hover:border-pink-500">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                    <lord-icon
+                                        src="https://cdn.lordicon.com/hvuelaml.json"
+                                        trigger="hover"
+                                        colors="primary:#9333ea"
+                                        style="width:24px;height:24px">
+                                    </lord-icon>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold mb-1">Hair Coloring</h3>
+                                    <p class="text-gray-600 text-sm mb-2">Full color or highlights with premium products</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-pink-600 font-semibold">$120</span>
+                                        <span class="text-sm text-gray-500">2 hours</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Card 3 -->
+                        <div class="glass-card rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all border-2 border-transparent hover:border-pink-500">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
+                                    <lord-icon
+                                        src="https://cdn.lordicon.com/tdrtiskw.json"
+                                        trigger="hover"
+                                        colors="primary:#ec4899"
+                                        style="width:24px;height:24px">
+                                    </lord-icon>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold mb-1">Facial Treatment</h3>
+                                    <p class="text-gray-600 text-sm mb-2">Rejuvenating facial with premium products</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-pink-600 font-semibold">$80</span>
+                                        <span class="text-sm text-gray-500">1 hour</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Card 4 -->
+                        <div class="glass-card rounded-xl p-6 cursor-pointer hover:shadow-lg transition-all border-2 border-transparent hover:border-pink-500">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                    <lord-icon
+                                        src="https://cdn.lordicon.com/rjzlnunf.json"
+                                        trigger="hover"
+                                        colors="primary:#9333ea"
+                                        style="width:24px;height:24px">
+                                    </lord-icon>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold mb-1">Makeup Service</h3>
+                                    <p class="text-gray-600 text-sm mb-2">Professional makeup for any occasion</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-pink-600 font-semibold">$75</span>
+                                        <span class="text-sm text-gray-500">1 hour</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Services Summary -->
+                    <div class="border-t border-gray-200 pt-6 mt-8">
+                        <h3 class="text-lg font-semibold mb-4">Selected Services</h3>
+                        <div class="space-y-2">
+                            <!-- Selected Service Item -->
+                            <div class="flex items-center justify-between py-2 px-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-pink-600">•</span>
+                                    <span class="font-medium">Haircut & Styling</span>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-gray-500">45 mins</span>
+                                    <span class="font-semibold">$50</span>
+                                    <button class="text-gray-400 hover:text-red-500">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex justify-between pt-8">
+                        <button class="px-6 py-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-all">
+                            Back
+                        </button>
+                        <button class="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 transition-all">
+                            Continue to Date & Time
                         </button>
                     </div>
-
-                    <!-- Step 2: Specialist Selection -->
-                    <div x-show="step === 2" class="space-y-6">
-                        <h2 class="text-xl font-semibold text-gray-700">Choose Your Specialist</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label class="relative flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-pink-500 transition-all duration-300">
-                                <input type="radio" name="specialist" class="absolute inset-0 opacity-0" value="sarah">
-                                <div class="flex items-center space-x-4">
-                                    <img src="https://randomuser.me/api/portraits/women/1.jpg" alt="Sarah" class="w-12 h-12 rounded-full">
-                                    <div>
-                                        <h3 class="font-medium text-gray-900">Sarah Johnson</h3>
-                                        <p class="text-sm text-gray-500">Senior Stylist</p>
-                                    </div>
-                                </div>
-                            </label>
-                            <!-- Add more specialist options -->
-                        </div>
-                        <div class="flex space-x-4">
-                            <button type="button" @click="step = 1" class="w-full py-3 border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50 transition-all duration-300">
-                                Back
-                            </button>
-                            <button type="button" @click="step = 3" class="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300">
-                                Continue
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Step 3: Date & Time Selection -->
-                    <div x-show="step === 3" class="space-y-6">
-                        <h2 class="text-xl font-semibold text-gray-700">Choose Date & Time</h2>
-                        <div class="grid grid-cols-1 gap-4">
-                            <div class="space-y-4">
-                                <label class="block text-sm font-medium text-gray-700">Select Date</label>
-                                <input type="date" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent">
-                            </div>
-                            <div class="space-y-4">
-                                <label class="block text-sm font-medium text-gray-700">Select Time</label>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <button type="button" class="p-2 text-sm border border-gray-200 rounded-lg hover:border-pink-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500">
-                                        9:00 AM
-                                    </button>
-                                    <!-- Add more time slots -->
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex space-x-4">
-                            <button type="button" @click="step = 2" class="w-full py-3 border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50 transition-all duration-300">
-                                Back
-                            </button>
-                            <button type="button" @click="step = 4" class="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300">
-                                Continue
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Step 4: Contact Information -->
-                    <div x-show="step === 4" class="space-y-6">
-                        <h2 class="text-xl font-semibold text-gray-700">Your Information</h2>
-                        <div class="grid grid-cols-1 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                <input type="text" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input type="email" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                                <input type="tel" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Special Requests</label>
-                                <textarea class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent" rows="3"></textarea>
-                            </div>
-                        </div>
-                        <div class="flex space-x-4">
-                            <button type="button" @click="step = 3" class="w-full py-3 border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50 transition-all duration-300">
-                                Back
-                            </button>
-                            <button type="submit" class="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full hover:shadow-lg transition-all duration-300">
-                                Book Appointment
-                            </button>
-                        </div>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
-    </main>
+    </section>
+@endsection
 
-    @include('partials.footer')
-
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
-        .booking-form {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-        input[type="radio"]:checked + div {
-            @apply ring-2 ring-pink-500;
-        }
-    </style>
-</body>
-</html>
+@push('scripts')
+<script>
+    // Add your booking form interaction logic here
+    document.addEventListener('DOMContentLoaded', function() {
+        // Service selection logic
+        const serviceCards = document.querySelectorAll('.glass-card');
+        serviceCards.forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('border-pink-500');
+                // Add your service selection logic here
+            });
+        });
+    });
+</script>
+@endpush

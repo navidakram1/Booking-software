@@ -1,160 +1,189 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gallery - GlamGo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.lordicon.com/lordicon.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Lightbox -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
-</head>
-<body class="min-h-screen bg-[url('https://images.pexels.com/photos/7130555/pexels-photo-7130555.jpeg?cs=srgb&dl=pexels-codioful-7130555.jpg&fm=jpg')] bg-cover bg-fixed bg-center">
-    @include('partials.header')
+@extends('layouts.app')
 
-    <main class="pt-32 pb-20 px-4">
-        <!-- Hero Section -->
-        <section class="max-w-7xl mx-auto text-center mb-16">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Our Gallery</h1>
-            <p class="text-gray-600 text-lg max-w-2xl mx-auto">Explore our collection of stunning transformations and beautiful styles created by our talented team.</p>
-        </section>
+@section('title', 'Gallery - GlamGo')
 
-        <!-- Filter Buttons -->
-        <div class="max-w-7xl mx-auto mb-12">
-            <div class="flex flex-wrap justify-center gap-4" x-data="{ activeFilter: 'all' }">
-                <button @click="activeFilter = 'all'" 
-                        :class="{ 'bg-gradient-to-r from-pink-500 to-purple-600 text-white': activeFilter === 'all', 'bg-white text-gray-700 hover:bg-gray-50': activeFilter !== 'all' }"
-                        class="px-6 py-2 rounded-full transition-all duration-300">
-                    All
-                </button>
-                <button @click="activeFilter = 'haircuts'" 
-                        :class="{ 'bg-gradient-to-r from-pink-500 to-purple-600 text-white': activeFilter === 'haircuts', 'bg-white text-gray-700 hover:bg-gray-50': activeFilter !== 'haircuts' }"
-                        class="px-6 py-2 rounded-full transition-all duration-300">
-                    Haircuts
-                </button>
-                <button @click="activeFilter = 'coloring'" 
-                        :class="{ 'bg-gradient-to-r from-pink-500 to-purple-600 text-white': activeFilter === 'coloring', 'bg-white text-gray-700 hover:bg-gray-50': activeFilter !== 'coloring' }"
-                        class="px-6 py-2 rounded-full transition-all duration-300">
-                    Coloring
-                </button>
-                <button @click="activeFilter = 'makeup'" 
-                        :class="{ 'bg-gradient-to-r from-pink-500 to-purple-600 text-white': activeFilter === 'makeup', 'bg-white text-gray-700 hover:bg-gray-50': activeFilter !== 'makeup' }"
-                        class="px-6 py-2 rounded-full transition-all duration-300">
-                    Makeup
-                </button>
-                <button @click="activeFilter = 'nails'" 
-                        :class="{ 'bg-gradient-to-r from-pink-500 to-purple-600 text-white': activeFilter === 'nails', 'bg-white text-gray-700 hover:bg-gray-50': activeFilter !== 'nails' }"
-                        class="px-6 py-2 rounded-full transition-all duration-300">
-                    Nails
-                </button>
-            </div>
+@section('content')
+    <!-- Gallery Hero Section -->
+    <section class="relative py-20 bg-gradient-to-br from-pink-500 to-purple-600">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-gradient-to-r from-pink-500/90 to-purple-600/90"></div>
         </div>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+            <h1 class="text-4xl sm:text-5xl font-bold mb-4">Our Gallery</h1>
+            <p class="text-lg sm:text-xl text-gray-100 max-w-2xl mx-auto">
+                Explore our portfolio of stunning transformations and beautiful styles
+            </p>
+        </div>
+    </section>
 
-        <!-- Gallery Grid -->
-        <section class="max-w-7xl mx-auto" x-data="{ activeFilter: 'all' }">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Gallery Item 1 -->
-                <div class="gallery-card rounded-2xl overflow-hidden" x-show="activeFilter === 'all' || activeFilter === 'haircuts'">
-                    <a href="https://source.unsplash.com/800x600/?haircut" data-lightbox="gallery" data-title="Modern Bob Cut">
-                        <div class="relative group">
-                            <img src="https://source.unsplash.com/800x600/?haircut" alt="Haircut" class="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-110">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                                <div class="p-6">
-                                    <h3 class="text-white text-xl font-bold">Modern Bob Cut</h3>
-                                    <p class="text-gray-200">By Sarah Johnson</p>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Gallery Item 2 -->
-                <div class="gallery-card rounded-2xl overflow-hidden" x-show="activeFilter === 'all' || activeFilter === 'coloring'">
-                    <a href="https://source.unsplash.com/800x600/?haircolor" data-lightbox="gallery" data-title="Pastel Pink Transformation">
-                        <div class="relative group">
-                            <img src="https://source.unsplash.com/800x600/?haircolor" alt="Hair Coloring" class="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-110">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                                <div class="p-6">
-                                    <h3 class="text-white text-xl font-bold">Pastel Pink Transformation</h3>
-                                    <p class="text-gray-200">By Emily Chen</p>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Gallery Item 3 -->
-                <div class="gallery-card rounded-2xl overflow-hidden" x-show="activeFilter === 'all' || activeFilter === 'makeup'">
-                    <a href="https://source.unsplash.com/800x600/?makeup" data-lightbox="gallery" data-title="Bridal Makeup">
-                        <div class="relative group">
-                            <img src="https://source.unsplash.com/800x600/?makeup" alt="Makeup" class="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-110">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                                <div class="p-6">
-                                    <h3 class="text-white text-xl font-bold">Bridal Makeup</h3>
-                                    <p class="text-gray-200">By Maria Rodriguez</p>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Add more gallery items -->
+    <!-- Gallery Filter Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center gap-4 mb-12">
+                <button class="px-6 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium hover:shadow-lg transition-all duration-300">All</button>
+                <button class="px-6 py-2 rounded-full bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition-all duration-300">Haircuts</button>
+                <button class="px-6 py-2 rounded-full bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition-all duration-300">Color</button>
+                <button class="px-6 py-2 rounded-full bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition-all duration-300">Styling</button>
+                <button class="px-6 py-2 rounded-full bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition-all duration-300">Treatments</button>
             </div>
-        </section>
 
-        <!-- Before/After Section -->
-        <section class="max-w-7xl mx-auto mt-20">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">Transformations</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Before/After Item 1 -->
-                <div class="gallery-card rounded-2xl overflow-hidden">
-                    <div class="relative">
-                        <div class="grid grid-cols-2 gap-2">
-                            <img src="https://source.unsplash.com/400x600/?before-haircut" alt="Before" class="w-full h-96 object-cover rounded-l-2xl">
-                            <img src="https://source.unsplash.com/400x600/?after-haircut" alt="After" class="w-full h-96 object-cover rounded-r-2xl">
-                        </div>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end">
-                            <div class="p-6">
-                                <h3 class="text-white text-xl font-bold">Complete Hair Transformation</h3>
-                                <p class="text-gray-200">By Sarah Johnson</p>
+            <!-- Gallery Grid with Masonry Layout -->
+            <div class="columns-1 md:columns-2 lg:columns-3 gap-8 [column-fill:_balance] box-border mx-auto before:box-inherit after:box-inherit">
+                <!-- Gallery Item 1 -->
+                <div class="break-inside-avoid mb-8">
+                    <div class="glass-card rounded-2xl overflow-hidden group relative cursor-pointer" onclick="openLightbox(this)">
+                        <img src="https://images.pexels.com/photos/3738339/pexels-photo-3738339.jpeg" 
+                             alt="Elegant Hairstyle" 
+                             class="w-full aspect-[3/4] object-cover transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <div class="text-white">
+                                <h3 class="font-bold text-lg">Elegant Waves</h3>
+                                <p class="text-sm text-gray-200">Modern styling for special occasions</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Add more before/after items -->
+                
+                <!-- Gallery Item 2 -->
+                <div class="break-inside-avoid mb-8">
+                    <div class="glass-card rounded-2xl overflow-hidden group relative cursor-pointer" onclick="openLightbox(this)">
+                        <img src="https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg" 
+                             alt="Color Treatment" 
+                             class="w-full aspect-square object-cover transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <div class="text-white">
+                                <h3 class="font-bold text-lg">Vibrant Colors</h3>
+                                <p class="text-sm text-gray-200">Professional color treatments</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gallery Item 3 -->
+                <div class="break-inside-avoid mb-8">
+                    <div class="glass-card rounded-2xl overflow-hidden group relative cursor-pointer" onclick="openLightbox(this)">
+                        <img src="https://images.pexels.com/photos/3997391/pexels-photo-3997391.jpeg" 
+                             alt="Spa Treatment" 
+                             class="w-full aspect-[4/5] object-cover transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <div class="text-white">
+                                <h3 class="font-bold text-lg">Luxury Spa</h3>
+                                <p class="text-sm text-gray-200">Relaxing spa treatments</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gallery Item 4 -->
+                <div class="break-inside-avoid mb-8">
+                    <div class="glass-card rounded-2xl overflow-hidden group relative cursor-pointer" onclick="openLightbox(this)">
+                        <img src="https://images.pexels.com/photos/3785147/pexels-photo-3785147.jpeg" 
+                             alt="Makeup Session" 
+                             class="w-full aspect-[4/3] object-cover transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <div class="text-white">
+                                <h3 class="font-bold text-lg">Professional Makeup</h3>
+                                <p class="text-sm text-gray-200">Expert makeup artistry</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gallery Item 5 -->
+                <div class="break-inside-avoid mb-8">
+                    <div class="glass-card rounded-2xl overflow-hidden group relative cursor-pointer" onclick="openLightbox(this)">
+                        <img src="https://images.pexels.com/photos/3985329/pexels-photo-3985329.jpeg" 
+                             alt="Facial Treatment" 
+                             class="w-full aspect-[3/4] object-cover transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <div class="text-white">
+                                <h3 class="font-bold text-lg">Facial Care</h3>
+                                <p class="text-sm text-gray-200">Rejuvenating facial treatments</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gallery Item 6 -->
+                <div class="break-inside-avoid mb-8">
+                    <div class="glass-card rounded-2xl overflow-hidden group relative cursor-pointer" onclick="openLightbox(this)">
+                        <img src="https://images.pexels.com/photos/3992855/pexels-photo-3992855.jpeg" 
+                             alt="Hair Styling" 
+                             class="w-full aspect-[5/6] object-cover transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <div class="text-white">
+                                <h3 class="font-bold text-lg">Creative Styling</h3>
+                                <p class="text-sm text-gray-200">Unique hair designs</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </section>
-    </main>
 
-    @include('partials.footer')
+            <!-- Load More Button -->
+            <div class="text-center mt-12">
+                <button class="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 transition-all">
+                    Load More
+                </button>
+            </div>
+        </div>
+    </section>
 
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
-        .gallery-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            transition: all 0.3s ease;
-        }
-        .gallery-card:hover {
-            transform: translateY(-4px);
-        }
-    </style>
+    <!-- Booking CTA Section -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="glass-card rounded-2xl p-12 text-center">
+                <h2 class="text-3xl font-bold mb-4">Ready for Your Transformation?</h2>
+                <p class="text-gray-600 mb-8 max-w-2xl mx-auto">Book an appointment with our expert stylists and let us help you achieve your dream look.</p>
+                <a href="{{ route('booking') }}" class="inline-block px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 transition-all">
+                    Book Now
+                </a>
+            </div>
+        </div>
+    </section>
 
-    <script>
-        // Initialize Lightbox
-        lightbox.option({
-            'resizeDuration': 200,
-            'wrapAround': true,
-            'albumLabel': 'Image %1 of %2'
-        });
-    </script>
-</body>
-</html>
+    <!-- Lightbox -->
+    <div id="lightbox" class="fixed inset-0 bg-black/90 z-50 hidden" onclick="closeLightbox()">
+        <button class="absolute top-4 right-4 text-white hover:text-pink-500" onclick="closeLightbox()">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        <div class="flex items-center justify-center h-full">
+            <img id="lightbox-img" src="" alt="" class="max-h-[90vh] max-w-[90vw] object-contain">
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+<script>
+    function openLightbox(element) {
+        const img = element.querySelector('img');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        
+        lightboxImg.src = img.src;
+        lightboxImg.alt = img.alt;
+        lightbox.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        const lightbox = document.getElementById('lightbox');
+        lightbox.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Close lightbox on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeLightbox();
+        }
+    });
+
+    // Prevent click on lightbox image from closing the lightbox
+    document.getElementById('lightbox-img').addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+</script>
+@endpush
