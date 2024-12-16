@@ -180,4 +180,27 @@ class SettingsController extends Controller
 
         return redirect()->back()->with('success', 'Integration settings updated successfully');
     }
+
+    public function security()
+    {
+        return view('admin.settings.security');
+    }
+
+    public function updateSecurity(Request $request)
+    {
+        $validated = $request->validate([
+            'enable_2fa' => 'boolean',
+            'session_lifetime' => 'required|integer|min:1',
+            'password_expiry_days' => 'required|integer|min:0',
+            'failed_login_attempts' => 'required|integer|min:0',
+            'lockout_duration' => 'required|integer|min:0',
+            'require_password_change' => 'boolean',
+        ]);
+
+        foreach ($validated as $key => $value) {
+            setting([$key => $value])->save();
+        }
+
+        return redirect()->back()->with('success', 'Security settings updated successfully');
+    }
 }

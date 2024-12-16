@@ -4,8 +4,8 @@
 <div class="p-6">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold text-gray-800">Group Bookings</h2>
-        <a href="{{ route('admin.group-bookings.create') }}" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">
-            Create Group Booking
+        <a href="{{ route('admin.group-bookings.create') }}" class="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors duration-200">
+            New Group Booking
         </a>
     </div>
 

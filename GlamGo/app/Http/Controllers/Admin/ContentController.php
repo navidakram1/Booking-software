@@ -9,6 +9,8 @@ use App\Models\TeamMember;
 use App\Models\Event;
 use App\Models\LandingPage;
 use App\Models\GalleryImage;
+use App\Models\Page;
+use App\Models\Post;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
@@ -493,5 +495,192 @@ class ContentController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    public function gallery()
+    {
+        $images = GalleryImage::orderBy('display_order')
+            ->paginate(20);
+            
+        return view('admin.content.gallery', compact('images'));
+    }
+
+    public function pages()
+    {
+        return view('admin.content.pages');
+    }
+
+    public function storePage(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:pages,slug',
+            'content' => 'required|string',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:255',
+            'featured_image' => 'nullable|image|max:2048',
+            'status' => 'required|in:draft,published'
+        ]);
+
+        $data = $request->except('featured_image');
+        
+        if ($request->hasFile('featured_image')) {
+            $path = $request->file('featured_image')->store('pages', 'public');
+            $data['featured_image'] = $path;
+        }
+
+        Page::create($data);
+
+        return redirect()->route('admin.content.pages')
+            ->with('success', 'Page created successfully');
+    }
+
+    public function updatePage(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:pages,slug,' . $id,
+            'content' => 'required|string',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:255',
+            'featured_image' => 'nullable|image|max:2048',
+            'status' => 'required|in:draft,published'
+        ]);
+
+        $page = Page::findOrFail($id);
+        $data = $request->except('featured_image');
+
+        if ($request->hasFile('featured_image')) {
+            if ($page->featured_image) {
+                Storage::disk('public')->delete($page->featured_image);
+            }
+            $path = $request->file('featured_image')->store('pages', 'public');
+            $data['featured_image'] = $path;
+        }
+
+        $page->update($data);
+
+        return redirect()->route('admin.content.pages')
+            ->with('success', 'Page updated successfully');
+    }
+
+    public function destroyPage($id)
+    {
+        $page = Page::findOrFail($id);
+        
+        if ($page->featured_image) {
+            Storage::disk('public')->delete($page->featured_image);
+        }
+        
+        $page->delete();
+
+        return redirect()->route('admin.content.pages')
+            ->with('success', 'Page deleted successfully');
+    }
+
+    public function blog()
+    {
+        $posts = Post::with('author')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+            
+        return view('admin.content.blog', compact('posts'));
+    }
+
+    public function storeBlog(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:posts,slug',
+            'content' => 'required|string',
+            'excerpt' => 'required|string|max:500',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:255',
+            'featured_image' => 'required|image|max:2048',
+            'status' => 'required|in:draft,published',
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
+            'tags' => 'nullable|array',
+            'tags.*' => 'exists:tags,id'
+        ]);
+
+        $data = $request->except(['featured_image', 'categories', 'tags']);
+        $data['author_id'] = auth()->id();
+        
+        if ($request->hasFile('featured_image')) {
+            $path = $request->file('featured_image')->store('blog', 'public');
+            $data['featured_image'] = $path;
+        }
+
+        $post = Post::create($data);
+
+        if ($request->has('categories')) {
+            $post->categories()->sync($request->categories);
+        }
+
+        if ($request->has('tags')) {
+            $post->tags()->sync($request->tags);
+        }
+
+        return redirect()->route('admin.content.blog')
+            ->with('success', 'Blog post created successfully');
+    }
+
+    public function updateBlog(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:posts,slug,' . $id,
+            'content' => 'required|string',
+            'excerpt' => 'required|string|max:500',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:255',
+            'featured_image' => 'nullable|image|max:2048',
+            'status' => 'required|in:draft,published',
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
+            'tags' => 'nullable|array',
+            'tags.*' => 'exists:tags,id'
+        ]);
+
+        $post = Post::findOrFail($id);
+        $data = $request->except(['featured_image', 'categories', 'tags']);
+
+        if ($request->hasFile('featured_image')) {
+            if ($post->featured_image) {
+                Storage::disk('public')->delete($post->featured_image);
+            }
+            $path = $request->file('featured_image')->store('blog', 'public');
+            $data['featured_image'] = $path;
+        }
+
+        $post->update($data);
+
+        if ($request->has('categories')) {
+            $post->categories()->sync($request->categories);
+        }
+
+        if ($request->has('tags')) {
+            $post->tags()->sync($request->tags);
+        }
+
+        return redirect()->route('admin.content.blog')
+            ->with('success', 'Blog post updated successfully');
+    }
+
+    public function destroyBlog($id)
+    {
+        $post = Post::findOrFail($id);
+        
+        if ($post->featured_image) {
+            Storage::disk('public')->delete($post->featured_image);
+        }
+        
+        $post->categories()->detach();
+        $post->tags()->detach();
+        $post->delete();
+
+        return redirect()->route('admin.content.blog')
+            ->with('success', 'Blog post deleted successfully');
     }
 }

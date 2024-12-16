@@ -78,17 +78,17 @@
                                     </div>
                                 </div>
                                 <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">{{ $appointment->customer->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $appointment->customer->email }}</div>
+                                    <div class="text-sm font-medium text-gray-900">{{ optional($appointment->customer)->name ?? 'Unknown Customer' }}</div>
+                                    <div class="text-sm text-gray-500">{{ optional($appointment->customer)->email ?? 'No email' }}</div>
                                 </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">{{ $appointment->service->name }}</div>
-                            <div class="text-sm text-gray-500">{{ $appointment->service->duration }} mins</div>
+                            <div class="text-sm text-gray-900">{{ optional($appointment->service)->name ?? 'Unknown Service' }}</div>
+                            <div class="text-sm text-gray-500">{{ optional($appointment->service)->duration ?? '0' }} mins</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">{{ $appointment->staff->name }}</div>
+                            <div class="text-sm text-gray-900">{{ optional($appointment->staff)->name ?? 'Unassigned' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}</div>

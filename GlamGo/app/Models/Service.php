@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\Booking;
-use App\Models\Staff;
+use Illuminate\Database\Eloquent\Model;
 
 class Service extends Model
 {
@@ -16,24 +14,18 @@ class Service extends Model
         'description',
         'price',
         'duration',
-        'category',
+        'category_id',
         'image_url',
-        'is_active'
+        'includes'
     ];
 
-    protected $casts = [
-        'price' => 'decimal:2',
-        'duration' => 'integer',
-        'is_active' => 'boolean'
-    ];
-
-    public function bookings()
+    public function category()
     {
-        return $this->hasMany(Booking::class);
+        return $this->belongsTo(Category::class);
     }
 
-    public function staff()
+    public function appointments()
     {
-        return $this->belongsToMany(Staff::class);
+        return $this->hasMany(Appointment::class);
     }
 }
