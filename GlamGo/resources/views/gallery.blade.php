@@ -2,80 +2,133 @@
 
 @section('title', 'Gallery - GlamGo')
 
+@push('styles')
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+
+        // Gallery filtering
+        const filterForm = document.getElementById('filter-form');
+        const galleryGrid = document.getElementById('gallery-grid');
+
+        function updateGallery(url) {
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                galleryGrid.innerHTML = html;
+                AOS.refresh();
+            });
+        }
+
+        // Handle filter changes
+        filterForm.addEventListener('change', function(e) {
+            const formData = new FormData(filterForm);
+            const searchParams = new URLSearchParams(formData);
+            const url = `${window.location.pathname}?${searchParams.toString()}`;
+            window.history.pushState({}, '', url);
+            updateGallery(url);
+        });
+
+        // Handle browser back/forward
+        window.addEventListener('popstate', function() {
+            updateGallery(window.location.href);
+        });
+
+        // Gallery modal
+        window.openGalleryModal = function(itemId) {
+            fetch(`/gallery/${itemId}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('gallery-modal').innerHTML = data.html;
+                    Alpine.store('modal').showModal = true;
+                }
+            });
+        }
+    });
+</script>
+@endpush
+
 @section('content')
 <div class="min-h-screen bg-gradient-to-b from-white via-pink-50/30 to-purple-50/30 py-32">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-800 mb-4">
+        <div class="text-center mb-12" data-aos="fade-down">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">
                 <span class="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
                     Our Gallery
                 </span>
             </h1>
-            <p class="text-lg text-gray-600">Explore our stunning collection of beauty transformations</p>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Explore our stunning collection of beauty transformations and get inspired for your next look
+            </p>
         </div>
 
-        <!-- Category Filter -->
-        <div class="flex flex-wrap justify-center gap-4 mb-8">
-            <button onclick="filterGallery('all')" 
-                    class="px-6 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300">
-                All
-            </button>
-            @foreach($categories as $category)
-            <button onclick="filterGallery('{{ strtolower($category) }}')"
-                    class="px-6 py-2 rounded-full bg-white text-gray-600 font-semibold hover:bg-gray-50 transition-all duration-300">
-                {{ $category }}
-            </button>
-            @endforeach
+        <!-- Filters -->
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 mb-8" data-aos="fade-up">
+            <form id="filter-form" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Category Filter -->
+                    <div class="relative">
+                        <select name="category" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                            <option value="all">All Categories</option>
+                            @foreach($categories as $category)
+                                <option value="{{ Str::slug($category) }}" {{ request('category') == Str::slug($category) ? 'selected' : '' }}>
+                                    {{ $category }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="relative">
+                        <input type="text" 
+                               name="search" 
+                               value="{{ request('search') }}" 
+                               placeholder="Search gallery..." 
+                               class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="relative">
+                        <input type="text" 
+                               name="tag" 
+                               value="{{ request('tag') }}" 
+                               placeholder="Search by tag..." 
+                               class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    </div>
+                </div>
+            </form>
         </div>
 
         <!-- Gallery Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            @foreach($galleryItems as $item)
-            <div class="gallery-item" data-category="{{ strtolower($item['category']) }}">
-                <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300">
-                    <img src="{{ $item['image'] }}" 
-                         alt="{{ $item['title'] }}" 
-                         class="w-full h-64 object-cover rounded-xl mb-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">{{ $item['title'] }}</h3>
-                    <p class="text-gray-600">{{ $item['description'] }}</p>
-                    <div class="mt-4">
-                        <span class="inline-block px-3 py-1 bg-pink-100 text-pink-600 rounded-full text-sm font-semibold">
-                            {{ $item['category'] }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            @endforeach
+        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            @include('components.gallery-grid')
         </div>
     </div>
 </div>
 
-@push('scripts')
-<script>
-function filterGallery(category) {
-    const items = document.querySelectorAll('.gallery-item');
-    
-    items.forEach(item => {
-        if (category === 'all' || item.dataset.category === category) {
-            item.style.display = 'block';
-        } else {
-            item.style.display = 'none';
-        }
-    });
-
-    // Update active button styles
-    const buttons = document.querySelectorAll('.category-filter button');
-    buttons.forEach(button => {
-        if (button.textContent.toLowerCase() === category) {
-            button.classList.add('bg-gradient-to-r', 'from-pink-500', 'to-purple-600', 'text-white');
-            button.classList.remove('bg-white', 'text-gray-600');
-        } else {
-            button.classList.remove('bg-gradient-to-r', 'from-pink-500', 'to-purple-600', 'text-white');
-            button.classList.add('bg-white', 'text-gray-600');
-        }
-    });
-}
-</script>
-@endpush
+<!-- Modal Container (Alpine.js) -->
+<div x-data="{ showModal: false }" 
+     x-on:keydown.escape.window="showModal = false"
+     id="gallery-modal">
+</div>
 @endsection

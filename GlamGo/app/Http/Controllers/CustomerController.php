@@ -8,6 +8,9 @@ use App\Models\LoyaltyPoint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use App\Models\Booking;
+use App\Models\Service;
+use App\Models\Staff;
 
 class CustomerController extends Controller
 {
@@ -201,5 +204,36 @@ class CustomerController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Loyalty points redeemed successfully');
+    }
+
+    public function dashboard()
+    {
+        $stats = [
+            'total_bookings' => Booking::count(),
+            'upcoming_appointments' => Booking::where('date', '>=', Carbon::today())->count(),
+            'completed_appointments' => Booking::where('date', '<', Carbon::today())->count(),
+            'favorite_services' => Service::take(3)->get(),
+            'recent_bookings' => Booking::with(['service', 'staff'])
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get()
+        ];
+
+        return view('customer.dashboard', compact('stats'));
+    }
+
+    public function profile()
+    {
+        return view('customer.profile');
+    }
+
+    public function reviews()
+    {
+        return view('customer.reviews');
+    }
+
+    public function favorites()
+    {
+        return view('customer.favorites');
     }
 }

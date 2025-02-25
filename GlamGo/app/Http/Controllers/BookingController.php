@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Service;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BookingConfirmation;
@@ -10,10 +12,110 @@ use App\Mail\AdminBookingNotification;
 
 class BookingController extends Controller
 {
+    public function index()
+    {
+        $services = [
+            [
+                'id' => 1,
+                'category' => 'Salon',
+                'name' => 'Haircut & Styling',
+                'description' => 'Professional haircut and styling services for all hair types.',
+                'price' => 50.00,
+                'duration' => 60,
+                'image' => 'images/services/haircut.jpg'
+            ],
+            [
+                'id' => 2,
+                'category' => 'Salon',
+                'name' => 'Hair Coloring',
+                'description' => 'Full hair coloring service with premium products.',
+                'price' => 120.00,
+                'duration' => 120,
+                'image' => 'images/services/coloring.jpg'
+            ],
+            [
+                'id' => 3,
+                'category' => 'Massage',
+                'name' => 'Swedish Massage',
+                'description' => 'Relaxing full-body massage.',
+                'price' => 80.00,
+                'duration' => 60,
+                'image' => 'images/services/massage.jpg'
+            ],
+            [
+                'id' => 4,
+                'category' => 'Skincare',
+                'name' => 'Facial Treatment',
+                'description' => 'Deep cleansing facial with premium products.',
+                'price' => 90.00,
+                'duration' => 60,
+                'image' => 'images/services/facial.jpg'
+            ]
+        ];
+
+        $specialists = [
+            [
+                'id' => 1,
+                'name' => 'Sarah Johnson',
+                'role' => 'Senior Hair Stylist',
+                'experience' => '8 years',
+                'specialties' => ['Haircuts', 'Coloring', 'Styling'],
+                'services' => [1, 2], // Service IDs they can perform
+                'image' => 'images/specialists/specialist1.jpg',
+                'rating' => 4.9
+            ],
+            [
+                'id' => 2,
+                'name' => 'Michael Chen',
+                'role' => 'Color Specialist',
+                'experience' => '6 years',
+                'specialties' => ['Balayage', 'Highlights', 'Color Correction'],
+                'services' => [2], // Service IDs they can perform
+                'image' => 'images/specialists/specialist2.jpg',
+                'rating' => 4.8
+            ],
+            [
+                'id' => 3,
+                'name' => 'Emily Rodriguez',
+                'role' => 'Massage Therapist',
+                'experience' => '5 years',
+                'specialties' => ['Swedish Massage', 'Deep Tissue', 'Hot Stone'],
+                'services' => [3], // Service IDs they can perform
+                'image' => 'images/specialists/specialist3.jpg',
+                'rating' => 4.9
+            ],
+            [
+                'id' => 4,
+                'name' => 'David Kim',
+                'role' => 'Skincare Expert',
+                'experience' => '7 years',
+                'specialties' => ['Facials', 'Skin Treatments', 'Anti-aging'],
+                'services' => [4], // Service IDs they can perform
+                'image' => 'images/specialists/specialist4.jpg',
+                'rating' => 4.7
+            ]
+        ];
+
+        return view('booking', compact('services', 'specialists'));
+    }
+
+    public function getSpecialists($serviceId)
+    {
+        // Get specialists who can perform this service
+        $specialists = collect($this->index()->getData()['specialists'])
+            ->filter(function($specialist) use ($serviceId) {
+                return in_array($serviceId, $specialist['services']);
+            })
+            ->values();
+
+        return response()->json($specialists);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
             'service_id' => 'required|integer',
+            'specialist_id' => 'required|integer',
             'service_name' => 'required|string',
             'price' => 'required|numeric',
             'name' => 'required|string|max:255',
@@ -41,75 +143,20 @@ class BookingController extends Controller
         }
     }
 
-    public function index()
+    public function getAvailableTimeSlots(Request $request)
     {
-        // Dummy data for development
-        $services = [
-            [
-                'id' => 1,
-                'name' => 'Haircut & Styling',
-                'description' => 'Professional haircut and styling services for all hair types.',
-                'duration' => '60',
-                'price' => 50.00,
-                'image' => 'https://images.unsplash.com/photo-1560869713-da86a9ec0744?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=400&q=80'
-            ],
-            [
-                'id' => 2,
-                'name' => 'Manicure & Pedicure',
-                'description' => 'Luxurious nail care treatment for hands and feet.',
-                'duration' => '90',
-                'price' => 75.00,
-                'image' => 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=400&q=80'
-            ],
-            [
-                'id' => 3,
-                'name' => 'Facial Treatment',
-                'description' => 'Rejuvenating facial treatment for glowing skin.',
-                'duration' => '60',
-                'price' => 90.00,
-                'image' => 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=400&q=80'
-            ],
-            [
-                'id' => 4,
-                'name' => 'Hair Coloring',
-                'description' => 'Professional hair coloring services.',
-                'duration' => '120',
-                'price' => 120.00,
-                'image' => 'https://images.unsplash.com/photo-1562322140-8baeececf3df?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=400&q=80'
-            ]
-        ];
+        $request->validate([
+            'date' => 'required|date|after_or_equal:today',
+            'specialist_id' => 'required|integer',
+            'service_id' => 'required|integer'
+        ]);
 
-        $stylists = [
-            [
-                'id' => 1,
-                'name' => 'Jane Smith',
-                'specialty' => 'Hair Styling',
-                'experience' => '8 years',
-                'avatar' => 'https://ui-avatars.com/api/?name=Jane+Smith'
-            ],
-            [
-                'id' => 2,
-                'name' => 'John Doe',
-                'specialty' => 'Nail Care',
-                'experience' => '5 years',
-                'avatar' => 'https://ui-avatars.com/api/?name=John+Doe'
-            ],
-            [
-                'id' => 3,
-                'name' => 'Sarah Johnson',
-                'specialty' => 'Facial Treatments',
-                'experience' => '10 years',
-                'avatar' => 'https://ui-avatars.com/api/?name=Sarah+Johnson'
-            ]
-        ];
-
+        // For development, return dummy time slots
         $timeSlots = [
-            '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-            '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM',
-            '05:00 PM', '06:00 PM'
+            '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'
         ];
 
-        return view('booking', compact('services', 'stylists', 'timeSlots'));
+        return response()->json($timeSlots);
     }
 
     public function show($id)

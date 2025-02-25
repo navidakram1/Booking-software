@@ -3,67 +3,48 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Category;
+use App\Models\GalleryItem;
 
 class GalleryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Define categories for gallery filtering
-        $categories = [
-            'Hair',
-            'Nails',
-            'Makeup',
-            'Facial',
-            'Spa',
-            'Bridal'
-        ];
+        $categories = Category::pluck('name');
+        $query = GalleryItem::with('category');
 
-        // For development, using dummy gallery items
-        $galleryItems = [
-            [
-                'id' => 1,
-                'category' => 'Hair',
-                'image' => 'https://ui-avatars.com/api/?name=Hair+Style&background=FF69B4&color=fff',
-                'title' => 'Modern Hair Styling',
-                'description' => 'Professional hair styling and coloring'
-            ],
-            [
-                'id' => 2,
-                'category' => 'Nails',
-                'image' => 'https://ui-avatars.com/api/?name=Nail+Art&background=FF69B4&color=fff',
-                'title' => 'Creative Nail Art',
-                'description' => 'Artistic nail designs and treatments'
-            ],
-            [
-                'id' => 3,
-                'category' => 'Makeup',
-                'image' => 'https://ui-avatars.com/api/?name=Makeup&background=FF69B4&color=fff',
-                'title' => 'Professional Makeup',
-                'description' => 'Stunning makeup for all occasions'
-            ],
-            [
-                'id' => 4,
-                'category' => 'Facial',
-                'image' => 'https://ui-avatars.com/api/?name=Facial&background=FF69B4&color=fff',
-                'title' => 'Facial Treatment',
-                'description' => 'Rejuvenating facial treatments'
-            ],
-            [
-                'id' => 5,
-                'category' => 'Spa',
-                'image' => 'https://ui-avatars.com/api/?name=Spa&background=FF69B4&color=fff',
-                'title' => 'Relaxing Spa',
-                'description' => 'Luxurious spa experiences'
-            ],
-            [
-                'id' => 6,
-                'category' => 'Bridal',
-                'image' => 'https://ui-avatars.com/api/?name=Bridal&background=FF69B4&color=fff',
-                'title' => 'Bridal Beauty',
-                'description' => 'Complete bridal beauty services'
-            ]
-        ];
+        // Filter by category
+        if ($request->has('category') && $request->category !== 'all') {
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('slug', $request->category);
+            });
+        }
+
+        // Filter by tag if provided
+        if ($request->has('tag')) {
+            $query->where('tags', 'like', '%' . $request->tag . '%');
+        }
+
+        $galleryItems = $query->latest()->paginate(12);
+
+        if ($request->ajax()) {
+            return view('components.gallery-grid', compact('galleryItems'));
+        }
 
         return view('gallery', compact('categories', 'galleryItems'));
+    }
+
+    public function show($id)
+    {
+        $item = GalleryItem::with('category')->findOrFail($id);
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'html' => view('components.gallery-modal', compact('item'))->render()
+            ]);
+        }
+
+        return view('gallery.show', compact('item'));
     }
 }

@@ -70,9 +70,9 @@
                     </button>
                     <div x-show="open" x-cloak class="mt-2 pl-12 space-y-2">
                         <a href="{{ route('admin.services.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">All Services</a>
-                        <a href="{{ route('admin.services.packages.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Service Packages</a>
-                        <a href="{{ route('admin.services.addons.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Add-ons</a>
-                        <a href="{{ route('admin.services.pricing') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Pricing Rules</a>
+                        <a href="{{ route('admin.service-packages.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Service Packages</a>
+                        <a href="{{ route('admin.service-addons.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Add-ons</a>
+                        <a href="{{ route('admin.service-pricing.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Pricing Rules</a>
                     </div>
                 </div>
 
@@ -107,9 +107,9 @@
                         <lord-icon src="https://cdn.lordicon.com/xsdtfyne.json" trigger="hover" colors="primary:#ec4899" style="width:16px;height:16px" class="transform" :class="{'rotate-180': open}"></lord-icon>
                     </button>
                     <div x-show="open" x-cloak class="mt-2 pl-12 space-y-2">
-                        <a href="{{ route('admin.marketing.email') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Email Campaigns</a>
+                        <a href="{{ route('admin.marketing.email') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Email Marketing</a>
                         <a href="{{ route('admin.marketing.sms') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">SMS Marketing</a>
-                        <a href="{{ route('admin.marketing.promotions') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Promotions</a>
+                        <a href="{{ route('admin.marketing.campaigns') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Campaigns</a>
                     </div>
                 </div>
 
@@ -126,30 +126,40 @@
                         <a href="{{ route('admin.reports.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">General Reports</a>
                         <div class="space-y-2">
                             <h3 class="text-lg font-semibold text-gray-700">Analytics</h3>
-                            <a href="{{ route('admin.revenue') }}" 
-                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.revenue') ? 'bg-gray-100' : '' }}">
-                                <i class="fas fa-chart-line mr-3"></i>
-                                Revenue Analytics
+                            <a href="{{ route('admin.revenue.index') }}" 
+                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.revenue.*') ? 'bg-gray-100' : '' }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="mx-4 font-medium">Revenue</span>
                             </a>
-                            <a href="{{ route('admin.bookings') }}"
-                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.bookings') ? 'bg-gray-100' : '' }}">
-                                <i class="fas fa-calendar-check mr-3"></i>
-                                Bookings Analytics
+                            <a href="{{ route('admin.bookings.index') }}" 
+                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.bookings.*') ? 'bg-gray-100' : '' }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span class="mx-4 font-medium">Bookings Analytics</span>
                             </a>
-                            <a href="{{ route('admin.customers') }}"
-                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.customers') ? 'bg-gray-100' : '' }}">
-                                <i class="fas fa-users mr-3"></i>
-                                Customer Analytics
+                            <a href="{{ route('admin.customers.index') }}" 
+                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.customers.*') ? 'bg-gray-100' : '' }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                </svg>
+                                <span class="mx-4 font-medium">Customers</span>
                             </a>
-                            <a href="{{ route('admin.services') }}"
-                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.services') ? 'bg-gray-100' : '' }}">
-                                <i class="fas fa-concierge-bell mr-3"></i>
-                                Service Analytics
+                            <a href="{{ route('admin.staff.index') }}" 
+                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.staff.*') ? 'bg-gray-100' : '' }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <span class="mx-4 font-medium">Staff</span>
                             </a>
-                            <a href="{{ route('admin.staff') }}"
-                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.staff') ? 'bg-gray-100' : '' }}">
-                                <i class="fas fa-user-tie mr-3"></i>
-                                Staff Analytics
+                            <a href="{{ route('admin.services.index') }}" 
+                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.services.*') ? 'bg-gray-100' : '' }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                <span class="mx-4 font-medium">Services</span>
                             </a>
                         </div>
                     </div>
@@ -217,13 +227,10 @@
                                 </div>
                             </button>
                             <div x-show="open" x-cloak @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-500">Profile</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-500">Settings</a>
-                                <hr class="my-2">
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-500">Logout</button>
-                                </form>
+                                <div class="mt-3 space-y-1">
+                                    <a href="{{ route('admin.settings.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-500">Settings</a>
+                                    <a href="{{ route('admin.profile.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-500">Profile</a>
+                                </div>
                             </div>
                         </div>
                     </div>

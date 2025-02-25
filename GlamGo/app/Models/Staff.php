@@ -4,45 +4,43 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\Booking;
-use App\Models\Service;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Appointment;
+use App\Models\Service;
 
 class Staff extends Model
 {
     use HasFactory;
+
+    protected $table = 'staff';
 
     protected $fillable = [
         'name',
         'email',
         'phone',
         'bio',
-        'specialization',
         'profile_image',
-        'working_hours',
+        'specialization',
+        'years_of_experience',
         'is_active'
     ];
 
     protected $casts = [
-        'working_hours' => 'array',
+        'years_of_experience' => 'integer',
         'is_active' => 'boolean'
     ];
-
-    public function bookings()
-    {
-        return $this->hasMany(Booking::class);
-    }
-
-    public function services()
-    {
-        return $this->belongsToMany(Service::class);
-    }
 
     /**
      * Get the appointments for the staff member.
      */
-    public function appointments()
+    public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    public function services(): BelongsToMany
+    {
+        return $this->belongsToMany(Service::class, 'service_staff');
     }
 }

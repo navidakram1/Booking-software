@@ -14,11 +14,8 @@ class StaffController extends Controller
 {
     public function index()
     {
-        $staff = Staff::with(['services', 'shifts'])->get();
-        return view('admin.staff.list', [
-            'staff' => $staff,
-            'performanceMetrics' => $this->getPerformanceMetrics()
-        ]);
+        $staff = Staff::latest()->paginate(10);
+        return view('admin.staff.index', compact('staff'));
     }
 
     public function create()
@@ -28,7 +25,74 @@ class StaffController extends Controller
 
     public function store(Request $request)
     {
-        // Store new staff member
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:staff,email',
+            'phone' => 'nullable|string|max:20',
+            'position' => 'required|string|max:255',
+            'bio' => 'nullable|string',
+            'services' => 'nullable|array',
+            'working_hours' => 'nullable|array',
+            'is_active' => 'boolean'
+        ]);
+
+        Staff::create($validated);
+
+        return redirect()->route('admin.staff.index')
+            ->with('success', 'Staff member created successfully.');
+    }
+
+    public function edit(Staff $staff)
+    {
+        return view('admin.staff.edit', compact('staff'));
+    }
+
+    public function update(Request $request, Staff $staff)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:staff,email,' . $staff->id,
+            'phone' => 'nullable|string|max:20',
+            'position' => 'required|string|max:255',
+            'bio' => 'nullable|string',
+            'services' => 'nullable|array',
+            'working_hours' => 'nullable|array',
+            'is_active' => 'boolean'
+        ]);
+
+        $staff->update($validated);
+
+        return redirect()->route('admin.staff.index')
+            ->with('success', 'Staff member updated successfully.');
+    }
+
+    public function destroy(Staff $staff)
+    {
+        $staff->delete();
+
+        return redirect()->route('admin.staff.index')
+            ->with('success', 'Staff member deleted successfully.');
+    }
+
+    public function schedule()
+    {
+        $staff = Staff::all();
+        return view('admin.staff.schedule', compact('staff'));
+    }
+
+    public function updateSchedule(Request $request)
+    {
+        $validated = $request->validate([
+            'staff_id' => 'required|exists:staff,id',
+            'working_hours' => 'required|array'
+        ]);
+
+        $staff = Staff::findOrFail($validated['staff_id']);
+        $staff->working_hours = $validated['working_hours'];
+        $staff->save();
+
+        return redirect()->route('admin.staff.schedule')
+            ->with('success', 'Staff schedule updated successfully.');
     }
 
     public function show($id)
@@ -38,41 +102,6 @@ class StaffController extends Controller
             'staff' => $staff,
             'performanceMetrics' => $this->getStaffPerformanceMetrics($id)
         ]);
-    }
-
-    public function edit($id)
-    {
-        return view('admin.staff.edit');
-    }
-
-    public function update(Request $request, $id)
-    {
-        // Update staff member
-    }
-
-    public function destroy($id)
-    {
-        // Delete staff member
-    }
-
-    public function toggleStatus($id)
-    {
-        // Toggle staff availability
-    }
-
-    public function updateSchedule(Request $request, $id)
-    {
-        // Update staff schedule
-    }
-
-    public function assignServices(Request $request, $id)
-    {
-        // Assign services to staff member
-    }
-
-    public function performance($id)
-    {
-        return view('admin.staff.performance');
     }
 
     public function leaveRequests()

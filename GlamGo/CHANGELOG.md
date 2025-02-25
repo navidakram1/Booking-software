@@ -8,8 +8,8 @@
 
 ## Version Control
 - Repository: [https://github.com/navidakram1/Saloon](https://github.com/navidakram1/Saloon)
-- Latest Release: v0.1.0
-- Release Date: February 24, 2025
+- Latest Release: v0.2.0
+- Release Date: February 25, 2025
 
 All notable changes to this project will be documented in this file.
 
@@ -19,26 +19,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Staff Profile Page
-  - Modern UI with profile information
-  - Statistics dashboard
-  - Portfolio gallery
-  - Client reviews section
-  - Working hours display
+- Modern homepage with glass-morphism design
+- Real-time booking system with availability checking
+- Services showcase with dynamic loading
+- Staff profiles section
+- Testimonials section
+- Contact form with map integration
+- API endpoints for service listing and booking
+- Staff profile management system
+- Performance metrics tracking
+- Group bookings management system
+  - CRUD operations for group appointments
+  - Group size tracking
+  - Special requests handling
+  - Staff assignment for groups
+- Enhanced admin dashboard
+  - Revenue analytics with daily breakdown
+  - Popular services tracking
+  - Customer growth metrics
+  - Staff performance ratings
+  - Interactive charts and visualizations
 
-- Staff Appointments Management
-  - Interactive calendar interface
-  - Time slot management
-  - Appointment creation form
-  - Upcoming appointments display
-  - Status tracking system
-  - Modern responsive design
+### Changed
+- Updated layout system with consistent header and footer
+- Enhanced booking form with real-time validation
+- Improved service display with dynamic filtering
+- Updated staff profile interface
+- Improved appointment management
+  - Added calendar view for appointments
+  - Enhanced filtering options
+  - Added status tracking
+  - Integrated with group bookings
+
+### Fixed
+- Resolved booking form validation issues
+- Fixed service availability checking
+- Corrected staff working hours display
+- Improved mobile responsiveness
+- Database schema alignment with salon_schema.sql
+  - Added missing total_amount column to appointments
+  - Created service_reviews table
+  - Updated services table with proper category relationships
+  - Added group_bookings table
+- Admin dashboard bugs
+  - Resolved GROUP BY SQL error in services query
+  - Fixed undefined variables in view
+  - Corrected route namespaces for admin controllers
+  - Added missing calendar route
+
+## [0.2.0] - 2025-02-25
+
+### Added
+- MySQL Database Integration
+  - Created MySQL database 'glamgo'
+  - Migrated from SQLite to MySQL
+  - Set up proper database structure with foreign key constraints
+  - Implemented database seeders for sample data
 
 ### Enhanced
-- Improved navigation with staff-specific routes
-- Added glassmorphism effects across staff pages
-- Implemented interactive elements and hover states
-- Enhanced user experience with visual feedback
+- Database Schema and Relationships
+  - Improved table relationships with proper foreign keys
+  - Enhanced cascade delete behavior
+  - Optimized table structures for better performance
+  - Added new fields for extended functionality
+
+### Fixed
+- Foreign key constraint issues in migrations
+- Table dependency order in database setup
+- Data seeding sequence for related tables
 
 ## [0.1.0] - 2025-02-24
 

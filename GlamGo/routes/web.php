@@ -2,179 +2,235 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AboutController;
+use App\Http\Controllers\ServicesController;
+use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AppointmentsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewsController;
-use App\Http\Controllers\FavoritesController;
-use App\Http\Controllers\StaffController;
-use App\Http\Controllers\HelpController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\SpecialistsController;
 use App\Http\Controllers\BookingController;
-use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\MarketingController;
+use App\Http\Controllers\SpecialistsController;
+use App\Http\Controllers\HelpController;
+use App\Http\Controllers\AuthController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
+// Admin Controllers
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\ServiceAddonsController;
+use App\Http\Controllers\Admin\ServicePricingController;
+use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
+use App\Http\Controllers\Admin\GroupBookingController;
+use App\Http\Controllers\Admin\WaitlistController;
+use App\Http\Controllers\Admin\BookingRuleController;
+use App\Http\Controllers\Admin\MarketingController as AdminMarketingController;
+use App\Http\Controllers\Admin\ReportsController;
+use App\Http\Controllers\Admin\ServiceCategoryController;
+use App\Http\Controllers\Admin\StaffScheduleController;
 
-// Home routes
+// Authentication routes
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Password Reset Routes
+Route::get('/password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/password/email', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/password/reset/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset', [AuthController::class, 'reset'])->name('password.update');
+
+// Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/about', [HomeController::class, 'about'])->name('about');
-Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+Route::get('/about', [AboutController::class, 'index'])->name('about');
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::get('/services', [ServicesController::class, 'index'])->name('services');
+Route::get('/specialists', [SpecialistsController::class, 'index'])->name('specialists');
+Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
+Route::get('/blog', [BlogController::class, 'index'])->name('blog');
+Route::get('/help', [HelpController::class, 'index'])->name('help');
+
+// Legal routes
 Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
 Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
 Route::get('/cookies', [HomeController::class, 'cookies'])->name('cookies');
-Route::get('/services', [ServiceController::class, 'index'])->name('services');
-Route::get('/specialists', [SpecialistsController::class, 'index'])->name('specialists');
-Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
 
-// Booking routes
-Route::get('/booking', [BookingController::class, 'index'])->name('booking');
-Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
-Route::get('/booking/slots', [BookingController::class, 'getAvailableSlots'])->name('booking.slots');
-
-// Appointment routes
-Route::prefix('appointments')->name('appointments.')->group(function () {
-    Route::get('/', [AppointmentsController::class, 'index'])->name('index');
-    Route::get('/create', [AppointmentsController::class, 'create'])->name('create');
-    Route::post('/', [AppointmentsController::class, 'store'])->name('store');
-    Route::post('/{id}/cancel', [AppointmentsController::class, 'cancel'])->name('cancel');
-    Route::post('/{id}/reschedule', [AppointmentsController::class, 'reschedule'])->name('reschedule');
-    Route::get('/available-slots', [AppointmentsController::class, 'getAvailableSlots'])->name('available-slots');
+// Contact routes
+Route::prefix('contact')->name('contact.')->group(function () {
+    Route::post('/send', [ContactController::class, 'sendContact'])->name('send');
 });
 
 // Customer routes
-Route::get('/dashboard', function () { return view('customer.dashboard'); })->name('dashboard');
-Route::get('/profile', function () { return view('customer.profile'); })->name('profile');
-Route::get('/reviews', function () { return view('customer.reviews'); })->name('reviews');
-Route::get('/favorites', function () { return view('customer.favorites'); })->name('favorites');
-
-// Staff routes
-Route::prefix('staff')->group(function () {
-    Route::get('/profile', [StaffController::class, 'profile'])->name('staff.profile');
-    Route::get('/appointments', [StaffController::class, 'appointments'])->name('staff.appointments');
+Route::prefix('customer')->name('customer.')->group(function () {
+    Route::get('/dashboard', [CustomerController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profile', [CustomerController::class, 'profile'])->name('profile');
+    Route::get('/appointments', [CustomerController::class, 'appointments'])->name('appointments');
+    Route::get('/reviews', [CustomerController::class, 'reviews'])->name('reviews');
+    Route::get('/favorites', [CustomerController::class, 'favorites'])->name('favorites');
 });
 
-// Help route
-Route::get('/help', [HelpController::class, 'index'])->name('help');
+// Booking routes
+Route::prefix('booking')->name('booking.')->group(function () {
+    Route::get('/', [BookingController::class, 'index'])->name('index');
+    Route::post('/', [BookingController::class, 'store'])->name('store');
+    Route::get('/specialists/{serviceId}', [BookingController::class, 'getSpecialists'])->name('specialists');
+    Route::get('/time-slots', [BookingController::class, 'getAvailableTimeSlots'])->name('timeSlots');
+});
 
 // Admin routes
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-    
-    // Analytics routes
-    Route::get('/revenue', [AdminController::class, 'revenueAnalytics'])->name('revenue');
-    Route::get('/bookings', [AdminController::class, 'bookingsAnalytics'])->name('bookings');
-    Route::get('/customers', [AdminController::class, 'customersAnalytics'])->name('customers');
-    Route::get('/services', [AdminController::class, 'servicesAnalytics'])->name('services');
-    Route::get('/staff', [AdminController::class, 'staffAnalytics'])->name('staff');
-    
-    // Staff management
-    Route::get('/staff', [AdminController::class, 'staff'])->name('staff.index');
-    Route::get('/staff/create', [AdminController::class, 'staffCreate'])->name('staff.create');
-    Route::post('/staff', [AdminController::class, 'staffStore'])->name('staff.store');
-    Route::get('/staff/schedule', [AdminController::class, 'staffSchedule'])->name('staff.schedule');
-    
-    // Services management
+    // Dashboard
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Staff Management
+    Route::prefix('staff')->name('staff.')->group(function () {
+        Route::get('/', [StaffController::class, 'index'])->name('index');
+        Route::get('/create', [StaffController::class, 'create'])->name('create');
+        Route::post('/', [StaffController::class, 'store'])->name('store');
+        Route::get('/{staff}/edit', [StaffController::class, 'edit'])->name('edit');
+        Route::put('/{staff}', [StaffController::class, 'update'])->name('update');
+        Route::delete('/{staff}', [StaffController::class, 'destroy'])->name('destroy');
+        Route::get('/schedule', [StaffController::class, 'schedule'])->name('schedule');
+        Route::post('/schedule', [StaffController::class, 'updateSchedule'])->name('schedule.update');
+    });
+
+    // Appointments
+    Route::prefix('appointments')->name('appointments.')->group(function () {
+        Route::get('/', [AppointmentController::class, 'index'])->name('index');
+        Route::get('/calendar', [AppointmentController::class, 'calendar'])->name('calendar');
+        Route::get('/create', [AppointmentController::class, 'create'])->name('create');
+        Route::post('/', [AppointmentController::class, 'store'])->name('store');
+        Route::get('/{appointment}/edit', [AppointmentController::class, 'edit'])->name('edit');
+        Route::put('/{appointment}', [AppointmentController::class, 'update'])->name('update');
+        Route::delete('/{appointment}', [AppointmentController::class, 'destroy'])->name('destroy');
+    });
+
+    // Services
     Route::prefix('services')->name('services.')->group(function () {
-        Route::get('/', [AdminController::class, 'services'])->name('index');
-        Route::post('/', [AdminController::class, 'servicesStore'])->name('store');
-        Route::put('/{id}', [AdminController::class, 'servicesUpdate'])->name('update');
-        Route::delete('/{id}', [AdminController::class, 'servicesDestroy'])->name('destroy');
-        
-        // Service packages
-        Route::prefix('packages')->name('packages.')->group(function () {
-            Route::get('/', [AdminController::class, 'servicePackages'])->name('index');
-            Route::post('/', [AdminController::class, 'servicePackagesStore'])->name('store');
-            Route::put('/{id}', [AdminController::class, 'servicePackagesUpdate'])->name('update');
-            Route::delete('/{id}', [AdminController::class, 'servicePackagesDestroy'])->name('destroy');
-        });
-
-        // Service addons
-        Route::prefix('addons')->name('addons.')->group(function () {
-            Route::get('/', [AdminController::class, 'serviceAddons'])->name('index');
-            Route::post('/', [AdminController::class, 'serviceAddonsStore'])->name('store');
-            Route::put('/{id}', [AdminController::class, 'serviceAddonsUpdate'])->name('update');
-            Route::delete('/{id}', [AdminController::class, 'serviceAddonsDestroy'])->name('destroy');
-        });
-
-        // Service pricing
-        Route::get('/pricing', [AdminController::class, 'servicePricing'])->name('pricing');
-        Route::post('/pricing', [AdminController::class, 'servicePricingStore'])->name('pricing.store');
-        Route::put('/pricing/{id}', [AdminController::class, 'servicePricingUpdate'])->name('pricing.update');
-        Route::delete('/pricing/{id}', [AdminController::class, 'servicePricingDestroy'])->name('pricing.destroy');
+        Route::get('/', [ServiceController::class, 'index'])->name('index');
+        Route::get('/create', [ServiceController::class, 'create'])->name('create');
+        Route::post('/', [ServiceController::class, 'store'])->name('store');
+        Route::get('/{service}/edit', [ServiceController::class, 'edit'])->name('edit');
+        Route::put('/{service}', [ServiceController::class, 'update'])->name('update');
+        Route::delete('/{service}', [ServiceController::class, 'destroy'])->name('destroy');
     });
-    
-    // Service management
-    Route::get('/services', [AdminController::class, 'services'])->name('services.index');
-    Route::get('/services/create', [AdminController::class, 'serviceCreate'])->name('services.create');
-    Route::post('/services', [AdminController::class, 'serviceStore'])->name('services.store');
-    Route::get('/services/categories', [AdminController::class, 'serviceCategories'])->name('services.categories');
-    
-    // Appointment management
-    Route::get('/appointments', [AdminController::class, 'appointments'])->name('appointments.index');
-    Route::get('/appointments/create', [AdminController::class, 'appointmentCreate'])->name('appointments.create');
-    Route::post('/appointments', [AdminController::class, 'appointmentStore'])->name('appointments.store');
-    Route::post('/appointments/{id}/update', [AdminController::class, 'appointmentUpdate'])->name('appointments.update');
-    Route::get('/appointments/calendar', [AdminController::class, 'appointmentCalendar'])->name('appointments.calendar');
-    
-    // Group bookings
-    Route::get('/group-bookings', [AdminController::class, 'groupBookings'])->name('group-bookings.index');
-    Route::get('/group-bookings/create', [AdminController::class, 'groupBookingsCreate'])->name('group-bookings.create');
-    Route::post('/group-bookings', [AdminController::class, 'groupBookingsStore'])->name('group-bookings.store');
-    Route::get('/group-bookings/{id}', [AdminController::class, 'groupBookingsShow'])->name('group-bookings.show');
-    Route::post('/group-bookings/{id}/update', [AdminController::class, 'groupBookingsUpdate'])->name('group-bookings.update');
-    Route::delete('/group-bookings/{id}', [AdminController::class, 'groupBookingsDestroy'])->name('group-bookings.destroy');
-    
-    // Waitlist management
-    Route::get('/waitlist', [AdminController::class, 'waitlist'])->name('waitlist.index');
-    Route::post('/waitlist', [AdminController::class, 'waitlistStore'])->name('waitlist.store');
-    Route::post('/waitlist/{id}/contact-attempt', [AdminController::class, 'waitlistContactAttempt'])->name('waitlist.contact-attempt');
-    Route::post('/waitlist/{id}/update-status', [AdminController::class, 'waitlistUpdateStatus'])->name('waitlist.update-status');
-    Route::delete('/waitlist/{id}', [AdminController::class, 'waitlistDestroy'])->name('waitlist.destroy');
-    
-    // Booking rules
-    Route::get('/booking-rules', [AdminController::class, 'bookingRules'])->name('booking-rules.index');
-    Route::post('/booking-rules', [AdminController::class, 'bookingRulesStore'])->name('booking-rules.store');
-    Route::put('/booking-rules/{id}', [AdminController::class, 'bookingRulesUpdate'])->name('booking-rules.update');
-    Route::delete('/booking-rules/{id}', [AdminController::class, 'bookingRulesDestroy'])->name('booking-rules.destroy');
-    
-    // Content management
-    Route::prefix('content')->name('content.')->group(function () {
-        Route::get('/gallery', [AdminController::class, 'gallery'])->name('gallery');
-        Route::post('/gallery/add', [AdminController::class, 'galleryAdd'])->name('gallery.add');
-        Route::delete('/gallery/{id}', [AdminController::class, 'galleryRemove'])->name('gallery.remove');
-        Route::post('/gallery/reorder', [AdminController::class, 'galleryReorder'])->name('gallery.reorder');
+
+    // Service Addons
+    Route::prefix('service-addons')->name('service-addons.')->group(function () {
+        Route::get('/', [ServiceAddonsController::class, 'index'])->name('index');
+        Route::get('/create', [ServiceAddonsController::class, 'create'])->name('create');
+        Route::post('/', [ServiceAddonsController::class, 'store'])->name('store');
+        Route::get('/{addon}/edit', [ServiceAddonsController::class, 'edit'])->name('edit');
+        Route::put('/{addon}', [ServiceAddonsController::class, 'update'])->name('update');
+        Route::delete('/{addon}', [ServiceAddonsController::class, 'destroy'])->name('destroy');
     });
-    
-    // Customer management
+
+    // Service Pricing
+    Route::prefix('service-pricing')->name('service-pricing.')->group(function () {
+        Route::get('/', [ServicePricingController::class, 'index'])->name('index');
+        Route::post('/', [ServicePricingController::class, 'store'])->name('store');
+        Route::put('/{pricing}', [ServicePricingController::class, 'update'])->name('update');
+        Route::delete('/{pricing}', [ServicePricingController::class, 'destroy'])->name('destroy');
+    });
+
+    // Service Categories
+    Route::prefix('service-categories')->name('service-categories.')->group(function () {
+        Route::get('/', [ServiceCategoryController::class, 'index'])->name('index');
+        Route::get('/create', [ServiceCategoryController::class, 'create'])->name('create');
+        Route::post('/', [ServiceCategoryController::class, 'store'])->name('store');
+        Route::get('/{category}/edit', [ServiceCategoryController::class, 'edit'])->name('edit');
+        Route::put('/{category}', [ServiceCategoryController::class, 'update'])->name('update');
+        Route::delete('/{category}', [ServiceCategoryController::class, 'destroy'])->name('destroy');
+        Route::post('/order', [ServiceCategoryController::class, 'updateOrder'])->name('order.update');
+    });
+
+    // Staff Schedules
+    Route::prefix('staff-schedules')->name('staff-schedules.')->group(function () {
+        Route::get('/', [StaffScheduleController::class, 'index'])->name('index');
+        Route::get('/create', [StaffScheduleController::class, 'create'])->name('create');
+        Route::post('/', [StaffScheduleController::class, 'store'])->name('store');
+        Route::get('/{schedule}/edit', [StaffScheduleController::class, 'edit'])->name('edit');
+        Route::put('/{schedule}', [StaffScheduleController::class, 'update'])->name('update');
+        Route::delete('/{schedule}', [StaffScheduleController::class, 'destroy'])->name('destroy');
+    });
+
+    // Customer Management
     Route::prefix('customers')->name('customers.')->group(function () {
-        Route::get('/', [CustomerController::class, 'index'])->name('index');
-        Route::get('/create', [CustomerController::class, 'create'])->name('create');
-        Route::post('/', [CustomerController::class, 'store'])->name('store');
-        Route::get('/{id}', [CustomerController::class, 'show'])->name('show');
-        Route::get('/{id}/edit', [CustomerController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [CustomerController::class, 'update'])->name('update');
-        Route::delete('/{id}', [CustomerController::class, 'destroy'])->name('destroy');
-        
-        // Customer preferences
-        Route::get('/{id}/preferences', [CustomerController::class, 'preferences'])->name('preferences');
-        Route::post('/{id}/preferences', [CustomerController::class, 'preferencesUpdate'])->name('preferences.update');
-        
-        // Customer loyalty
-        Route::get('/{id}/loyalty', [CustomerController::class, 'loyalty'])->name('loyalty');
-        Route::post('/{id}/loyalty/points/add', [CustomerController::class, 'addLoyaltyPoints'])->name('loyalty.points.add');
-        Route::post('/{id}/loyalty/points/redeem', [CustomerController::class, 'redeemLoyaltyPoints'])->name('loyalty.points.redeem');
+        Route::get('/', [AdminCustomerController::class, 'index'])->name('index');
+        Route::get('/create', [AdminCustomerController::class, 'create'])->name('create');
+        Route::post('/', [AdminCustomerController::class, 'store'])->name('store');
+        Route::get('/{customer}/edit', [AdminCustomerController::class, 'edit'])->name('edit');
+        Route::put('/{customer}', [AdminCustomerController::class, 'update'])->name('update');
+        Route::delete('/{customer}', [AdminCustomerController::class, 'destroy'])->name('destroy');
     });
-    
+
+    // Group Bookings
+    Route::prefix('group-bookings')->name('group-bookings.')->group(function () {
+        Route::get('/', [GroupBookingController::class, 'index'])->name('index');
+        Route::get('/create', [GroupBookingController::class, 'create'])->name('create');
+        Route::post('/', [GroupBookingController::class, 'store'])->name('store');
+        Route::get('/{booking}/edit', [GroupBookingController::class, 'edit'])->name('edit');
+        Route::put('/{booking}', [GroupBookingController::class, 'update'])->name('update');
+        Route::delete('/{booking}', [GroupBookingController::class, 'destroy'])->name('destroy');
+    });
+
+    // Waitlist
+    Route::prefix('waitlist')->name('waitlist.')->group(function () {
+        Route::get('/', [WaitlistController::class, 'index'])->name('index');
+        Route::post('/', [WaitlistController::class, 'store'])->name('store');
+        Route::delete('/{waitlist}', [WaitlistController::class, 'destroy'])->name('destroy');
+    });
+
+    // Booking Rules
+    Route::prefix('booking-rules')->name('booking-rules.')->group(function () {
+        Route::get('/', [BookingRuleController::class, 'index'])->name('index');
+        Route::get('/create', [BookingRuleController::class, 'create'])->name('create');
+        Route::post('/', [BookingRuleController::class, 'store'])->name('store');
+        Route::get('/{rule}/edit', [BookingRuleController::class, 'edit'])->name('edit');
+        Route::put('/{rule}', [BookingRuleController::class, 'update'])->name('update');
+        Route::delete('/{rule}', [BookingRuleController::class, 'destroy'])->name('destroy');
+    });
+
+    // Marketing
+    Route::prefix('marketing')->name('marketing.')->group(function () {
+        Route::get('/', [AdminMarketingController::class, 'index'])->name('index');
+        Route::get('/email', [AdminMarketingController::class, 'email'])->name('email');
+        Route::get('/sms', [AdminMarketingController::class, 'sms'])->name('sms');
+        Route::get('/campaigns', [AdminMarketingController::class, 'campaigns'])->name('campaigns');
+    });
+
     // Reports
-    Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
-    
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportsController::class, 'index'])->name('index');
+        Route::get('/export', [ReportsController::class, 'export'])->name('export');
+        Route::get('/sales', [ReportsController::class, 'sales'])->name('sales');
+        Route::get('/customers', [ReportsController::class, 'customers'])->name('customers');
+        Route::get('/staff', [ReportsController::class, 'staff'])->name('staff');
+        Route::get('/services', [ReportsController::class, 'services'])->name('services');
+    });
+
+    // Content Management
+    Route::prefix('content')->name('content.')->group(function () {
+        Route::get('/pages', [AdminController::class, 'pages'])->name('pages');
+        Route::get('/blog', [AdminController::class, 'blog'])->name('blog');
+        Route::get('/gallery', [AdminController::class, 'gallery'])->name('gallery');
+        Route::get('/testimonials', [AdminController::class, 'testimonials'])->name('testimonials');
+    });
+
     // Settings
-    Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
-    Route::post('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/general', [AdminController::class, 'generalSettings'])->name('general');
+        Route::get('/notifications', [AdminController::class, 'notificationSettings'])->name('notifications');
+        Route::get('/integrations', [AdminController::class, 'integrationSettings'])->name('integrations');
+        Route::get('/payment', [AdminController::class, 'paymentSettings'])->name('payment');
+        Route::get('/security', [AdminController::class, 'securitySettings'])->name('security');
+    });
+
+    // Cache Management
+    Route::get('/cache', [AdminController::class, 'cache'])->name('cache');
 });

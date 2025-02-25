@@ -5,7 +5,7 @@
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold text-gray-800">Service Packages</h2>
         <div class="flex gap-3">
-            <a href="{{ route('admin.services.packages.create') }}" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">
+            <a href="{{ route('admin.service-packages.create') }}" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">
                 Create Package
             </a>
             <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg" onclick="exportPackages()">
@@ -69,7 +69,7 @@
                         </div>
 
                         <div class="flex gap-2 pt-4 border-t">
-                            <a href="{{ route('admin.services.packages.edit', 1) }}" class="flex-1 text-center py-2 text-blue-500 hover:bg-blue-50 rounded">
+                            <a href="{{ route('admin.service-packages.edit', 1) }}" class="flex-1 text-center py-2 text-blue-500 hover:bg-blue-50 rounded">
                                 Edit
                             </a>
                             <button onclick="togglePackageStatus(1)" class="flex-1 text-center py-2 text-yellow-500 hover:bg-yellow-50 rounded">
@@ -108,7 +108,7 @@
     }
 
     function togglePackageStatus(id) {
-        fetch(`/admin/services/packages/${id}/toggle`, {
+        fetch(`/admin/service-packages/${id}/toggle`, {
             method: 'PUT',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -118,7 +118,7 @@
 
     function deletePackage(id) {
         if (confirm('Are you sure you want to delete this package?')) {
-            fetch(`/admin/services/packages/${id}`, {
+            fetch(`/admin/service-packages/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content

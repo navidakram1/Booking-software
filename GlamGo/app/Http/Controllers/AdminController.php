@@ -1006,7 +1006,7 @@ class AdminController extends Controller
         $services = Service::all();
         $staff = Staff::all();
         
-        return view('admin.services.pricing', compact('pricingRules', 'services', 'staff'));
+        return view('admin.service-pricing.index', compact('pricingRules', 'services', 'staff'));
     }
 
     public function servicePricingStore(Request $request)
@@ -1091,5 +1091,52 @@ class AdminController extends Controller
         $rule->delete();
 
         return redirect()->back()->with('success', 'Pricing rule deleted successfully');
+    }
+
+    // Staff Management
+    public function staffIndex()
+    {
+        $staff = Staff::with('services')->get();
+        return view('admin.staff.index', compact('staff'));
+    }
+
+    public function staffShow($id)
+    {
+        $staff = Staff::with(['services', 'bookings'])->findOrFail($id);
+        return view('admin.staff.show', compact('staff'));
+    }
+
+    public function staffEdit($id)
+    {
+        $staff = Staff::findOrFail($id);
+        $services = Service::all();
+        return view('admin.staff.edit', compact('staff', 'services'));
+    }
+
+    // Services Management
+    public function servicesIndex()
+    {
+        $services = Service::with('staff')->get();
+        return view('admin.services.index', compact('services'));
+    }
+
+    public function servicesEdit($id)
+    {
+        $service = Service::findOrFail($id);
+        $staff = Staff::all();
+        return view('admin.services.edit', compact('service', 'staff'));
+    }
+
+    // Marketing Management
+    public function email()
+    {
+        $customers = User::where('role', 'customer')->get();
+        return view('admin.marketing.email', compact('customers'));
+    }
+
+    public function sms()
+    {
+        $customers = User::where('role', 'customer')->get();
+        return view('admin.marketing.sms', compact('customers'));
     }
 }

@@ -5,8 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Booking;
-use App\Models\Staff;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\Category;
+use App\Models\Appointment;
+use App\Models\Specialist;
 
 class Service extends Model
 {
@@ -17,50 +20,38 @@ class Service extends Model
         'description',
         'price',
         'duration',
-        'category',
-        'image'
+        'category_id',
+        'image_url',
+        'is_active'
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:2',
+        'duration' => 'integer',
+        'is_active' => 'boolean'
     ];
 
     /**
-     * Get all bookings for this service
+     * Get the category that owns the service.
      */
-    public function bookings(): HasMany
+    public function category(): BelongsTo
     {
-        return $this->hasMany(Booking::class);
+        return $this->belongsTo(Category::class);
     }
 
     /**
-     * Get all staff members who can provide this service
+     * Get all appointments for this service.
      */
-    public function staff()
+    public function appointments(): HasMany
     {
-        return $this->belongsToMany(Staff::class, 'staff_services');
+        return $this->hasMany(Appointment::class);
     }
 
     /**
-     * Get the formatted price
+     * Get all specialists who can provide this service.
      */
-    public function getFormattedPriceAttribute()
+    public function specialists(): BelongsToMany
     {
-        return '$' . number_format($this->price, 2);
-    }
-
-    /**
-     * Get the formatted duration
-     */
-    public function getFormattedDurationAttribute()
-    {
-        if ($this->duration < 60) {
-            return $this->duration . ' min';
-        }
-        
-        $hours = floor($this->duration / 60);
-        $minutes = $this->duration % 60;
-        
-        if ($minutes === 0) {
-            return $hours . ' hr' . ($hours > 1 ? 's' : '');
-        }
-        
-        return $hours . ' hr ' . $minutes . ' min';
+        return $this->belongsToMany(Specialist::class);
     }
 }

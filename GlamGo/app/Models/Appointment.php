@@ -3,39 +3,60 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Customer;
-use App\Models\Service;
-use App\Models\Staff;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Appointment extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'customer_id',
         'service_id',
-        'staff_id',
+        'specialist_id',
         'appointment_date',
+        'appointment_time',
         'status',
-        'notes',
+        'special_requests',
         'total_amount'
     ];
 
     protected $casts = [
-        'appointment_date' => 'datetime',
+        'appointment_date' => 'date',
+        'appointment_time' => 'datetime',
         'total_amount' => 'decimal:2'
     ];
 
-    public function customer()
+    /**
+     * Get the customer for this appointment.
+     */
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    public function service()
+    /**
+     * Get the service for this appointment.
+     */
+    public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
     }
 
-    public function staff()
+    /**
+     * Get the specialist for this appointment.
+     */
+    public function specialist(): BelongsTo
     {
-        return $this->belongsTo(Staff::class);
+        return $this->belongsTo(Specialist::class);
+    }
+
+    /**
+     * Get the review for this appointment.
+     */
+    public function review(): HasOne
+    {
+        return $this->hasOne(ServiceReview::class);
     }
 }
