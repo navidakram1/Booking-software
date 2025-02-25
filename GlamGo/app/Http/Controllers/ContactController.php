@@ -8,6 +8,11 @@ use App\Mail\ContactFormMail;
 
 class ContactController extends Controller
 {
+    public function index()
+    {
+        return view('contact');
+    }
+
     public function send(Request $request)
     {
         $validated = $request->validate([

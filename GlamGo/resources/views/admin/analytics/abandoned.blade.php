@@ -121,7 +121,7 @@
                                             </thead>
                                             <tbody>
                                                 @foreach($abandonedBookings as $booking)
-                                                <tr>
+                                                <tr id="booking-{{ $booking->id }}">
                                                     <td>{{ $booking->customer_name }}</td>
                                                     <td>{{ $booking->service_name }}</td>
                                                     <td>{{ $booking->created_at->format('M d, Y') }}</td>
@@ -129,8 +129,8 @@
                                                     <td>${{ number_format($booking->value, 2) }}</td>
                                                     <td>{{ $booking->last_step }}</td>
                                                     <td>
-                                                        <button class="btn btn-sm btn-primary" onclick="sendRecoveryEmail({{ $booking->id }})">
-                                                            Send Recovery Email
+                                                        <button class="btn btn-sm btn-primary" onclick="recoverBooking({{ $booking->id }})">
+                                                            Recover Booking
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -206,21 +206,28 @@ $(document).ready(function() {
     });
 });
 
-function sendRecoveryEmail(bookingId) {
-    fetch(`/admin/analytics/abandoned/${bookingId}/recover`, {
+function recoverBooking(bookingId) {
+    fetch(`/admin/bookings/${bookingId}/recover`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json'
         }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Recovery email sent successfully!');
+            // Remove the row or update UI
+            document.getElementById(`booking-${bookingId}`).remove();
+            // Show success message
+            showNotification('Booking recovered successfully!', 'success');
         } else {
-            alert('Failed to send recovery email. Please try again.');
+            showNotification('Failed to recover booking', 'error');
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred', 'error');
     });
 }
 </script>

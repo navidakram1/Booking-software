@@ -96,9 +96,15 @@
                 <span class="font-medium">Add Staff</span>
                 <lord-icon src="https://cdn.lordicon.com/mecwbjnp.json" trigger="hover" colors="primary:#2563eb" style="width:20px;height:20px"></lord-icon>
             </a>
-            <a href="{{ route('admin.analytics.revenue') }}" class="w-full flex items-center justify-between p-4 bg-green-50 rounded-xl text-green-600 hover:bg-green-100 transition-colors duration-200">
-                <span class="font-medium">View Reports</span>
-                <lord-icon src="https://cdn.lordicon.com/mecwbjnp.json" trigger="hover" colors="primary:#059669" style="width:20px;height:20px"></lord-icon>
+            <a href="{{ route('admin.revenue') }}" class="w-full flex items-center justify-between p-4 bg-green-50 rounded-xl text-green-600 hover:bg-green-100 transition-colors duration-200">
+                <div>
+                    <h3 class="text-xl font-semibold">Revenue</h3>
+                    <p class="text-sm opacity-90">This month's earnings</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-2xl font-bold">{{ number_format($currentRevenue, 2) }}</p>
+                    <p class="text-sm">Total: {{ number_format($analytics['total_revenue'], 2) }}</p>
+                </div>
             </a>
         </div>
     </div>

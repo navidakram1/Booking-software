@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\Api\StatusController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,9 @@ use App\Http\Controllers\BookingController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// Status Route
+Route::get('/status', [StatusController::class, 'index']);
 
 // Booking Routes
 Route::post('/bookings', [BookingController::class, 'store']);

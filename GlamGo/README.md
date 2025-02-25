@@ -345,5 +345,39 @@ Contributions welcome! Please read our contributing guidelines.
 ## 📄 License
 MIT License - see LICENSE.md
 
+## Database Configuration
+
+### Development
+The application uses SQLite for development:
+1. The database file is located at `database/database.sqlite`
+2. No additional configuration needed
+3. Migrations can be run with `php artisan migrate`
+4. Seeds can be run with `php artisan db:seed`
+
+### Production
+For production, configure MySQL/PostgreSQL in your `.env`:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_database
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
+
+### Real-time Features
+Real-time features are powered by Firebase:
+1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
+2. Add Firebase configuration to `.env`:
+```env
+FIREBASE_CREDENTIALS=path/to/firebase-credentials.json
+FIREBASE_DATABASE_URL=https://your-project.firebaseio.com
+```
+3. Real-time features include:
+   - Notifications
+   - Chat system
+   - Live booking updates
+   - Service availability tracking
+
 ---
 Made with ❤️ by GlamGo Team

@@ -124,7 +124,34 @@
                     </button>
                     <div x-show="open" x-cloak class="mt-2 pl-12 space-y-2">
                         <a href="{{ route('admin.reports.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">General Reports</a>
-                        <a href="{{ route('admin.analytics.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Analytics</a>
+                        <div class="space-y-2">
+                            <h3 class="text-lg font-semibold text-gray-700">Analytics</h3>
+                            <a href="{{ route('admin.revenue') }}" 
+                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.revenue') ? 'bg-gray-100' : '' }}">
+                                <i class="fas fa-chart-line mr-3"></i>
+                                Revenue Analytics
+                            </a>
+                            <a href="{{ route('admin.bookings') }}"
+                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.bookings') ? 'bg-gray-100' : '' }}">
+                                <i class="fas fa-calendar-check mr-3"></i>
+                                Bookings Analytics
+                            </a>
+                            <a href="{{ route('admin.customers') }}"
+                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.customers') ? 'bg-gray-100' : '' }}">
+                                <i class="fas fa-users mr-3"></i>
+                                Customer Analytics
+                            </a>
+                            <a href="{{ route('admin.services') }}"
+                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.services') ? 'bg-gray-100' : '' }}">
+                                <i class="fas fa-concierge-bell mr-3"></i>
+                                Service Analytics
+                            </a>
+                            <a href="{{ route('admin.staff') }}"
+                                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg {{ request()->routeIs('admin.staff') ? 'bg-gray-100' : '' }}">
+                                <i class="fas fa-user-tie mr-3"></i>
+                                Staff Analytics
+                            </a>
+                        </div>
                     </div>
                 </div>
 
