@@ -63,4 +63,13 @@ class ServicesController extends Controller
 
         return view('services', compact('services', 'categories'));
     }
+
+    public function show(Service $service)
+    {
+        if (!$service->is_active) {
+            abort(404);
+        }
+        
+        return view('services.show', compact('service'));
+    }
 }

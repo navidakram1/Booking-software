@@ -1,54 +1,52 @@
 -- Insert sample categories
-INSERT INTO categories (name, description, slug) VALUES
-('Hair Care', 'All hair related services including cutting, styling, and coloring', 'hair-care');
-SET @hair_care_id = LAST_INSERT_ID();
-
-INSERT INTO categories (name, description, slug) VALUES
-('Nail Care', 'Manicure, pedicure, and nail art services', 'nail-care');
-SET @nail_care_id = LAST_INSERT_ID();
-
-INSERT INTO categories (name, description, slug) VALUES
-('Facial', 'Facial treatments and skincare services', 'facial');
-SET @facial_id = LAST_INSERT_ID();
-
-INSERT INTO categories (name, description, slug) VALUES
-('Massage', 'Various types of massage therapies', 'massage');
-SET @massage_id = LAST_INSERT_ID();
+INSERT INTO categories (name, description, created_at, updated_at) VALUES
+('Hair Care', 'All hair related services including cutting, styling, and coloring', NOW(), NOW()),
+('Nail Care', 'Manicure, pedicure, and nail art services', NOW(), NOW()),
+('Facial', 'Facial treatments and skincare services', NOW(), NOW()),
+('Massage', 'Various types of massage therapies', NOW(), NOW());
 
 -- Insert sample services
-INSERT INTO services (category_id, name, description, duration, price, slug) VALUES
-(@hair_care_id, 'Haircut', 'Professional haircut and styling', 45, 50.00, 'haircut'),
-(@hair_care_id, 'Hair Coloring', 'Full hair coloring service', 120, 150.00, 'hair-coloring'),
-(@nail_care_id, 'Manicure', 'Basic manicure service', 30, 35.00, 'manicure'),
-(@nail_care_id, 'Pedicure', 'Basic pedicure service', 45, 45.00, 'pedicure'),
-(@facial_id, 'Basic Facial', 'Deep cleansing facial', 60, 75.00, 'basic-facial'),
-(@massage_id, 'Swedish Massage', 'Full body relaxation massage', 60, 90.00, 'swedish-massage');
+INSERT INTO services (category_id, name, description, duration, price, is_active, created_at, updated_at) VALUES
+(1, 'Haircut', 'Professional haircut and styling', 45, 50.00, 1, NOW(), NOW()),
+(1, 'Hair Coloring', 'Full hair coloring service', 120, 150.00, 1, NOW(), NOW()),
+(2, 'Manicure', 'Basic manicure service', 30, 35.00, 1, NOW(), NOW()),
+(2, 'Pedicure', 'Basic pedicure service', 45, 45.00, 1, NOW(), NOW()),
+(3, 'Basic Facial', 'Deep cleansing facial', 60, 75.00, 1, NOW(), NOW()),
+(4, 'Swedish Massage', 'Full body relaxation massage', 60, 90.00, 1, NOW(), NOW());
 
--- Insert sample staff
-INSERT INTO staff (name, email, phone) VALUES
-('Sarah Johnson', 'sarah.j@glamgo.com', '555-0101');
-SET @sarah_id = LAST_INSERT_ID();
+-- Insert sample specialists
+INSERT INTO specialists (name, email, phone, bio, years_of_experience, is_active, created_at, updated_at) VALUES
+('Sarah Johnson', 'sarah.j@glamgo.com', '555-0101', 'Expert hair stylist with over 5 years of experience', 5, 1, NOW(), NOW()),
+('Michael Chen', 'michael.c@glamgo.com', '555-0102', 'Certified massage therapist', 3, 1, NOW(), NOW()),
+('Emma Wilson', 'emma.w@glamgo.com', '555-0103', 'Nail care specialist', 4, 1, NOW(), NOW());
 
-INSERT INTO staff (name, email, phone) VALUES
-('Michael Chen', 'michael.c@glamgo.com', '555-0102');
-SET @michael_id = LAST_INSERT_ID();
+-- Create Service Specialist Bridge Table (with Laravel's naming convention)
+CREATE TABLE service_specialist (
+    service_id BIGINT UNSIGNED,
+    specialist_id BIGINT UNSIGNED,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    PRIMARY KEY (service_id, specialist_id),
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE,
+    FOREIGN KEY (specialist_id) REFERENCES specialists(id) ON DELETE CASCADE
+);
 
-INSERT INTO staff (name, email, phone) VALUES
-('Emma Wilson', 'emma.w@glamgo.com', '555-0103');
-SET @emma_id = LAST_INSERT_ID();
+-- Insert sample service-specialist relationships
+INSERT INTO service_specialist (service_id, specialist_id, created_at, updated_at) VALUES
+-- Sarah Johnson (id: 1) - Hair services
+(1, 1, NOW(), NOW()), -- Haircut
+(2, 1, NOW(), NOW()), -- Hair Coloring
 
--- Get service IDs
-SET @haircut_id = (SELECT id FROM services WHERE slug = 'haircut');
-SET @hair_coloring_id = (SELECT id FROM services WHERE slug = 'hair-coloring');
-SET @manicure_id = (SELECT id FROM services WHERE slug = 'manicure');
-SET @pedicure_id = (SELECT id FROM services WHERE slug = 'pedicure');
-SET @facial_id = (SELECT id FROM services WHERE slug = 'basic-facial');
-SET @massage_id = (SELECT id FROM services WHERE slug = 'swedish-massage');
+-- Michael Chen (id: 2) - Massage services
+(6, 2, NOW(), NOW()), -- Swedish Massage
 
--- Link staff to services
-INSERT INTO service_staff (staff_id, service_id) VALUES
-(@sarah_id, @haircut_id),
-(@sarah_id, @hair_coloring_id),
-(@michael_id, @massage_id),
-(@emma_id, @manicure_id),
-(@emma_id, @pedicure_id);
+-- Emma Wilson (id: 3) - Nail services
+(3, 3, NOW(), NOW()), -- Manicure
+(4, 3, NOW(), NOW()); -- Pedicure
+
+-- Add is_active column to categories table
+ALTER TABLE categories
+ADD COLUMN is_active BOOLEAN DEFAULT TRUE AFTER image_url;
+
+-- Update all existing categories to be active
+UPDATE categories SET is_active = 1;

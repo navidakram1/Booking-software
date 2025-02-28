@@ -50,6 +50,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::get('/services', [ServicesController::class, 'index'])->name('services');
+Route::get('/services/{service}', [ServicesController::class, 'show'])->name('services.show');
 Route::get('/specialists', [SpecialistsController::class, 'index'])->name('specialists');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog');
