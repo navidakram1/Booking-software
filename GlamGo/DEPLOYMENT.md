@@ -1,107 +1,275 @@
-# Deployment Documentation
+# GlamGo Deployment Guide
 
-## Quick Navigation
-- [Features](FEATURES.md) - Features to deploy
-- [API Documentation](API_DOCS.md) - API deployment
-- [Testing Guide](TESTING.md) - Pre-deployment testing
-- [Work Tracking](WORK_TRACKING.md) - Development progress
-- [Post-Launch Activities](POST_LAUNCH.md) - After deployment
-- [Changelog](CHANGELOG.md) - Version updates
+## Deployment Overview
 
-## Environment URLs
-- Development: [http://127.0.0.1:8000](http://127.0.0.1:8000)
-- Staging: [https://staging.glamgo.com](https://staging.glamgo.com) (Coming Soon)
-- Production: [https://glamgo.com](https://glamgo.com) (Coming Soon)
+This guide covers the deployment process for the GlamGo salon booking system.
+
+## Prerequisites
+
+- PHP 8.2+
+- MySQL 8.0+
+- Node.js 18+
+- Composer 2+
+- Web server (Apache/Nginx)
+- SSL certificate
+- Git
 
 ## Server Requirements
-- PHP >= 8.2
-- Composer
-- Node.js >= 18.x
-- MySQL >= 8.0
-- Nginx/Apache
-- SSL Certificate
 
-## Environment Setup
-1. System dependencies
+### Minimum Specifications
+- CPU: 2 cores
+- RAM: 4GB
+- Storage: 20GB SSD
+- Bandwidth: 100GB/month
+
+### Recommended Specifications
+- CPU: 4 cores
+- RAM: 8GB
+- Storage: 40GB SSD
+- Bandwidth: 500GB/month
+
+## Deployment Steps
+
+### 1. Server Setup
+
 ```bash
 # Update system
 sudo apt update
-sudo apt upgrade
+sudo apt upgrade -y
 
-# Install PHP and extensions
-sudo apt install php8.2-fpm php8.2-mysql php8.2-mbstring php8.2-xml php8.2-curl
-
-# Install Node.js
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt install nodejs
-
-# Install MySQL
-sudo apt install mysql-server
+# Install required packages
+sudo apt install -y nginx mysql-server php8.2-fpm php8.2-mysql php8.2-mbstring php8.2-xml php8.2-curl
 ```
 
-2. Application setup
+### 2. Database Setup
+
+```bash
+# Secure MySQL installation
+sudo mysql_secure_installation
+
+# Create database and user
+mysql -u root -p
+CREATE DATABASE glamgo;
+CREATE USER 'glamgo_user'@'localhost' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON glamgo.* TO 'glamgo_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+### 3. Application Deployment
+
 ```bash
 # Clone repository
-git clone <repository-url>
+git clone https://github.com/yourusername/glamgo.git
+cd glamgo
 
-# Install PHP dependencies
+# Install dependencies
 composer install --no-dev --optimize-autoloader
-
-# Install Node.js dependencies
 npm install
 npm run build
 
-# Set up environment file
+# Set permissions
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+```
+
+### 4. Environment Configuration
+
+```bash
+# Copy environment file
 cp .env.example .env
+
+# Generate application key
 php artisan key:generate
 
-# Configure database
-php artisan migrate
-php artisan db:seed
+# Configure .env file
+APP_NAME=GlamGo
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain.com
 
-# Cache configuration
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=glamgo
+DB_USERNAME=glamgo_user
+DB_PASSWORD=your_password
+
+MAIL_MAILER=smtp
+MAIL_HOST=your-smtp-host
+MAIL_PORT=587
+MAIL_USERNAME=your-username
+MAIL_PASSWORD=your-password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@your-domain.com
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+### 5. Web Server Configuration
+
+#### Nginx Configuration
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name your-domain.com;
+
+    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+
+    root /var/www/glamgo/public;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+
+    location ~ /.well-known {
+        allow all;
+    }
+}
+```
+
+### 6. SSL Certificate
+
+```bash
+# Install Certbot
+sudo apt install certbot python3-certbot-nginx
+
+# Obtain SSL certificate
+sudo certbot --nginx -d your-domain.com
+```
+
+### 7. Final Setup
+
+```bash
+# Clear cache
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+
+# Run migrations
+php artisan migrate --force
+
+# Create storage link
+php artisan storage:link
 ```
 
-## CI/CD Pipeline
+## Deployment Checklist
 
-### GitHub Actions Workflow
-1. Run tests
-2. Build assets
-3. Deploy to staging/production
+- [ ] Environment variables configured
+- [ ] Database migrations run
+- [ ] Storage links created
+- [ ] SSL certificate installed
+- [ ] File permissions set
+- [ ] Caches cleared and rebuilt
+- [ ] Error logging configured
+- [ ] Backup system setup
+- [ ] Monitoring tools installed
 
-### Deployment Steps
-1. Pull latest code
-2. Install dependencies
-3. Run migrations
-4. Build assets
+## Monitoring Setup
+
+### 1. Laravel Telescope (Development)
+
+```bash
+composer require laravel/telescope --dev
+php artisan telescope:install
+php artisan migrate
+```
+
+### 2. Production Monitoring
+
+```bash
+# Install monitoring tools
+composer require laravel/horizon
+php artisan horizon:install
+```
+
+## Backup Configuration
+
+```bash
+# Install backup package
+composer require spatie/laravel-backup
+
+# Configure backup
+php artisan backup:run
+```
+
+## Maintenance Mode
+
+```bash
+# Enable maintenance mode
+php artisan down --message="Updating system" --retry=60
+
+# Disable maintenance mode
+php artisan up
+```
+
+## Rollback Procedure
+
+```bash
+# Revert to previous version
+git checkout previous_tag
+
+# Restore database
+mysql -u user -p database < backup.sql
+
+# Clear cache
+php artisan config:clear
+php artisan cache:clear
+```
+
+## Performance Optimization
+
+1. Enable OPcache
+2. Configure Redis caching
+3. Set up CDN for assets
+4. Enable Gzip compression
+5. Configure browser caching
+
+## Security Measures
+
+1. Enable HTTPS only
+2. Set secure headers
+3. Configure firewall
+4. Enable rate limiting
+5. Regular security updates
+
+## Troubleshooting
+
+Common issues and solutions:
+1. Permission errors
+2. Database connection issues
+3. Cache problems
+4. SSL certificate errors
+
+## Deployment Schedule
+
+1. Pre-deployment testing
+2. Backup current version
+3. Deploy new version
+4. Run migrations
 5. Clear caches
-6. Reload PHP-FPM
+6. Verify functionality
+7. Monitor for issues
 
-## Hosting
+## Resources
 
-### Production Environment
-- Cloud provider: AWS/DigitalOcean
-- Web server: Nginx
-- Database: MySQL
-- Cache: Redis
-- File storage: S3
-
-### Staging Environment
-- Mirror of production setup
-- Separate database
-- Sandbox payment integration
-
-## Monitoring
-- Server monitoring: New Relic
-- Error tracking: Sentry
-- Log management: Papertrail
-- Uptime monitoring: Pingdom
-
-## Backup Strategy
-- Daily database backups
-- Weekly full system backups
-- Stored in multiple locations
-- Automated verification
+- Laravel Deployment Documentation
+- Nginx Documentation
+- MySQL Documentation
+- Server Hardening Guide

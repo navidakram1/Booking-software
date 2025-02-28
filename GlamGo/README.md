@@ -1,8 +1,105 @@
 # GlamGo - Modern Salon Booking System
 
-![GlamGo Logo](public/images/logo.png)
+A modern, user-friendly salon booking system built with Laravel and TailwindCSS.
 
-GlamGo is a modern, user-friendly salon booking system that connects customers with professional beauty services. Built with Laravel and modern web technologies, it provides a seamless booking experience for both customers and salon administrators.
+## Features
+
+- Modern and responsive design
+- Easy appointment booking system
+- Service catalog with detailed descriptions
+- Staff/specialist profiles
+- Gallery showcase
+- Contact and location information
+- Mobile-friendly interface
+
+## Tech Stack
+
+- Laravel 11.x
+- PHP 8.2+
+- MySQL 8.0+
+- TailwindCSS 3.x
+- AlpineJS
+- Lord Icons
+- Swiper JS
+
+## Prerequisites
+
+- PHP >= 8.2
+- Composer
+- Node.js & NPM
+- MySQL
+- XAMPP/WAMP/MAMP (for local development)
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/glamgo.git
+cd glamgo
+```
+
+2. Install PHP dependencies:
+```bash
+composer install
+```
+
+3. Install NPM packages:
+```bash
+npm install
+```
+
+4. Create environment file:
+```bash
+cp .env.example .env
+```
+
+5. Generate application key:
+```bash
+php artisan key:generate
+```
+
+6. Configure database in `.env`:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=glamgo
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+7. Run migrations and seeders:
+```bash
+php artisan migrate --seed
+```
+
+8. Start development servers:
+```bash
+# Terminal 1
+php artisan serve
+
+# Terminal 2
+npm run dev
+```
+
+## Documentation
+
+For detailed documentation, please refer to:
+- [Features Documentation](FEATURES.md)
+- [API Documentation](API_DOCS.md)
+- [Testing Guide](TESTING.md)
+- [Deployment Guide](DEPLOYMENT.md)
+- [Work Tracking](WORK_TRACKING.md)
+- [Roadmap](ROADMAP.md)
+- [Changelog](CHANGELOG.md)
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🌟 Features
 

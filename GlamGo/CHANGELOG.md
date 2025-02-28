@@ -1,129 +1,122 @@
-# Changelog
+# GlamGo Changelog
 
-## Quick Navigation
-- [Features](FEATURES.md) - Current features
-- [Work Tracking](WORK_TRACKING.md) - Development progress
-- [Roadmap](ROADMAP.md) - Future plans
-- [Post-Launch Activities](POST_LAUNCH.md) - Future maintenance
-
-## Version Control
-- Repository: [https://github.com/navidakram1/Saloon](https://github.com/navidakram1/Saloon)
-- Latest Release: v0.2.0
-- Release Date: February 25, 2025
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+All notable changes to the GlamGo project will be documented in this file.
 
 ## [Unreleased]
 
 ### Added
-- Modern homepage with glass-morphism design
-- Real-time booking system with availability checking
-- Services showcase with dynamic loading
-- Staff profiles section
-- Testimonials section
-- Contact form with map integration
-- API endpoints for service listing and booking
-- Staff profile management system
-- Performance metrics tracking
-- Group bookings management system
-  - CRUD operations for group appointments
-  - Group size tracking
-  - Special requests handling
-  - Staff assignment for groups
-- Enhanced admin dashboard
-  - Revenue analytics with daily breakdown
-  - Popular services tracking
-  - Customer growth metrics
-  - Staff performance ratings
-  - Interactive charts and visualizations
+- Mobile-responsive header with animated menu
+- Modern homepage layout with hero section
+- Service listing and detail pages
+- Gallery showcase section
+- Contact form with validation
+- Newsletter subscription component
+- Reusable navigation components
+- Lord Icons integration
 
 ### Changed
-- Updated layout system with consistent header and footer
-- Enhanced booking form with real-time validation
-- Improved service display with dynamic filtering
-- Updated staff profile interface
-- Improved appointment management
-  - Added calendar view for appointments
-  - Enhanced filtering options
-  - Added status tracking
-  - Integrated with group bookings
+- Updated navigation structure for better UX
+- Improved mobile menu animations
+- Enhanced booking button placement
 
 ### Fixed
-- Resolved booking form validation issues
-- Fixed service availability checking
-- Corrected staff working hours display
-- Improved mobile responsiveness
-- Database schema alignment with salon_schema.sql
-  - Added missing total_amount column to appointments
-  - Created service_reviews table
-  - Updated services table with proper category relationships
-  - Added group_bookings table
-- Admin dashboard bugs
-  - Resolved GROUP BY SQL error in services query
-  - Fixed undefined variables in view
-  - Corrected route namespaces for admin controllers
-  - Added missing calendar route
+- Mobile menu animation issues
+- Navigation link routing
+- Header transparency on scroll
+- Booking route definition
 
-## [0.2.0] - 2025-02-25
+## [1.0.0] - 2025-02-28
 
 ### Added
-- MySQL Database Integration
-  - Created MySQL database 'glamgo'
-  - Migrated from SQLite to MySQL
-  - Set up proper database structure with foreign key constraints
-  - Implemented database seeders for sample data
-
-### Enhanced
-- Database Schema and Relationships
-  - Improved table relationships with proper foreign keys
-  - Enhanced cascade delete behavior
-  - Optimized table structures for better performance
-  - Added new fields for extended functionality
-
-### Fixed
-- Foreign key constraint issues in migrations
-- Table dependency order in database setup
-- Data seeding sequence for related tables
-
-## [0.1.0] - 2025-02-24
-
-### Added
-- Initial project setup with Laravel 11
-- Modern homepage implementation
-  - Glass-morphism design
-  - Responsive navigation
-  - Hero section with booking form
-  - Services section
-  - Gallery section
-  - Blog section
-- Tailwind CSS integration
-- Alpine.js integration
-- Basic routing structure
-- Project documentation
-  - README.md
-  - WORK_TRACKING.md
-  - FEATURES.md
-  - API_DOCS.md
-  - TESTING.md
-  - DEPLOYMENT.md
-  - POST_LAUNCH.md
-  - ROADMAP.md
-  - CHANGELOG.md
-
-### Changed
-- None (initial release)
-
-### Deprecated
-- None
-
-### Removed
-- None
-
-### Fixed
-- None
+- Initial release of GlamGo
+- Basic salon booking functionality
+- Service management system
+- Staff/specialist profiles
+- Appointment scheduling
+- User authentication
+- Admin dashboard
+- Basic reporting
 
 ### Security
-- None
+- SSL implementation
+- Basic authentication
+- Form validation
+- CSRF protection
+
+## Version Format
+
+The versioning scheme we use is [SemVer](http://semver.org/).
+
+Given a version number MAJOR.MINOR.PATCH, increment the:
+1. MAJOR version when you make incompatible API changes
+2. MINOR version when you add functionality in a backward compatible manner
+3. PATCH version when you make backward compatible bug fixes
+
+## Commit Message Format
+
+Each commit message consists of a header, a body, and a footer:
+
+```
+<type>(<scope>): <subject>
+<BLANK LINE>
+<body>
+<BLANK LINE>
+<footer>
+```
+
+### Type
+Must be one of the following:
+- feat: A new feature
+- fix: A bug fix
+- docs: Documentation only changes
+- style: Changes that do not affect the meaning of the code
+- refactor: A code change that neither fixes a bug nor adds a feature
+- perf: A code change that improves performance
+- test: Adding missing tests
+- chore: Changes to the build process or auxiliary tools
+
+### Scope
+The scope could be anything specifying the place of the commit change.
+
+### Subject
+The subject contains a succinct description of the change.
+
+## Examples
+
+```
+feat(booking): add appointment confirmation emails
+
+- Implement email notification system
+- Add email templates
+- Configure SMTP settings
+```
+
+```
+fix(mobile): resolve menu animation glitch
+
+- Update transition timing
+- Fix z-index issues
+- Improve touch response
+```
+
+## Release Process
+
+1. Update version number in relevant files
+2. Update CHANGELOG.md
+3. Create release branch
+4. Run tests
+5. Build assets
+6. Create tag
+7. Deploy to production
+
+## How to Update
+
+To update your local project:
+
+```bash
+git pull origin main
+composer install
+npm install
+php artisan migrate
+npm run build
+```
