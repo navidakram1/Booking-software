@@ -13,14 +13,14 @@
 <body class="min-h-screen bg-[url('https://images.pexels.com/photos/7130555/pexels-photo-7130555.jpeg?cs=srgb&dl=pexels-codioful-7130555.jpg&fm=jpg')] bg-cover bg-fixed bg-center">
     
     <!-- Include Header -->
-    @include('components.header')
+    <x-layout.header />
 
     <main class="pt-32 pb-16">
         @yield('content')
     </main>
 
     <!-- Include Footer -->
-    @include('components.footer')
+    <x-layout.footer />
 
     <style>
         body {

@@ -142,7 +142,7 @@
         <div class="text-center">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">Ready to Experience GlamGo?</h2>
             <p class="text-gray-600 mb-8">Book your appointment today and let us help you look and feel your best.</p>
-            <a href="{{ route('booking') }}" class="inline-block px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300">
+            <a href="{{ route('booking.index') }}" class="inline-block px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300">
                 Book Now
             </a>
         </div>

@@ -96,7 +96,7 @@ class BookingController extends Controller
             ]
         ];
 
-        return view('booking', compact('services', 'specialists'));
+        return view('book.create', compact('services', 'specialists'));
     }
 
     public function getSpecialists($serviceId)

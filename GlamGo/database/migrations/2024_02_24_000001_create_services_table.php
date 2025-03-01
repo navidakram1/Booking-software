@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('services', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('name', 100);
+            $table->string('name');
             $table->text('description')->nullable();
-            $table->integer('duration')->comment('Duration in minutes');
-            $table->decimal('price', 10, 2);
+            $table->decimal('price', 8, 2);
+            $table->integer('duration'); // in minutes
+            $table->string('category');
             $table->string('image_url')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

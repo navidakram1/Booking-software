@@ -1,115 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlamGo - Modern Salon Booking</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.lordicon.com/lordicon.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+@extends('layouts.main')
+
+@section('title', 'GlamGo - Modern Salon Booking')
+
+@section('head')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="min-h-screen bg-[url('https://images.pexels.com/photos/7130555/pexels-photo-7130555.jpeg?cs=srgb&dl=pexels-codioful-7130555.jpg&fm=jpg')] bg-cover bg-fixed bg-center">
-    <!-- Navigation Header -->
-    <header class="fixed w-full top-0 z-50">
-        <nav class="nav-blur mx-auto max-w-5xl mt-3 sm:mt-4 md:mt-6 px-4 sm:px-6 py-2 rounded-full transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <!-- Logo -->
-                <div class="flex-shrink-0">
-                    <div class="flex items-center space-x-1.5 sm:space-x-2">
-                        <div class="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
-                            <span class="text-white text-xs sm:text-sm font-bold">G</span>
-                        </div>
-                        <span class="text-base sm:text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">GlamGo</span>
-                    </div>
-                </div>
+@endsection
 
-                <!-- Navigation Links - Hidden on Mobile -->
-                <div class="hidden md:flex items-center space-x-3">
-                    <a href="{{ url('/') }}" class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl text-lg font-bold hover:bg-pink-50/50 transition-all duration-300">
-                        <lord-icon src="https://cdn.lordicon.com/wmwqvixz.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
-                        <span>Home</span>
-                    </a>
-                    <a href="{{ url('/services') }}" class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl text-lg font-bold hover:bg-pink-50/50 transition-all duration-300">
-                        <lord-icon src="https://cdn.lordicon.com/zvllgyec.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
-                        <span>Services</span>
-                    </a>
-                    <a href="{{ url('/gallery') }}" class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl text-lg font-bold hover:bg-pink-50/50 transition-all duration-300">
-                        <lord-icon src="https://cdn.lordicon.com/vixtkkbk.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
-                        <span>Gallery</span>
-                    </a>
-                    <a href="{{ url('/contact') }}" class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl text-lg font-bold hover:bg-pink-50/50 transition-all duration-300">
-                        <lord-icon src="https://cdn.lordicon.com/hpivxauj.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
-                        <span>Contact</span>
-                    </a>
-                </div>
-
-                <!-- Right Side Navigation -->
-                <div class="flex items-center space-x-1.5 sm:space-x-2">
-                    <!-- Book Now Button -->
-                    <button class="hidden md:flex px-3 lg:px-4 py-1.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs lg:text-sm rounded-full shadow-md hover:shadow-lg transition-all duration-300 items-center justify-center">
-                        Book Now
-                    </button>
-
-                    <!-- Mobile Menu Button -->
-                    <button id="mobile-menu-button" class="md:hidden p-2 rounded-xl hover:bg-pink-50/50 transition-all duration-300">
-                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Mobile Menu Items -->
-            <div id="mobile-menu" class="md:hidden mt-4 hidden opacity-0 transition-all duration-300 transform -translate-y-2">
-                <div class="flex flex-col space-y-2 bg-white/90 backdrop-blur-sm rounded-2xl p-3 border border-gray-100 shadow-lg">
-                    <a href="#" class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl hover:bg-pink-50/50 transition-all duration-300">
-                        <lord-icon src="https://cdn.lordicon.com/wmwqvixz.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
-                        <span>Home</span>
-                    </a>
-                    <!-- More mobile menu items... -->
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <style>
-        .nav-blur {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
-        .specialist-card {
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .specialist-card:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.15);
-        }
-        .booking-form {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        main section {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
-    </style>
-
-    <main class="pt-0">
+@section('content')
         <!-- Hero Section -->
         <section class="relative h-screen overflow-hidden">
             <!-- SVG Pattern Background - No overlay -->
@@ -243,8 +141,6 @@
         <!-- Live Queue Section -->
         @include('components.live-queue-section')
 
-      
-
         <!-- Promotional Offers Section -->
         @include('components.promotional-offers-section')
 
@@ -265,13 +161,9 @@
 
 <!-- Blog Section -->
 @include('components.blog-section')
-
-        <!-- Footer Section -->
-        @include('components.footer-section')
+@endsection
         
-    </main>
-
-    <!-- Mobile Menu Toggle Script -->
+@section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const mobileMenuButton = document.getElementById('mobile-menu-button');
@@ -286,5 +178,4 @@
             });
         });
     </script>
-</body>
-</html>
+@endsection
