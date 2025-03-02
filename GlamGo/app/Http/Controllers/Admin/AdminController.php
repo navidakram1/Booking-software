@@ -133,4 +133,59 @@ class AdminController extends Controller
     {
         return view('admin.cache');
     }
+
+    public function profile()
+    {
+        return view('admin.profile.index');
+    }
+
+    public function editProfile()
+    {
+        return view('admin.profile.edit');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . auth()->id(),
+            'phone' => 'nullable|string|max:20',
+            'avatar' => 'nullable|image|max:1024'
+        ]);
+
+        $user = auth()->user();
+        
+        if ($request->hasFile('avatar')) {
+            // Handle avatar upload
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $validated['avatar'] = $path;
+        }
+
+        $user->update($validated);
+
+        return redirect()
+            ->route('admin.profile.index')
+            ->with('success', 'Profile updated successfully');
+    }
+
+    public function password()
+    {
+        return view('admin.profile.password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => 'required|current_password',
+            'password' => 'required|string|min:8|confirmed'
+        ]);
+
+        auth()->user()->update([
+            'password' => bcrypt($validated['password'])
+        ]);
+
+        return redirect()
+            ->route('admin.profile.index')
+            ->with('success', 'Password updated successfully');
+    }
 }

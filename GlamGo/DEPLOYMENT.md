@@ -1,112 +1,120 @@
-# GlamGo Deployment Guide
+# Deployment Guide
 
-## Deployment Overview
+## Overview
 
-This guide covers the deployment process for the GlamGo salon booking system.
+This document outlines the deployment process for the GlamGo salon management system. Follow these instructions to deploy the application in various environments.
 
 ## Prerequisites
 
-- PHP 8.2+
-- MySQL 8.0+
-- Node.js 18+
-- Composer 2+
+- PHP 8.1 or higher
+- MySQL 8.0 or higher
+- Node.js 16.x or higher
+- Composer 2.x
+- Git
 - Web server (Apache/Nginx)
 - SSL certificate
-- Git
+- Redis (optional, for caching)
 
-## Server Requirements
+## Environment Setup
 
-### Minimum Specifications
-- CPU: 2 cores
-- RAM: 4GB
-- Storage: 20GB SSD
-- Bandwidth: 100GB/month
-
-### Recommended Specifications
-- CPU: 4 cores
-- RAM: 8GB
-- Storage: 40GB SSD
-- Bandwidth: 500GB/month
-
-## Deployment Steps
-
-### 1. Server Setup
-
+1. Clone the repository:
 ```bash
-# Update system
-sudo apt update
-sudo apt upgrade -y
-
-# Install required packages
-sudo apt install -y nginx mysql-server php8.2-fpm php8.2-mysql php8.2-mbstring php8.2-xml php8.2-curl
-```
-
-### 2. Database Setup
-
-```bash
-# Secure MySQL installation
-sudo mysql_secure_installation
-
-# Create database and user
-mysql -u root -p
-CREATE DATABASE glamgo;
-CREATE USER 'glamgo_user'@'localhost' IDENTIFIED BY 'your_password';
-GRANT ALL PRIVILEGES ON glamgo.* TO 'glamgo_user'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-### 3. Application Deployment
-
-```bash
-# Clone repository
 git clone https://github.com/yourusername/glamgo.git
 cd glamgo
+```
 
-# Install dependencies
+2. Install dependencies:
+```bash
 composer install --no-dev --optimize-autoloader
 npm install
 npm run build
-
-# Set permissions
-sudo chown -R www-data:www-data storage bootstrap/cache
-sudo chmod -R 775 storage bootstrap/cache
 ```
 
-### 4. Environment Configuration
-
+3. Configure environment:
 ```bash
-# Copy environment file
 cp .env.example .env
-
-# Generate application key
 php artisan key:generate
+```
 
-# Configure .env file
+4. Update `.env` file:
+```env
 APP_NAME=GlamGo
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://your-domain.com
 
 DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
+DB_HOST=your-db-host
 DB_PORT=3306
-DB_DATABASE=glamgo
-DB_USERNAME=glamgo_user
-DB_PASSWORD=your_password
+DB_DATABASE=your-db-name
+DB_USERNAME=your-db-user
+DB_PASSWORD=your-db-password
 
 MAIL_MAILER=smtp
-MAIL_HOST=your-smtp-host
+MAIL_HOST=your-mail-host
 MAIL_PORT=587
-MAIL_USERNAME=your-username
-MAIL_PASSWORD=your-password
+MAIL_USERNAME=your-mail-username
+MAIL_PASSWORD=your-mail-password
 MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=noreply@your-domain.com
 MAIL_FROM_NAME="${APP_NAME}"
+
+QUEUE_CONNECTION=redis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
 ```
 
-### 5. Web Server Configuration
+## Database Setup
 
-#### Nginx Configuration
+1. Run migrations:
+```bash
+php artisan migrate --force
+```
+
+2. Seed database:
+```bash
+php artisan db:seed --class=ProductionSeeder
+```
+
+## Web Server Configuration
+
+### Apache
+
+1. Enable required modules:
+```bash
+sudo a2enmod rewrite
+sudo a2enmod ssl
+```
+
+2. Configure virtual host:
+```apache
+<VirtualHost *:80>
+    ServerName your-domain.com
+    Redirect permanent / https://your-domain.com/
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName your-domain.com
+    DocumentRoot /var/www/glamgo/public
+    
+    SSLEngine on
+    SSLCertificateFile /path/to/certificate.crt
+    SSLCertificateKeyFile /path/to/private.key
+    SSLCertificateChainFile /path/to/chain.crt
+    
+    <Directory /var/www/glamgo/public>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+    
+    ErrorLog ${APACHE_LOG_DIR}/glamgo-error.log
+    CustomLog ${APACHE_LOG_DIR}/glamgo-access.log combined
+</VirtualHost>
+```
+
+### Nginx
 
 ```nginx
 server {
@@ -118,158 +126,234 @@ server {
 server {
     listen 443 ssl;
     server_name your-domain.com;
-
-    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
-
     root /var/www/glamgo/public;
+    
+    ssl_certificate /path/to/certificate.crt;
+    ssl_certificate_key /path/to/private.key;
+    
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+    
     index index.php;
-
+    charset utf-8;
+    
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
-
+    
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+    
+    error_page 404 /index.php;
+    
     location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
     }
-
-    location ~ /\.ht {
+    
+    location ~ /\.(?!well-known).* {
         deny all;
-    }
-
-    location ~ /.well-known {
-        allow all;
     }
 }
 ```
 
-### 6. SSL Certificate
+## File Permissions
 
 ```bash
-# Install Certbot
-sudo apt install certbot python3-certbot-nginx
-
-# Obtain SSL certificate
-sudo certbot --nginx -d your-domain.com
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
 ```
 
-### 7. Final Setup
+## Queue Worker Setup
 
+1. Create systemd service:
 ```bash
-# Clear cache
+sudo nano /etc/systemd/system/glamgo-worker.service
+```
+
+2. Add configuration:
+```ini
+[Unit]
+Description=GlamGo Queue Worker
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+ExecStart=/usr/bin/php /var/www/glamgo/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+
+[Install]
+WantedBy=multi-user.target
+```
+
+3. Start service:
+```bash
+sudo systemctl enable glamgo-worker
+sudo systemctl start glamgo-worker
+```
+
+## Scheduled Tasks
+
+Add Laravel scheduler to crontab:
+```bash
+* * * * * cd /var/www/glamgo && php artisan schedule:run >> /dev/null 2>&1
+```
+
+## Cache Configuration
+
+1. Clear all caches:
+```bash
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+```
+
+2. Cache for production:
+```bash
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-
-# Run migrations
-php artisan migrate --force
-
-# Create storage link
-php artisan storage:link
 ```
 
-## Deployment Checklist
+## SSL Certificate
 
-- [ ] Environment variables configured
-- [ ] Database migrations run
-- [ ] Storage links created
-- [ ] SSL certificate installed
-- [ ] File permissions set
-- [ ] Caches cleared and rebuilt
-- [ ] Error logging configured
-- [ ] Backup system setup
-- [ ] Monitoring tools installed
+1. Install Certbot:
+```bash
+sudo apt install certbot
+```
+
+2. Generate certificate:
+```bash
+sudo certbot certonly --webroot -w /var/www/glamgo/public -d your-domain.com
+```
 
 ## Monitoring Setup
 
-### 1. Laravel Telescope (Development)
-
+1. Install monitoring tools:
 ```bash
 composer require laravel/telescope --dev
 php artisan telescope:install
-php artisan migrate
 ```
 
-### 2. Production Monitoring
-
-```bash
-# Install monitoring tools
-composer require laravel/horizon
-php artisan horizon:install
+2. Configure Telescope in production:
+```php
+// config/telescope.php
+'enabled' => env('TELESCOPE_ENABLED', false),
 ```
 
 ## Backup Configuration
 
+1. Install backup package:
 ```bash
-# Install backup package
 composer require spatie/laravel-backup
-
-# Configure backup
-php artisan backup:run
 ```
 
-## Maintenance Mode
-
+2. Configure backup:
 ```bash
-# Enable maintenance mode
-php artisan down --message="Updating system" --retry=60
+php artisan vendor:publish --provider="Spatie\Backup\BackupServiceProvider"
+```
 
-# Disable maintenance mode
-php artisan up
+3. Schedule backup:
+```php
+// app/Console/Kernel.php
+$schedule->command('backup:clean')->daily()->at('01:00');
+$schedule->command('backup:run')->daily()->at('02:00');
+```
+
+## Post-Deployment Checklist
+
+1. Verify application health:
+```bash
+php artisan about
+```
+
+2. Check security headers:
+```bash
+curl -I https://your-domain.com
+```
+
+3. Test all features:
+- Admin dashboard access
+- Booking system
+- Payment processing
+- Email notifications
+- File uploads
+- API endpoints
+
+4. Monitor logs:
+```bash
+tail -f storage/logs/laravel.log
 ```
 
 ## Rollback Procedure
 
+1. Switch to previous version:
 ```bash
-# Revert to previous version
-git checkout previous_tag
+git checkout previous-tag
+```
 
-# Restore database
-mysql -u user -p database < backup.sql
+2. Restore database:
+```bash
+php artisan migrate:rollback
+```
 
-# Clear cache
+3. Clear caches:
+```bash
+php artisan cache:clear
+php artisan config:clear
+```
+
+## Troubleshooting
+
+Common issues and solutions:
+
+1. Permission errors:
+```bash
+sudo chown -R www-data:www-data /var/www/glamgo
+find /var/www/glamgo -type f -exec chmod 644 {} \;
+find /var/www/glamgo -type d -exec chmod 755 {} \;
+```
+
+2. Cache issues:
+```bash
+php artisan optimize:clear
+```
+
+3. Database connection errors:
+```bash
 php artisan config:clear
 php artisan cache:clear
 ```
+
+## Security Considerations
+
+1. Enable HTTPS only
+2. Set secure headers
+3. Configure CORS
+4. Rate limiting
+5. Input validation
+6. SQL injection prevention
+7. XSS protection
+8. CSRF protection
 
 ## Performance Optimization
 
 1. Enable OPcache
 2. Configure Redis caching
-3. Set up CDN for assets
+3. Use CDN for assets
 4. Enable Gzip compression
-5. Configure browser caching
+5. Optimize images
+6. Minify CSS/JS
+7. Database indexing
 
-## Security Measures
+## Maintenance Mode
 
-1. Enable HTTPS only
-2. Set secure headers
-3. Configure firewall
-4. Enable rate limiting
-5. Regular security updates
-
-## Troubleshooting
-
-Common issues and solutions:
-1. Permission errors
-2. Database connection issues
-3. Cache problems
-4. SSL certificate errors
-
-## Deployment Schedule
-
-1. Pre-deployment testing
-2. Backup current version
-3. Deploy new version
-4. Run migrations
-5. Clear caches
-6. Verify functionality
-7. Monitor for issues
-
-## Resources
-
-- Laravel Deployment Documentation
-- Nginx Documentation
-- MySQL Documentation
-- Server Hardening Guide
+Enable maintenance mode during updates:
+```bash
+php artisan down --secret="your-secret-token"
+# Perform updates
+php artisan up
+```

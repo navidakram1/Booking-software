@@ -16,14 +16,13 @@ return new class extends Migration
             $table->string('name');
             $table->text('description');
             $table->decimal('price', 10, 2);
-            $table->integer('duration');
+            $table->string('image_url')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->decimal('discount_percentage', 5, 2)->nullable();
-            $table->integer('validity_days')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
-        Schema::create('service_package_services', function (Blueprint $table) {
+        Schema::create('service_package_service', function (Blueprint $table) {
             $table->id();
             $table->foreignId('service_package_id')->constrained()->onDelete('cascade');
             $table->foreignId('service_id')->constrained()->onDelete('cascade');
@@ -36,7 +35,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('service_package_services');
+        Schema::dropIfExists('service_package_service');
         Schema::dropIfExists('service_packages');
     }
-};
+}; 

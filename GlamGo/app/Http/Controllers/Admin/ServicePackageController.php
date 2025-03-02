@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Service;
 use App\Models\ServicePackage;
+use App\Models\Service;
 use Illuminate\Http\Request;
 
 class ServicePackageController extends Controller
@@ -14,13 +14,17 @@ class ServicePackageController extends Controller
      */
     public function index()
     {
-        $packages = ServicePackage::with(['services'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-            
-        $services = Service::all();
-        
-        return view('admin.services.packages.index', compact('packages', 'services'));
+        $packages = ServicePackage::with('services')->latest()->paginate(10);
+        return view('admin.service-packages.index', compact('packages'));
+    }
+
+    /**
+     * Show the form for creating a new service package.
+     */
+    public function create()
+    {
+        $services = Service::active()->get();
+        return view('admin.service-packages.create', compact('services'));
     }
 
     /**
@@ -29,32 +33,29 @@ class ServicePackageController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
+            'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'duration' => 'required|integer|min:1',
             'services' => 'required|array',
             'services.*' => 'exists:services,id',
             'is_active' => 'boolean',
-            'discount_percentage' => 'nullable|numeric|min:0|max:100',
-            'validity_days' => 'nullable|integer|min:1',
+            'image_url' => 'nullable|string'
         ]);
 
-        $package = ServicePackage::create([
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'price' => $validated['price'],
-            'duration' => $validated['duration'],
-            'is_active' => $request->boolean('is_active', true),
-            'discount_percentage' => $validated['discount_percentage'],
-            'validity_days' => $validated['validity_days'],
-        ]);
+        $package = ServicePackage::create($validated);
+        $package->services()->attach($request->services);
 
-        $package->services()->attach($validated['services']);
-
-        return redirect()
-            ->route('admin.services.packages.index')
+        return redirect()->route('admin.service-packages.index')
             ->with('success', 'Service package created successfully.');
+    }
+
+    /**
+     * Show the form for editing the specified service package.
+     */
+    public function edit(ServicePackage $package)
+    {
+        $services = Service::active()->get();
+        return view('admin.service-packages.edit', compact('package', 'services'));
     }
 
     /**
@@ -63,31 +64,19 @@ class ServicePackageController extends Controller
     public function update(Request $request, ServicePackage $package)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
+            'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'duration' => 'required|integer|min:1',
             'services' => 'required|array',
             'services.*' => 'exists:services,id',
             'is_active' => 'boolean',
-            'discount_percentage' => 'nullable|numeric|min:0|max:100',
-            'validity_days' => 'nullable|integer|min:1',
+            'image_url' => 'nullable|string'
         ]);
 
-        $package->update([
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'price' => $validated['price'],
-            'duration' => $validated['duration'],
-            'is_active' => $request->boolean('is_active', true),
-            'discount_percentage' => $validated['discount_percentage'],
-            'validity_days' => $validated['validity_days'],
-        ]);
+        $package->update($validated);
+        $package->services()->sync($request->services);
 
-        $package->services()->sync($validated['services']);
-
-        return redirect()
-            ->route('admin.services.packages.index')
+        return redirect()->route('admin.service-packages.index')
             ->with('success', 'Service package updated successfully.');
     }
 
@@ -99,8 +88,7 @@ class ServicePackageController extends Controller
         $package->services()->detach();
         $package->delete();
 
-        return redirect()
-            ->route('admin.services.packages.index')
+        return redirect()->route('admin.service-packages.index')
             ->with('success', 'Service package deleted successfully.');
     }
 

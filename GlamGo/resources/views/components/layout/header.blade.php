@@ -1,8 +1,8 @@
 @props(['isFixed' => true])
 
 <!-- Navigation Header -->
-<header class="fixed w-full top-0 z-50" x-data="{ mobileMenuOpen: false }">
-    <nav class="nav-blur mx-auto max-w-5xl mt-3 sm:mt-4 md:mt-6 px-4 sm:px-6 py-2 rounded-full transition-all duration-300">
+<header class="{{ $isFixed ? 'fixed' : 'relative' }} w-full top-0 z-50" x-data="{ mobileMenuOpen: false }">
+    <nav class="nav-blur mx-auto max-w-7xl mt-3 sm:mt-4 md:mt-6 px-4 sm:px-6 py-2 rounded-full transition-all duration-300">
         <div class="flex items-center justify-between">
             <!-- Logo -->
             <div class="flex-shrink-0">
@@ -15,24 +15,24 @@
             </div>
 
             <!-- Navigation Links - Hidden on Mobile -->
-            <div class="hidden md:flex items-center space-x-3">
-                <a href="{{ url('/') }}" class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl text-lg font-bold hover:bg-pink-50/50 transition-all duration-300">
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="{{ url('/') }}" class="nav-link">
                     <lord-icon src="https://cdn.lordicon.com/wmwqvixz.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
                     <span>Home</span>
                 </a>
-                <a href="{{ url('/services') }}" class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl text-lg font-bold hover:bg-pink-50/50 transition-all duration-300">
+                <a href="{{ url('/services') }}" class="nav-link">
                     <lord-icon src="https://cdn.lordicon.com/zvllgyec.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
                     <span>Services</span>
                 </a>
-                <a href="{{ url('/specialists') }}" class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl text-lg font-bold hover:bg-pink-50/50 transition-all duration-300">
+                <a href="{{ url('/specialists') }}" class="nav-link">
                     <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
                     <span>Specialists</span>
                 </a>
-                <a href="{{ url('/gallery') }}" class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl text-lg font-bold hover:bg-pink-50/50 transition-all duration-300">
+                <a href="{{ url('/gallery') }}" class="nav-link">
                     <lord-icon src="https://cdn.lordicon.com/vixtkkbk.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
                     <span>Gallery</span>
                 </a>
-                <a href="{{ url('/contact') }}" class="flex items-center space-x-1 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl text-lg font-bold hover:bg-pink-50/50 transition-all duration-300">
+                <a href="{{ url('/contact') }}" class="nav-link">
                     <lord-icon src="https://cdn.lordicon.com/hpivxauj.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
                     <span>Contact</span>
                 </a>
@@ -41,7 +41,7 @@
             <!-- Right Side Navigation -->
             <div class="flex items-center space-x-1.5 sm:space-x-2">
                 <!-- Book Now Button -->
-                <a href="{{ route('booking.index') }}" class="flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm sm:text-base font-semibold hover:shadow-lg hover:shadow-pink-500/30 transition-all duration-300">
+                <a href="{{ route('booking.index') }}" class="book-now-btn">
                     <lord-icon src="https://cdn.lordicon.com/uukerzzv.json" trigger="hover" colors="primary:#ffffff" style="width:20px;height:20px"></lord-icon>
                     <span>Book Now</span>
                 </a>
@@ -54,30 +54,30 @@
         </div>
 
         <!-- Mobile Menu -->
-        <div x-show="mobileMenuOpen" x-cloak class="md:hidden mt-4 opacity-0 transition-all duration-300 transform -translate-y-2" :class="{'opacity-100 translate-y-0': mobileMenuOpen}">
+        <div x-show="mobileMenuOpen" x-cloak class="mobile-menu" :class="{'opacity-100 translate-y-0': mobileMenuOpen}">
             <div class="flex flex-col space-y-2 bg-white/90 backdrop-blur-sm rounded-2xl p-3 border border-gray-100 shadow-lg">
-                <a href="{{ url('/') }}" class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl hover:bg-pink-50/50 transition-all duration-300">
+                <a href="{{ url('/') }}" class="mobile-nav-link">
                     <lord-icon src="https://cdn.lordicon.com/wmwqvixz.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
                     <span>Home</span>
                 </a>
-                <a href="{{ url('/services') }}" class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl hover:bg-pink-50/50 transition-all duration-300">
+                <a href="{{ url('/services') }}" class="mobile-nav-link">
                     <lord-icon src="https://cdn.lordicon.com/zvllgyec.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
                     <span>Services</span>
                 </a>
-                <a href="{{ url('/specialists') }}" class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl hover:bg-pink-50/50 transition-all duration-300">
+                <a href="{{ url('/specialists') }}" class="mobile-nav-link">
                     <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
                     <span>Specialists</span>
                 </a>
-                <a href="{{ url('/gallery') }}" class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl hover:bg-pink-50/50 transition-all duration-300">
+                <a href="{{ url('/gallery') }}" class="mobile-nav-link">
                     <lord-icon src="https://cdn.lordicon.com/vixtkkbk.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
                     <span>Gallery</span>
                 </a>
-                <a href="{{ url('/contact') }}" class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl hover:bg-pink-50/50 transition-all duration-300">
+                <a href="{{ url('/contact') }}" class="mobile-nav-link">
                     <lord-icon src="https://cdn.lordicon.com/hpivxauj.json" trigger="hover" colors="primary:#ec4899,secondary:#9333ea" style="width:24px;height:24px"></lord-icon>
                     <span>Contact</span>
                 </a>
                 <!-- Mobile Book Now Button -->
-                <a href="{{ route('booking.index') }}" class="flex items-center justify-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-xl font-semibold hover:shadow-lg hover:shadow-pink-500/30 transition-all duration-300">
+                <a href="{{ route('booking.index') }}" class="mobile-book-now-btn">
                     <lord-icon src="https://cdn.lordicon.com/uukerzzv.json" trigger="hover" colors="primary:#ffffff" style="width:20px;height:20px"></lord-icon>
                     <span>Book Now</span>
                 </a>
@@ -89,10 +89,31 @@
 <style>
 .nav-blur {
     background-color: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
+
+.nav-link {
+    @apply flex items-center space-x-1 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl text-sm font-medium hover:bg-pink-50/50 transition-all duration-300;
+}
+
+.mobile-nav-link {
+    @apply flex items-center space-x-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-xl hover:bg-pink-50/50 transition-all duration-300;
+}
+
+.book-now-btn {
+    @apply flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg hover:shadow-pink-500/30 transition-all duration-300;
+}
+
+.mobile-book-now-btn {
+    @apply flex items-center justify-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-xl font-medium hover:shadow-lg hover:shadow-pink-500/30 transition-all duration-300;
+}
+
+.mobile-menu {
+    @apply md:hidden mt-4 opacity-0 transition-all duration-300 transform -translate-y-2;
+}
+
 [x-cloak] {
     display: none !important;
 }

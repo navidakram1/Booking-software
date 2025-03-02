@@ -4,70 +4,47 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ServicePackage extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
         'description',
         'price',
-        'duration',
-        'is_active',
-        'discount_percentage',
-        'validity_days'
+        'image_url',
+        'is_active'
     ];
 
     protected $casts = [
-        'price' => 'float',
-        'duration' => 'integer',
-        'is_active' => 'boolean',
-        'discount_percentage' => 'float',
-        'validity_days' => 'integer'
+        'price' => 'decimal:2',
+        'is_active' => 'boolean'
     ];
 
-    protected $attributes = [
-        'is_active' => true,
-    ];
-
-    public function services()
+    /**
+     * Get the services included in this package.
+     */
+    public function services(): BelongsToMany
     {
-        return $this->belongsToMany(Service::class, 'service_package_services');
+        return $this->belongsToMany(Service::class);
     }
 
     /**
-     * Get the total regular price of all services.
+     * Get formatted price attribute
      */
-    public function getRegularPriceAttribute()
+    public function getFormattedPriceAttribute(): string
     {
-        return $this->services->sum('price');
+        return '$' . number_format($this->price, 2);
     }
 
     /**
-     * Get the savings amount.
+     * Scope a query to only include active packages.
      */
-    public function getSavingsAttribute()
+    public function scopeActive($query)
     {
-        return $this->regular_price - $this->price;
-    }
-
-    /**
-     * Get the savings percentage.
-     */
-    public function getSavingsPercentageAttribute()
-    {
-        if ($this->regular_price > 0) {
-            return round(($this->savings / $this->regular_price) * 100, 1);
-        }
-        return 0;
-    }
-
-    /**
-     * Get the total duration of all services.
-     */
-    public function getTotalDurationAttribute()
-    {
-        return $this->services->sum('duration');
+        return $query->where('is_active', true);
     }
 }

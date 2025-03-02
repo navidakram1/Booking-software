@@ -13,28 +13,50 @@ All notable changes to the GlamGo project will be documented in this file.
 - Newsletter subscription component
 - Reusable navigation components
 - Lord Icons integration
+- Admin Profile Management
+  - Added profile view, edit, and password change functionality
+  - Implemented avatar upload feature
+  - Added secure password update with current password verification
+
+- Admin Settings Module
+  - Created comprehensive settings dashboard
+  - Added sections for general, notifications, integrations, payment, and security settings
+  - Implemented modern card-based UI with intuitive navigation
+
+- Admin Booking Management
+  - Added complete booking management system
+  - Implemented calendar view for appointments
+  - Added booking status management and rescheduling features
+
+- Revenue Management
+  - Added revenue dashboard with daily, monthly, and yearly views
+  - Implemented revenue analytics and reporting
+  - Added export functionality for revenue reports
 
 ### Changed
 - Updated navigation structure for better UX
 - Improved mobile menu animations
 - Enhanced booking button placement
+- Updated admin dashboard layout for better usability
+- Improved routing structure for admin section
+- Enhanced error handling and validation for forms
 
 ### Fixed
 - Mobile menu animation issues
 - Navigation link routing
 - Header transparency on scroll
 - Booking route definition
+- Fixed missing routes for admin profile and settings
+- Resolved route definition issues for bookings management
+- Fixed authentication middleware for admin routes
 
-## [1.0.0] - 2025-02-28
+## [1.0.0] - 2024-03-02
 
-### Added
-- Initial release of GlamGo
-- Basic salon booking functionality
-- Service management system
-- Staff/specialist profiles
-- Appointment scheduling
-- User authentication
-- Admin dashboard
+### Initial Release
+- Basic salon management functionality
+- Customer booking system
+- Service management
+- Staff management
 - Basic reporting
 
 ### Security

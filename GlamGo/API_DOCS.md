@@ -162,8 +162,8 @@ Parameters:
 - `date`: Required (YYYY-MM-DD)
 
 Response:
-```json
-{
+   ```json
+   {
     "date": "2025-03-01",
     "slots": [
         {
@@ -181,27 +181,27 @@ Response:
 ## Error Responses
 
 ### 400 Bad Request
-```json
-{
+   ```json
+   {
     "error": "validation_error",
     "message": "The given data was invalid",
     "errors": {
         "field": ["Error message"]
-    }
-}
-```
+     }
+   }
+   ```
 
 ### 401 Unauthorized
-```json
-{
+   ```json
+   {
     "error": "unauthorized",
     "message": "Invalid or expired token"
 }
 ```
 
 ### 404 Not Found
-```json
-{
+   ```json
+   {
     "error": "not_found",
     "message": "Resource not found"
 }
@@ -227,3 +227,125 @@ Webhooks are available for:
 - Mobile SDKs: Coming soon
 
 For additional support or questions, contact our API team at api@glamgo.com
+
+## Authentication
+
+### Login
+- **POST** `/api/login`
+- Authenticate user and get access token
+
+### Logout
+- **POST** `/api/logout`
+- Invalidate current access token
+
+## Admin Endpoints
+
+### Profile Management
+- **GET** `/api/admin/profile`
+  - Get admin profile information
+- **PUT** `/api/admin/profile`
+  - Update admin profile
+- **PUT** `/api/admin/profile/password`
+  - Update admin password
+- **POST** `/api/admin/profile/avatar`
+  - Upload profile avatar
+
+### Settings
+- **GET** `/api/admin/settings`
+  - Get all settings
+- **GET** `/api/admin/settings/{section}`
+  - Get specific settings section
+- **PUT** `/api/admin/settings/{section}`
+  - Update settings section
+
+### Bookings
+- **GET** `/api/admin/bookings`
+  - List all bookings
+- **GET** `/api/admin/bookings/{id}`
+  - Get booking details
+- **POST** `/api/admin/bookings`
+  - Create new booking
+- **PUT** `/api/admin/bookings/{id}`
+  - Update booking
+- **DELETE** `/api/admin/bookings/{id}`
+  - Delete booking
+- **PUT** `/api/admin/bookings/{id}/status`
+  - Update booking status
+- **PUT** `/api/admin/bookings/{id}/reschedule`
+  - Reschedule booking
+
+### Revenue
+- **GET** `/api/admin/revenue`
+  - Get revenue overview
+- **GET** `/api/admin/revenue/daily`
+  - Get daily revenue
+- **GET** `/api/admin/revenue/monthly`
+  - Get monthly revenue
+- **GET** `/api/admin/revenue/yearly`
+  - Get yearly revenue
+- **GET** `/api/admin/revenue/export`
+  - Export revenue report
+
+## Public Endpoints
+
+### Services
+- **GET** `/api/services`
+  - List all services
+- **GET** `/api/services/{id}`
+  - Get service details
+- **GET** `/api/services/categories`
+  - List service categories
+
+### Specialists
+- **GET** `/api/specialists`
+  - List all specialists
+- **GET** `/api/specialists/{id}`
+  - Get specialist details
+- **GET** `/api/specialists/{id}/schedule`
+  - Get specialist schedule
+
+### Bookings
+- **POST** `/api/bookings`
+  - Create new booking
+- **GET** `/api/bookings/time-slots`
+  - Get available time slots
+- **GET** `/api/bookings/specialists/{serviceId}`
+  - Get available specialists for service
+
+## Response Format
+
+```json
+{
+    "success": true,
+    "data": {
+        // Response data
+    },
+    "message": "Success message",
+    "errors": {
+        // Error details if any
+    }
+}
+```
+
+## Error Codes
+
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 422: Validation Error
+- 500: Server Error
+
+## Authentication
+
+All admin endpoints require authentication using Bearer token:
+
+```http
+Authorization: Bearer <token>
+```
+
+## Rate Limiting
+
+API requests are limited to:
+- 60 requests per minute for public endpoints
+- 120 requests per minute for authenticated endpoints

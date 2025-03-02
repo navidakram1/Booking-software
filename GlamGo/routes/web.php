@@ -33,6 +33,8 @@ use App\Http\Controllers\Admin\MarketingController as AdminMarketingController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\ServiceCategoryController;
 use App\Http\Controllers\Admin\StaffScheduleController;
+use App\Http\Controllers\Admin\ServicePackageController;
+use App\Http\Controllers\Admin\RevenueController;
 
 // Authentication routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -88,11 +90,45 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Bookings Management
+    Route::prefix('bookings')->name('bookings.')->group(function () {
+        Route::get('/', [BookingController::class, 'index'])->name('index');
+        Route::get('/calendar', [BookingController::class, 'calendar'])->name('calendar');
+        Route::get('/create', [BookingController::class, 'create'])->name('create');
+        Route::post('/', [BookingController::class, 'store'])->name('store');
+        Route::get('/{booking}/edit', [BookingController::class, 'edit'])->name('edit');
+        Route::put('/{booking}', [BookingController::class, 'update'])->name('update');
+        Route::delete('/{booking}', [BookingController::class, 'destroy'])->name('destroy');
+        Route::put('/{booking}/status', [BookingController::class, 'updateStatus'])->name('status.update');
+        Route::put('/{booking}/reschedule', [BookingController::class, 'reschedule'])->name('reschedule');
+        Route::put('/{booking}/cancel', [BookingController::class, 'cancel'])->name('cancel');
+    });
+
+    // Revenue Management
+    Route::prefix('revenue')->name('revenue.')->group(function () {
+        Route::get('/', [RevenueController::class, 'index'])->name('index');
+        Route::get('/daily', [RevenueController::class, 'daily'])->name('daily');
+        Route::get('/monthly', [RevenueController::class, 'monthly'])->name('monthly');
+        Route::get('/yearly', [RevenueController::class, 'yearly'])->name('yearly');
+        Route::get('/export', [RevenueController::class, 'export'])->name('export');
+    });
+
+    // Service Packages
+    Route::prefix('service-packages')->name('service-packages.')->group(function () {
+        Route::get('/', [ServicePackageController::class, 'index'])->name('index');
+        Route::get('/create', [ServicePackageController::class, 'create'])->name('create');
+        Route::post('/', [ServicePackageController::class, 'store'])->name('store');
+        Route::get('/{package}/edit', [ServicePackageController::class, 'edit'])->name('edit');
+        Route::put('/{package}', [ServicePackageController::class, 'update'])->name('update');
+        Route::delete('/{package}', [ServicePackageController::class, 'destroy'])->name('destroy');
+    });
+
     // Staff Management
     Route::prefix('staff')->name('staff.')->group(function () {
         Route::get('/', [StaffController::class, 'index'])->name('index');
         Route::get('/create', [StaffController::class, 'create'])->name('create');
         Route::post('/', [StaffController::class, 'store'])->name('store');
+        Route::get('/{staff}', [StaffController::class, 'show'])->name('show');
         Route::get('/{staff}/edit', [StaffController::class, 'edit'])->name('edit');
         Route::put('/{staff}', [StaffController::class, 'update'])->name('update');
         Route::delete('/{staff}', [StaffController::class, 'destroy'])->name('destroy');
@@ -213,6 +249,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/customers', [ReportsController::class, 'customers'])->name('customers');
         Route::get('/staff', [ReportsController::class, 'staff'])->name('staff');
         Route::get('/services', [ReportsController::class, 'services'])->name('services');
+        Route::get('/revenue', [ReportsController::class, 'revenue'])->name('revenue');
+        Route::get('/appointments', [ReportsController::class, 'appointments'])->name('appointments');
+    });
+
+    // Profile Management
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [AdminController::class, 'profile'])->name('index');
+        Route::get('/edit', [AdminController::class, 'editProfile'])->name('edit');
+        Route::put('/update', [AdminController::class, 'updateProfile'])->name('update');
+        Route::get('/password', [AdminController::class, 'password'])->name('password');
+        Route::put('/password', [AdminController::class, 'updatePassword'])->name('password.update');
     });
 
     // Content Management
@@ -225,6 +272,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Settings
     Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [AdminController::class, 'settings'])->name('index');
         Route::get('/general', [AdminController::class, 'generalSettings'])->name('general');
         Route::get('/notifications', [AdminController::class, 'notificationSettings'])->name('notifications');
         Route::get('/integrations', [AdminController::class, 'integrationSettings'])->name('integrations');

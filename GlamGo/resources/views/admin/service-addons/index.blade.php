@@ -5,7 +5,7 @@
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold text-gray-800">Service Add-ons</h2>
         <div class="flex gap-3">
-            <a href="{{ route('admin.services.addons.create') }}" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">
+            <a href="{{ route('admin.service-addons.create') }}" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">
                 Create Add-on
             </a>
             <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg" onclick="exportAddons()">

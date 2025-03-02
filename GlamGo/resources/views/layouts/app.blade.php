@@ -26,11 +26,11 @@
 
     <!-- Main Content -->
     <main class="{{ ($isFixedHeader ?? true) ? 'pt-24' : '' }}">
-        {{ $slot }}
+        @yield('content')
     </main>
 
     <!-- Footer -->
-    <x-layout.footer :show-newsletter="$showNewsletter ?? true" />
+    <x-layout.footer :show_newsletter="$showNewsletter ?? true" />
 
     <!-- Scripts -->
     @stack('scripts')

@@ -132,7 +132,7 @@
 
 ### Analytics
 - Booking analytics
-- Customer insights
+  - Customer insights
 - Service popularity
 - Revenue reports
 - Marketing metrics
@@ -156,7 +156,7 @@ For implementation details of specific features, please refer to the relevant se
 - Service selection and scheduling
 - Stylist preference options
 - Instant booking confirmation
-- Calendar integration
+  - Calendar integration
 - Multiple service booking
 - Time slot management
 
@@ -278,11 +278,11 @@ class Service extends Model
 - Cloud storage
 
 ### APIs
-- RESTful API endpoints
+   - RESTful API endpoints
 - WebSocket connections
 - Third-party integrations
 - Mobile app endpoints
-- Payment processing
+   - Payment processing
 - Authentication services
 - File handling
 
@@ -345,6 +345,113 @@ class Service extends Model
 - Location settings
 - Payment methods
 - Notification preferences
+
+## Admin Dashboard
+
+### Profile Management
+- View and edit admin profile information
+- Upload profile avatar
+- Secure password management
+- Two-factor authentication support (coming soon)
+
+### Settings Management
+- General business settings
+- Notification preferences
+- Third-party integrations
+- Payment gateway configuration
+- Security settings
+
+### Booking Management
+- Comprehensive booking overview
+- Calendar view for appointments
+- Status management (pending, confirmed, completed, cancelled)
+- Rescheduling functionality
+- Booking history
+
+### Revenue Management
+- Real-time revenue dashboard
+- Daily, monthly, and yearly analytics
+- Revenue forecasting
+- Export reports in multiple formats
+- Transaction history
+
+### Service Management
+- Service categories
+- Individual services
+- Service packages
+- Pricing management
+- Service addons
+
+### Staff Management
+- Staff profiles
+- Schedule management
+- Performance tracking
+- Specialization assignment
+
+### Customer Management
+- Customer profiles
+- Booking history
+- Customer feedback
+- Loyalty program (coming soon)
+
+### Marketing Tools
+- Email campaigns
+- SMS notifications
+- Promotional offers
+- Customer engagement analytics
+
+### Content Management
+- Website pages
+- Blog posts
+- Gallery
+- Testimonials
+
+## Customer Features
+
+### Booking System
+- Service selection
+- Date and time booking
+- Specialist selection
+- Real-time availability
+- Instant confirmation
+
+### User Account
+- Profile management
+- Booking history
+- Favorite services
+- Review system
+
+### Service Discovery
+- Service categories
+- Detailed service information
+- Pricing transparency
+- Special offers
+
+## General Features
+
+### Authentication
+- Secure login system
+- Password recovery
+- Role-based access control
+- Session management
+
+### UI/UX
+- Responsive design
+- Modern interface
+- Intuitive navigation
+- Mobile-friendly
+
+### Security
+- Data encryption
+- Secure payments
+- Privacy protection
+- Regular backups
+
+### Integration
+- Payment gateways
+- Email service
+- SMS service
+- Analytics tools
 
 ---
 

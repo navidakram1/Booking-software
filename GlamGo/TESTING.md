@@ -1,284 +1,186 @@
-# GlamGo Testing Guide
+# Testing Documentation
 
-## Testing Overview
+## Overview
 
-This document outlines the testing procedures and guidelines for the GlamGo salon booking system.
+This document outlines the testing procedures for the GlamGo salon management system. Testing is performed at multiple levels to ensure the quality and reliability of the application.
 
-## Testing Environment Setup
+## Test Environment Setup
 
 1. Clone the repository
-```bash
-git clone https://github.com/yourusername/glamgo.git
-cd glamgo
+2. Install dependencies: `composer install && npm install`
+3. Copy `.env.example` to `.env.testing`
+4. Configure test database in `.env.testing`
+5. Run migrations: `php artisan migrate --env=testing`
+6. Run seeders: `php artisan db:seed --env=testing`
+
+## Unit Tests
+
+### Admin Features
+
+#### Profile Management
+```php
+php artisan test --filter=AdminProfileTest
 ```
+- Test profile view
+- Test profile update
+- Test password change
+- Test avatar upload
 
-2. Install dependencies
-```bash
-composer install
-npm install
+#### Settings Management
+```php
+php artisan test --filter=AdminSettingsTest
 ```
+- Test settings retrieval
+- Test settings update
+- Test settings validation
 
-3. Create test database
-```bash
-php artisan db:create --env=testing
-php artisan migrate --env=testing
-php artisan db:seed --env=testing
+#### Booking Management
+```php
+php artisan test --filter=AdminBookingTest
 ```
+- Test booking list
+- Test booking creation
+- Test booking update
+- Test booking deletion
+- Test status changes
+- Test rescheduling
 
-## Types of Tests
-
-### 1. Unit Tests
-
-Location: `tests/Unit`
-
-Run unit tests:
-```bash
-php artisan test --testsuite=Unit
+#### Revenue Management
+```php
+php artisan test --filter=AdminRevenueTest
 ```
+- Test revenue overview
+- Test daily revenue
+- Test monthly revenue
+- Test yearly revenue
+- Test revenue export
 
-Key areas covered:
-- Models
-- Services
-- Helpers
-- Utilities
+### Public Features
 
-### 2. Feature Tests
-
-Location: `tests/Feature`
-
-Run feature tests:
-```bash
-php artisan test --testsuite=Feature
+#### Services
+```php
+php artisan test --filter=ServiceTest
 ```
+- Test service listing
+- Test service details
+- Test category listing
 
-Key areas covered:
-- Controllers
-- Middleware
-- Routes
-- Form Requests
-
-### 3. Integration Tests
-
-Location: `tests/Integration`
-
-Run integration tests:
-```bash
-php artisan test --testsuite=Integration
+#### Specialists
+```php
+php artisan test --filter=SpecialistTest
 ```
+- Test specialist listing
+- Test specialist details
+- Test schedule viewing
 
-Key areas covered:
-- API Endpoints
-- Database Interactions
-- External Services
-- Authentication Flow
+#### Bookings
+```php
+php artisan test --filter=BookingTest
+```
+- Test booking creation
+- Test time slot availability
+- Test specialist availability
 
-### 4. Browser Tests
+## Integration Tests
 
-Location: `tests/Browser`
+### API Endpoints
+```php
+php artisan test --filter=ApiTest
+```
+- Test authentication
+- Test admin endpoints
+- Test public endpoints
+- Test rate limiting
+- Test error handling
 
-Run browser tests:
-```bash
+### Frontend Integration
+```php
 php artisan dusk
 ```
+- Test user flows
+- Test admin dashboard
+- Test booking process
+- Test responsive design
 
-Key areas covered:
-- User Interface
-- JavaScript Functionality
-- Form Submissions
-- Navigation Flow
+## User Acceptance Testing (UAT)
 
-## Test Cases
-
-### Frontend Components
-
-1. Header
-```php
-public function test_header_navigation()
-{
-    $this->browse(function ($browser) {
-        $browser->visit('/')
-                ->assertSee('Home')
-                ->assertSee('Services')
-                ->assertSee('Book Now');
-    });
-}
-```
-
-2. Mobile Menu
-```php
-public function test_mobile_menu_functionality()
-{
-    $this->browse(function ($browser) {
-        $browser->resize(375, 812)
-                ->visit('/')
-                ->click('#mobile-menu-button')
-                ->assertVisible('#mobile-menu');
-    });
-}
-```
+### Admin Dashboard
+1. Login to admin panel
+2. Navigate through all sections
+3. Test CRUD operations
+4. Verify data accuracy
+5. Test export functionality
 
 ### Booking System
+1. Browse services
+2. Select time slot
+3. Choose specialist
+4. Complete booking
+5. Receive confirmation
 
-1. Service Selection
-```php
-public function test_service_selection()
-{
-    $response = $this->get('/services');
-    $response->assertStatus(200)
-             ->assertViewHas('services');
-}
-```
-
-2. Booking Creation
-```php
-public function test_booking_creation()
-{
-    $response = $this->post('/booking', [
-        'service_id' => 1,
-        'date' => '2025-03-01',
-        'time' => '14:00'
-    ]);
-    
-    $response->assertStatus(200)
-             ->assertJson(['status' => 'success']);
-}
-```
+### Revenue Reports
+1. View daily reports
+2. Generate monthly summary
+3. Export yearly data
+4. Verify calculations
+5. Test filtering options
 
 ## Performance Testing
 
 ### Load Testing
-
 Using Apache JMeter:
-1. Homepage load test
-2. Booking system stress test
-3. Service listing performance
-4. Search functionality
+- Test concurrent users: 100
+- Test response time < 2s
+- Test error rate < 1%
 
-### Response Time Benchmarks
+### Security Testing
+- SQL injection prevention
+- XSS protection
+- CSRF protection
+- Rate limiting
+- Input validation
 
-- Homepage: < 2s
-- Service Listing: < 1s
-- Booking Creation: < 3s
-- Search Results: < 1s
+## Automated Testing
 
-## Security Testing
-
-### Authentication Tests
-
-```php
-public function test_user_authentication()
-{
-    $response = $this->post('/login', [
-        'email' => 'test@example.com',
-        'password' => 'password'
-    ]);
-    
-    $response->assertStatus(200)
-             ->assertAuthenticated();
-}
+### CI/CD Pipeline
+```bash
+# Run in GitHub Actions
+composer test
+npm run test
 ```
 
-### Authorization Tests
-
-```php
-public function test_admin_authorization()
-{
-    $this->actingAs($admin)
-         ->get('/admin/dashboard')
-         ->assertStatus(200);
-
-    $this->actingAs($user)
-         ->get('/admin/dashboard')
-         ->assertStatus(403);
-}
+### Code Quality
+```bash
+# Run static analysis
+./vendor/bin/phpstan analyse
+# Run code style checks
+./vendor/bin/php-cs-fixer fix --dry-run
 ```
 
-## API Testing
+## Bug Reporting
 
-### Endpoint Testing
-
-```php
-public function test_services_api()
-{
-    $response = $this->getJson('/api/v1/services');
-    
-    $response->assertStatus(200)
-             ->assertJsonStructure([
-                 'data' => [
-                     '*' => ['id', 'name', 'price']
-                 ]
-             ]);
-}
+Report bugs using the following format:
 ```
-
-## Continuous Integration
-
-### GitHub Actions Workflow
-
-```yaml
-name: Tests
-on: [push, pull_request]
-jobs:
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-      - name: Run Tests
-        run: |
-          composer install
-          php artisan test
+Title: [Component] Brief description
+Description:
+- Steps to reproduce
+- Expected behavior
+- Actual behavior
+- Screenshots/logs
+Environment:
+- Browser/OS
+- PHP version
+- Database version
 ```
 
 ## Test Coverage
 
+Maintain minimum coverage:
+- Unit Tests: 80%
+- Integration Tests: 70%
+- Feature Tests: 60%
+
 Generate coverage report:
 ```bash
-php artisan test --coverage
+php artisan test --coverage-html reports/
 ```
-
-Coverage goals:
-- Models: 90%
-- Controllers: 85%
-- Services: 80%
-- Overall: 75%
-
-## Bug Reporting
-
-Template:
-```markdown
-## Bug Description
-[Clear description of the issue]
-
-## Steps to Reproduce
-1. Step 1
-2. Step 2
-3. Step 3
-
-## Expected Behavior
-[What should happen]
-
-## Actual Behavior
-[What actually happens]
-
-## Environment
-- Browser:
-- OS:
-- Screen Size:
-```
-
-## Testing Schedule
-
-1. Unit Tests: Run on every commit
-2. Feature Tests: Run on every PR
-3. Integration Tests: Run daily
-4. Performance Tests: Run weekly
-5. Security Tests: Run bi-weekly
-
-## Resources
-
-- PHPUnit Documentation
-- Laravel Dusk Guide
-- JMeter Documentation
-- Testing Best Practices

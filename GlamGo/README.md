@@ -1,34 +1,26 @@
-# GlamGo - Modern Salon Booking System
+# GlamGo - Modern Salon Management System
 
-A modern, user-friendly salon booking system built with Laravel and TailwindCSS.
+GlamGo is a comprehensive salon management system designed to streamline the operations of modern beauty salons. With its intuitive interface and powerful features, it helps salon owners manage appointments, staff, services, and customer relationships effectively.
 
 ## Features
 
-- Modern and responsive design
-- Easy appointment booking system
-- Service catalog with detailed descriptions
-- Staff/specialist profiles
-- Gallery showcase
-- Contact and location information
-- Mobile-friendly interface
+- **Admin Dashboard**: Complete control over salon operations
+- **Booking Management**: Efficient appointment scheduling and management
+- **Service Management**: Easy service and pricing configuration
+- **Staff Management**: Staff scheduling and performance tracking
+- **Customer Management**: Customer profiles and booking history
+- **Revenue Management**: Financial tracking and reporting
+- **Marketing Tools**: Email and SMS campaign management
+- **Content Management**: Website and blog content control
 
 ## Tech Stack
 
-- Laravel 11.x
-- PHP 8.2+
-- MySQL 8.0+
-- TailwindCSS 3.x
-- AlpineJS
-- Lord Icons
-- Swiper JS
-
-## Prerequisites
-
-- PHP >= 8.2
-- Composer
-- Node.js & NPM
-- MySQL
-- XAMPP/WAMP/MAMP (for local development)
+- **Frontend**: HTML, CSS (Tailwind CSS), JavaScript
+- **Backend**: PHP (Laravel)
+- **Database**: MySQL
+- **Authentication**: Laravel Breeze
+- **UI Components**: Alpine.js
+- **Icons**: Heroicons
 
 ## Installation
 
@@ -43,7 +35,7 @@ cd glamgo
 composer install
 ```
 
-3. Install NPM packages:
+3. Install NPM dependencies:
 ```bash
 npm install
 ```
@@ -58,7 +50,7 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-6. Configure database in `.env`:
+6. Configure your database in `.env` file:
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -68,38 +60,53 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-7. Run migrations and seeders:
+7. Run migrations:
 ```bash
-php artisan migrate --seed
+php artisan migrate
 ```
 
-8. Start development servers:
+8. Start the development server:
 ```bash
-# Terminal 1
 php artisan serve
+```
 
-# Terminal 2
+9. In a new terminal, start the Vite development server:
+```bash
 npm run dev
 ```
 
+## Usage
+
+1. Access the admin dashboard at `http://localhost:8000/admin`
+2. Default admin credentials:
+   - Email: admin@glamgo.com
+   - Password: password
+
 ## Documentation
 
-For detailed documentation, please refer to:
-- [Features Documentation](FEATURES.md)
+- [Features](FEATURES.md)
 - [API Documentation](API_DOCS.md)
-- [Testing Guide](TESTING.md)
-- [Deployment Guide](DEPLOYMENT.md)
-- [Work Tracking](WORK_TRACKING.md)
-- [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)
+- [Contributing](CONTRIBUTING.md)
 
-## Contributing
+## Support
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+For support, please email support@glamgo.com or create an issue in this repository.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contributors
+
+- [Your Name](https://github.com/yourusername)
+
+## Acknowledgments
+
+- [Laravel](https://laravel.com)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Alpine.js](https://alpinejs.dev)
+- [Heroicons](https://heroicons.com)
 
 ## 🌟 Features
 
