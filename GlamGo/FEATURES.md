@@ -147,7 +147,53 @@
 - Gift cards
 - Automated marketing
 
-For implementation details of specific features, please refer to the relevant sections in the codebase.
+## Real-Time Booking System
+
+### Customer Booking Interface
+- Multi-step booking process with intuitive navigation
+  - Service selection with pricing and duration
+  - Specialist selection with availability
+  - Date and time selection with real-time availability
+  - Customer details collection
+  - Booking confirmation with summary
+- Real-time availability updates via WebSocket
+- Temporary slot locking to prevent double bookings
+- Multi-timezone support for international customers
+- Automated email confirmations with calendar invites
+- Mobile-responsive design for all devices
+
+### Admin Booking Management
+- Comprehensive booking list view
+  - Filtering by date, status, and specialist
+  - Pagination for large datasets
+  - Quick status updates
+  - Detailed booking information
+- Calendar view for visual scheduling
+  - Color-coded booking status
+  - Quick booking details access
+  - Week and month views
+- Status management workflow
+  - Status updates (confirm, complete, cancel)
+  - Automated customer notifications
+  - Rebooking options for cancelled appointments
+
+### Technical Features
+- WebSocket Integration
+  - Real-time slot availability updates
+  - Booking conflict prevention
+  - Live status updates
+- Caching System
+  - Temporary slot locking
+  - Quick availability checks
+  - Performance optimization
+- Email Notifications
+  - Booking confirmations
+  - Status change alerts
+  - Calendar invites (.ics)
+- Error Handling
+  - Graceful error recovery
+  - User-friendly error messages
+  - Loading state indicators
 
 ## Core Features
 
@@ -452,6 +498,35 @@ class Service extends Model
 - Email service
 - SMS service
 - Analytics tools
+
+## Admin Features
+
+### Security Management
+- Password Policy Configuration
+  - Minimum length requirements (8-32 characters)
+  - Uppercase letter requirements
+  - Number requirements
+  - Special character requirements
+- Account Security
+  - Two-Factor Authentication (2FA) toggle
+  - Forced password change policy (90 days)
+  - Maximum login attempts (3-10)
+  - Account lockout duration (5-1440 minutes)
+- Session Security
+  - Session timeout configuration (5-1440 minutes)
+  - HTTPS enforcement option
+
+### Payment Settings
+- Payment Method Configuration
+  - Cash payments toggle
+  - Card payments toggle
+  - Online payments toggle
+- Currency Settings
+  - Currency selection
+  - Symbol position (before/after amount)
+- Invoice Configuration
+  - Custom prefix
+  - Footer text customization
 
 ---
 

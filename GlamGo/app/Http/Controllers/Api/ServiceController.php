@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Service;
 use App\Models\Category;
+use App\Models\ServiceCategory;
+use Illuminate\Http\JsonResponse;
 
 class ServiceController extends Controller
 {
@@ -33,14 +35,12 @@ class ServiceController extends Controller
         ]);
     }
 
-    public function categories()
+    public function categories(): JsonResponse
     {
-        $categories = Category::with('services')
-            ->get();
-        
-        return response()->json([
-            'status' => 'success',
-            'data' => $categories
-        ]);
+        $categories = ServiceCategory::with(['services' => function ($query) {
+            $query->active()->orderBy('name');
+        }])->get();
+
+        return response()->json($categories);
     }
 }

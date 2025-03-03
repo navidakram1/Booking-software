@@ -9,7 +9,7 @@
                     <h3 class="card-title">Payment Settings</h3>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.settings.payments.update') }}" method="POST">
+                    <form action="{{ route('admin.settings.payment.update') }}" method="POST">
                         @csrf
                         @method('PUT')
                         

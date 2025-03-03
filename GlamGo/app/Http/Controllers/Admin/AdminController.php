@@ -81,7 +81,7 @@ class AdminController extends Controller
 
     public function pages()
     {
-        return view('admin.content.pages');
+        return view('admin.content.pages.index');
     }
 
     public function blog()
@@ -109,6 +109,31 @@ class AdminController extends Controller
         return view('admin.settings.general');
     }
 
+    public function updateGeneralSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'salon_name' => 'required|string|max:255',
+            'salon_email' => 'required|email',
+            'salon_phone' => 'required|string|max:20',
+            'salon_address' => 'required|string',
+            'business_hours' => 'required|array',
+            'timezone' => 'required|string',
+            'currency' => 'required|string|size:3',
+            'date_format' => 'required|string',
+            'time_format' => 'required|string',
+            'language' => 'required|string|size:2',
+        ]);
+
+        // Update settings in the database
+        foreach ($validated as $key => $value) {
+            setting([$key => $value]);
+        }
+
+        return redirect()
+            ->route('admin.settings.general')
+            ->with('success', 'General settings updated successfully');
+    }
+
     public function notificationSettings()
     {
         return view('admin.settings.notifications');
@@ -119,9 +144,58 @@ class AdminController extends Controller
         return view('admin.settings.integrations');
     }
 
+    public function updateIntegrationSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'google_analytics_id' => 'nullable|string|max:50',
+            'facebook_pixel_id' => 'nullable|string|max:50',
+            'google_maps_api_key' => 'nullable|string|max:100',
+            'social_facebook' => 'nullable|url|max:255',
+            'social_instagram' => 'nullable|url|max:255',
+            'social_twitter' => 'nullable|url|max:255',
+            'social_linkedin' => 'nullable|url|max:255',
+            'mailchimp_api_key' => 'nullable|string|max:100',
+            'mailchimp_list_id' => 'nullable|string|max:50',
+            'twilio_account_sid' => 'nullable|string|max:100',
+            'twilio_auth_token' => 'nullable|string|max:100',
+            'twilio_phone_number' => 'nullable|string|max:20'
+        ]);
+
+        // Update settings in the database
+        foreach ($validated as $key => $value) {
+            setting([$key => $value]);
+        }
+
+        return redirect()
+            ->route('admin.settings.integrations')
+            ->with('success', 'Integration settings updated successfully');
+    }
+
     public function paymentSettings()
     {
         return view('admin.settings.payment');
+    }
+
+    public function updatePaymentSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'accept_cash' => 'boolean',
+            'accept_cards' => 'boolean',
+            'accept_online' => 'boolean',
+            'currency' => 'required|string|size:3',
+            'currency_symbol_position' => 'required|in:before,after',
+            'invoice_prefix' => 'nullable|string|max:10',
+            'invoice_footer_text' => 'nullable|string|max:1000'
+        ]);
+
+        // Update settings in the database
+        foreach ($validated as $key => $value) {
+            setting([$key => $value]);
+        }
+
+        return redirect()
+            ->route('admin.settings.payment')
+            ->with('success', 'Payment settings updated successfully');
     }
 
     public function securitySettings()
@@ -129,9 +203,42 @@ class AdminController extends Controller
         return view('admin.settings.security');
     }
 
+    public function updateSecuritySettings(Request $request)
+    {
+        $validated = $request->validate([
+            'require_uppercase' => 'boolean',
+            'require_numbers' => 'boolean',
+            'require_symbols' => 'boolean',
+            'min_password_length' => 'required|integer|min:8|max:32',
+            'enable_2fa' => 'boolean',
+            'force_password_change' => 'boolean',
+            'max_login_attempts' => 'required|integer|min:3|max:10',
+            'lockout_duration' => 'required|integer|min:5|max:1440',
+            'session_timeout' => 'required|integer|min:5|max:1440',
+            'force_https' => 'boolean'
+        ]);
+
+        // Update settings in the database
+        foreach ($validated as $key => $value) {
+            setting([$key => $value]);
+        }
+
+        return redirect()
+            ->route('admin.settings.security')
+            ->with('success', 'Security settings updated successfully');
+    }
+
     public function cache()
     {
-        return view('admin.cache');
+        // Clear various caches
+        \Artisan::call('cache:clear');
+        \Artisan::call('view:clear');
+        \Artisan::call('config:clear');
+        \Artisan::call('route:clear');
+
+        return redirect()
+            ->back()
+            ->with('success', 'Cache cleared successfully');
     }
 
     public function profile()
@@ -146,20 +253,13 @@ class AdminController extends Controller
 
     public function updateProfile(Request $request)
     {
+        $user = auth()->user();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . auth()->id(),
+            'email' => 'required|email|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
-            'avatar' => 'nullable|image|max:1024'
         ]);
-
-        $user = auth()->user();
-        
-        if ($request->hasFile('avatar')) {
-            // Handle avatar upload
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $validated['avatar'] = $path;
-        }
 
         $user->update($validated);
 
@@ -177,7 +277,7 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'current_password' => 'required|current_password',
-            'password' => 'required|string|min:8|confirmed'
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         auth()->user()->update([
@@ -185,7 +285,7 @@ class AdminController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.profile.index')
+            ->route('admin.profile.password')
             ->with('success', 'Password updated successfully');
     }
 }

@@ -16,6 +16,8 @@ use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\SpecialistsController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\ContentController;
 
 // Admin Controllers
 use App\Http\Controllers\Admin\AdminController;
@@ -35,6 +37,8 @@ use App\Http\Controllers\Admin\ServiceCategoryController;
 use App\Http\Controllers\Admin\StaffScheduleController;
 use App\Http\Controllers\Admin\ServicePackageController;
 use App\Http\Controllers\Admin\RevenueController;
+use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\PageController as AdminPageController;
 
 // Authentication routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -83,6 +87,15 @@ Route::prefix('booking')->name('booking.')->group(function () {
     Route::post('/', [BookingController::class, 'store'])->name('store');
     Route::get('/specialists/{serviceId}', [BookingController::class, 'getSpecialists'])->name('specialists');
     Route::get('/time-slots', [BookingController::class, 'getAvailableTimeSlots'])->name('timeSlots');
+});
+
+// Real-time Booking Routes
+Route::prefix('api')->group(function () {
+    Route::get('/availability/slots', [BookingController::class, 'getAvailableSlots']);
+    Route::post('/bookings/lock-slot', [BookingController::class, 'lockSlot']);
+    Route::delete('/bookings/release-lock/{lockId}', [BookingController::class, 'releaseLock']);
+    Route::post('/bookings/validate', [BookingController::class, 'validateBooking']);
+    Route::post('/bookings/confirm', [BookingController::class, 'confirmBooking']);
 });
 
 // Admin routes
@@ -241,6 +254,50 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/campaigns', [AdminMarketingController::class, 'campaigns'])->name('campaigns');
     });
 
+    // Content Management
+    Route::prefix('content')->name('content.')->group(function () {
+        // Pages
+        Route::prefix('pages')->name('pages.')->group(function () {
+            Route::get('/', [AdminPageController::class, 'index'])->name('index');
+            Route::get('/create', [AdminPageController::class, 'create'])->name('create');
+            Route::post('/', [AdminPageController::class, 'store'])->name('store');
+            Route::get('/{page}/edit', [AdminPageController::class, 'edit'])->name('edit');
+            Route::put('/{page}', [AdminPageController::class, 'update'])->name('update');
+            Route::delete('/{page}', [AdminPageController::class, 'destroy'])->name('destroy');
+            Route::put('/{page}/status', [AdminPageController::class, 'toggleStatus'])->name('toggle-status');
+        });
+
+        // Blog
+        Route::prefix('blog')->name('blog.')->group(function () {
+            Route::get('/', [ContentController::class, 'blog'])->name('index');
+            Route::get('/create', [ContentController::class, 'createBlog'])->name('create');
+            Route::post('/', [ContentController::class, 'storeBlog'])->name('store');
+            Route::get('/{post}/edit', [ContentController::class, 'editBlog'])->name('edit');
+            Route::put('/{post}', [ContentController::class, 'updateBlog'])->name('update');
+            Route::delete('/{post}', [ContentController::class, 'destroyBlog'])->name('destroy');
+        });
+
+        // Gallery
+        Route::prefix('gallery')->name('gallery.')->group(function () {
+            Route::get('/', [ContentController::class, 'gallery'])->name('index');
+            Route::get('/create', [ContentController::class, 'createGallery'])->name('create');
+            Route::post('/', [ContentController::class, 'storeGallery'])->name('store');
+            Route::get('/{image}/edit', [ContentController::class, 'editGallery'])->name('edit');
+            Route::put('/{image}', [ContentController::class, 'updateGallery'])->name('update');
+            Route::delete('/{image}', [ContentController::class, 'destroyGallery'])->name('destroy');
+        });
+
+        // Testimonials
+        Route::prefix('testimonials')->name('testimonials.')->group(function () {
+            Route::get('/', [TestimonialController::class, 'index'])->name('index');
+            Route::post('/', [TestimonialController::class, 'store'])->name('store');
+            Route::get('/{testimonial}', [TestimonialController::class, 'show'])->name('show');
+            Route::put('/{testimonial}', [TestimonialController::class, 'update'])->name('update');
+            Route::delete('/{testimonial}', [TestimonialController::class, 'destroy'])->name('destroy');
+            Route::post('/{testimonial}/approve', [TestimonialController::class, 'approve'])->name('approve');
+        });
+    });
+
     // Reports
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [ReportsController::class, 'index'])->name('index');
@@ -262,22 +319,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/password', [AdminController::class, 'updatePassword'])->name('password.update');
     });
 
-    // Content Management
-    Route::prefix('content')->name('content.')->group(function () {
-        Route::get('/pages', [AdminController::class, 'pages'])->name('pages');
-        Route::get('/blog', [AdminController::class, 'blog'])->name('blog');
-        Route::get('/gallery', [AdminController::class, 'gallery'])->name('gallery');
-        Route::get('/testimonials', [AdminController::class, 'testimonials'])->name('testimonials');
-    });
-
     // Settings
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [AdminController::class, 'settings'])->name('index');
         Route::get('/general', [AdminController::class, 'generalSettings'])->name('general');
+        Route::put('/general', [AdminController::class, 'updateGeneralSettings'])->name('general.update');
         Route::get('/notifications', [AdminController::class, 'notificationSettings'])->name('notifications');
+        Route::put('/notifications', [AdminController::class, 'updateNotificationSettings'])->name('notifications.update');
         Route::get('/integrations', [AdminController::class, 'integrationSettings'])->name('integrations');
+        Route::put('/integrations', [AdminController::class, 'updateIntegrationSettings'])->name('integrations.update');
         Route::get('/payment', [AdminController::class, 'paymentSettings'])->name('payment');
+        Route::put('/payment', [AdminController::class, 'updatePaymentSettings'])->name('payment.update');
         Route::get('/security', [AdminController::class, 'securitySettings'])->name('security');
+        Route::put('/security', [AdminController::class, 'updateSecuritySettings'])->name('security.update');
     });
 
     // Cache Management

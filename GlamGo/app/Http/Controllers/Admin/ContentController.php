@@ -507,7 +507,7 @@ class ContentController extends Controller
 
     public function pages()
     {
-        return view('admin.content.pages');
+        return view('admin.content.pages.index');
     }
 
     public function storePage(Request $request)
@@ -531,7 +531,7 @@ class ContentController extends Controller
 
         Page::create($data);
 
-        return redirect()->route('admin.content.pages')
+        return redirect()->route('admin.content.pages.index')
             ->with('success', 'Page created successfully');
     }
 
@@ -560,7 +560,7 @@ class ContentController extends Controller
 
         $page->update($data);
 
-        return redirect()->route('admin.content.pages')
+        return redirect()->route('admin.content.pages.index')
             ->with('success', 'Page updated successfully');
     }
 
@@ -574,7 +574,7 @@ class ContentController extends Controller
         
         $page->delete();
 
-        return redirect()->route('admin.content.pages')
+        return redirect()->route('admin.content.pages.index')
             ->with('success', 'Page deleted successfully');
     }
 

@@ -349,3 +349,244 @@ Authorization: Bearer <token>
 API requests are limited to:
 - 60 requests per minute for public endpoints
 - 120 requests per minute for authenticated endpoints
+
+## Admin Settings API Endpoints
+
+### Security Settings
+
+#### GET /admin/settings/security
+- Description: Retrieve security settings configuration
+- Authentication: Required (Admin)
+- Response: Security settings view with current configuration
+
+#### PUT /admin/settings/security
+- Description: Update security settings
+- Authentication: Required (Admin)
+- Request Body:
+  ```json
+  {
+    "require_uppercase": boolean,
+    "require_numbers": boolean,
+    "require_symbols": boolean,
+    "min_password_length": integer (8-32),
+    "enable_2fa": boolean,
+    "force_password_change": boolean,
+    "max_login_attempts": integer (3-10),
+    "lockout_duration": integer (5-1440),
+    "session_timeout": integer (5-1440),
+    "force_https": boolean
+  }
+  ```
+
+### Payment Settings
+
+#### GET /admin/settings/payment
+- Description: Retrieve payment settings configuration
+- Authentication: Required (Admin)
+- Response: Payment settings view with current configuration
+
+#### PUT /admin/settings/payment
+- Description: Update payment settings
+- Authentication: Required (Admin)
+- Request Body:
+  ```json
+  {
+    "accept_cash": boolean,
+    "accept_cards": boolean,
+    "accept_online": boolean,
+    "currency": string (3 chars),
+    "currency_symbol_position": "before"|"after",
+    "invoice_prefix": string (max 10 chars),
+    "invoice_footer_text": string (max 1000 chars)
+  }
+  ```
+
+## Real-Time Booking System
+
+### WebSocket Events
+
+#### Slot Availability Updates
+```javascript
+Event: 'slot.availability.changed'
+Channel: 'bookings'
+Data: {
+  specialist_id: number,
+  service_id: number,
+  start_time: string,
+  end_time: string,
+  is_available: boolean
+}
+```
+
+### Booking Endpoints
+
+#### Get Available Slots
+```http
+GET /api/availability/slots
+
+Query Parameters:
+- service_id: number (required)
+- specialist_id: number (required)
+- date: string (required, format: YYYY-MM-DD)
+- timezone: string (required)
+
+Response:
+{
+  "slots": [
+    {
+      "start_time": "2025-03-03T09:00:00Z",
+      "end_time": "2025-03-03T10:00:00Z",
+      "formatted_time": "9:00 AM"
+    }
+  ]
+}
+```
+
+#### Lock Time Slot
+```http
+POST /api/bookings/lock-slot
+
+Request Body:
+{
+  "service_id": number,
+  "specialist_id": number,
+  "start_time": string,
+  "end_time": string
+}
+
+Response:
+{
+  "lock_id": string,
+  "expires_at": string
+}
+```
+
+#### Release Lock
+```http
+DELETE /api/bookings/release-lock/{lock_id}
+
+Response:
+{
+  "message": "Lock released successfully"
+}
+```
+
+#### Validate Booking
+```http
+POST /api/bookings/validate
+
+Request Body:
+{
+  "service_id": number,
+  "specialist_id": number,
+  "start_time": string,
+  "customer_details": {
+    "name": string,
+    "email": string,
+    "phone": string,
+    "notes": string
+  },
+  "lock_id": string
+}
+
+Response:
+{
+  "is_valid": boolean,
+  "message": string
+}
+```
+
+#### Confirm Booking
+```http
+POST /api/bookings/confirm
+
+Request Body:
+{
+  "service_id": number,
+  "specialist_id": number,
+  "start_time": string,
+  "customer_details": {
+    "name": string,
+    "email": string,
+    "phone": string,
+    "notes": string
+  },
+  "lock_id": string
+}
+
+Response:
+{
+  "booking_id": number,
+  "confirmation_code": string,
+  "message": string
+}
+```
+
+### Admin Endpoints
+
+#### List Bookings
+```http
+GET /api/admin/bookings
+
+Query Parameters:
+- start_date: string (optional)
+- status: string (optional)
+- specialist_id: number (optional)
+- page: number (optional)
+
+Response:
+{
+  "bookings": [
+    {
+      "id": number,
+      "confirmation_code": string,
+      "service": object,
+      "specialist": object,
+      "customer_details": object,
+      "start_time": string,
+      "end_time": string,
+      "status": string
+    }
+  ],
+  "pagination": object
+}
+```
+
+#### Update Booking Status
+```http
+PUT /api/admin/bookings/{booking}/status
+
+Request Body:
+{
+  "status": string
+}
+
+Response:
+{
+  "message": string,
+  "booking": object
+}
+```
+
+#### Get Calendar View
+```http
+GET /api/admin/bookings/calendar
+
+Query Parameters:
+- start_date: string (optional)
+- end_date: string (optional)
+
+Response:
+{
+  "events": [
+    {
+      "id": number,
+      "title": string,
+      "start": string,
+      "end": string,
+      "color": string,
+      "url": string
+    }
+  ]
+}
+```

@@ -6,30 +6,25 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('specialists', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100);
-            $table->string('email', 100)->unique();
-            $table->string('phone', 20)->nullable();
+            $table->string('name');
+            $table->string('title');
             $table->text('bio')->nullable();
-            $table->string('profile_image')->nullable();
-            $table->text('specialization')->nullable();
-            $table->integer('years_of_experience')->nullable();
+            $table->string('avatar')->nullable();
+            $table->string('email')->unique();
+            $table->string('phone')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->json('settings')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('specialists');
     }
-};
+}; 

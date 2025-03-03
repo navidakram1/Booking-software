@@ -4,7 +4,41 @@ GlamGo is a comprehensive salon management system designed to streamline the ope
 
 ## Features
 
-- **Admin Dashboard**: Complete control over salon operations
+### Real-Time Booking System
+- Intuitive multi-step booking process
+- Real-time availability updates via WebSocket
+- Temporary slot locking to prevent double bookings
+- Multi-timezone support
+- Automated email confirmations with calendar invites
+- Mobile-responsive design
+
+### Admin Dashboard
+- Comprehensive settings management:
+  - Security settings with password policies, 2FA, and session controls
+  - Payment configuration for multiple payment methods
+  - Integration settings for third-party services
+  - General salon settings and preferences
+- Booking and appointment management
+- Staff and service management
+- Customer relationship management
+- Revenue tracking and reporting
+- Content management for website pages
+
+### Security Features
+- Configurable password requirements
+- Two-factor authentication support
+- Account lockout protection
+- Session timeout controls
+- HTTPS enforcement option
+
+### Payment Processing
+- Multiple payment method support
+  - Cash payments
+  - Card payments
+  - Online payments
+- Customizable invoice settings
+- Flexible currency configuration
+
 - **Booking Management**: Efficient appointment scheduling and management
 - **Service Management**: Easy service and pricing configuration
 - **Staff Management**: Staff scheduling and performance tracking

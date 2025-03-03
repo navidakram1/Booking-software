@@ -13,7 +13,7 @@
             </nav>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.services.addons.edit', $addon->id) }}" class="btn btn-primary">
+            <a href="{{ route('admin.service-addons.edit', $addon->id) }}" class="btn btn-primary">
                 <i class="fas fa-edit"></i> Edit Addon
             </a>
             <form action="{{ route('admin.services.addons.toggle', $addon->id) }}" method="POST" class="d-inline">

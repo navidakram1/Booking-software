@@ -9,9 +9,21 @@ use App\Models\Appointment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Booking;
+use App\Services\BookingService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class BookingController extends Controller
 {
+    protected BookingService $bookingService;
+
+    public function __construct(BookingService $bookingService)
+    {
+        $this->bookingService = $bookingService;
+    }
+
     public function getServices()
     {
         $services = Service::with(['category', 'staff'])
@@ -167,5 +179,82 @@ class BookingController extends Controller
                 });
             })
             ->exists();
+    }
+
+    public function availableSlots(Request $request): JsonResponse
+    {
+        $request->validate([
+            'service_id' => 'required|exists:services,id',
+            'specialist_id' => 'required|exists:specialists,id',
+            'date' => 'required|date_format:Y-m-d',
+            'timezone' => 'required|string'
+        ]);
+
+        $slots = $this->bookingService->getAvailableSlots(
+            $request->service_id,
+            $request->specialist_id,
+            Carbon::parse($request->date),
+            $request->timezone
+        );
+
+        return response()->json($slots);
+    }
+
+    public function lockSlot(Request $request): JsonResponse
+    {
+        $request->validate([
+            'service_id' => 'required|exists:services,id',
+            'specialist_id' => 'required|exists:specialists,id',
+            'start_time' => 'required|date_format:Y-m-d H:i:s',
+            'end_time' => 'required|date_format:Y-m-d H:i:s|after:start_time'
+        ]);
+
+        $lockId = $this->bookingService->lockTimeSlot(
+            $request->service_id,
+            $request->specialist_id,
+            Carbon::parse($request->start_time),
+            Carbon::parse($request->end_time)
+        );
+
+        return response()->json(['lock_id' => $lockId]);
+    }
+
+    public function releaseLock(string $lockId): JsonResponse
+    {
+        $this->bookingService->releaseLock($lockId);
+        return response()->json(['message' => 'Lock released successfully']);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'service_id' => 'required|exists:services,id',
+            'specialist_id' => 'required|exists:specialists,id',
+            'start_time' => 'required|date_format:Y-m-d H:i:s',
+            'customer_details' => 'required|array',
+            'customer_details.first_name' => 'required|string|max:255',
+            'customer_details.last_name' => 'required|string|max:255',
+            'customer_details.email' => 'required|email|max:255',
+            'customer_details.phone' => 'required|string|max:20',
+            'notes' => 'nullable|string',
+            'addons' => 'nullable|array',
+            'addons.*' => 'exists:service_addons,id',
+            'timezone' => 'required|string'
+        ]);
+
+        $booking = $this->bookingService->createBooking(
+            $request->service_id,
+            $request->specialist_id,
+            Carbon::parse($request->start_time),
+            $request->customer_details,
+            $request->notes ?? '',
+            $request->addons ?? [],
+            $request->timezone
+        );
+
+        return response()->json([
+            'message' => 'Booking created successfully',
+            'confirmation_code' => $booking->confirmation_code
+        ], 201);
     }
 }

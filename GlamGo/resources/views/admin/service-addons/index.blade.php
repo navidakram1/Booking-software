@@ -73,7 +73,7 @@
                             </td>
                             <td class="px-4 py-3 text-sm">
                                 <div class="flex gap-2">
-                                    <a href="{{ route('admin.services.addons.edit', 1) }}" class="text-blue-500 hover:text-blue-700">Edit</a>
+                                    <a href="{{ route('admin.service-addons.edit', 1) }}" class="text-blue-500 hover:text-blue-700">Edit</a>
                                     <button onclick="assignServices(1)" class="text-purple-500 hover:text-purple-700">Assign</button>
                                     <button onclick="toggleStatus(1)" class="text-yellow-500 hover:text-yellow-700">Toggle</button>
                                     <button onclick="deleteAddon(1)" class="text-red-500 hover:text-red-700">Delete</button>

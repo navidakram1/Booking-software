@@ -44,7 +44,7 @@
                                                 </a>
                                             </li>
                                             <li>
-                                                <a class="dropdown-item" href="{{ route('admin.services.addons.edit', $addon->id) }}">
+                                                <a class="dropdown-item" href="{{ route('admin.service-addons.edit', $addon->id) }}">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
                                             </li>

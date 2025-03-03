@@ -30,8 +30,9 @@ class AppointmentController extends Controller
     {
         $services = Service::where('is_active', true)->get();
         $staff = Staff::where('is_active', true)->get();
+        $customers = \App\Models\Customer::orderBy('name')->get();
 
-        return view('admin.appointments.create', compact('services', 'staff'));
+        return view('admin.appointments.create', compact('services', 'staff', 'customers'));
     }
 
     /**

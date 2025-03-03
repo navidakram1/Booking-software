@@ -6,8 +6,10 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\API\ServiceController;
 use App\Http\Controllers\API\AppointmentController;
-use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\BookingController as ApiBookingController;
 use App\Http\Controllers\Staff\ProfileController;
+use App\Http\Controllers\Api\SpecialistController;
+use App\Http\Controllers\Api\ServiceAddonController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,9 +47,9 @@ Route::post('/appointments/book', [AppointmentController::class, 'book']);
 
 Route::prefix('v1')->group(function () {
     // Booking routes
-    Route::get('services', [BookingController::class, 'getServices']);
-    Route::post('check-availability', [BookingController::class, 'checkAvailability']);
-    Route::post('appointments', [BookingController::class, 'createAppointment']);
+    Route::get('services', [ApiBookingController::class, 'getServices']);
+    Route::post('check-availability', [ApiBookingController::class, 'checkAvailability']);
+    Route::post('appointments', [ApiBookingController::class, 'createAppointment']);
 
     // Staff routes
     Route::prefix('staff')->group(function () {
@@ -57,3 +59,19 @@ Route::prefix('v1')->group(function () {
         Route::get('{id}/performance', [ProfileController::class, 'getPerformanceMetrics']);
     });
 });
+
+// Service Categories with Services
+Route::get('/service-categories', [ServiceController::class, 'categories']);
+
+// Specialists
+Route::get('/specialists', [SpecialistController::class, 'index']);
+
+// Available Time Slots
+Route::get('/available-slots', [ApiBookingController::class, 'availableSlots']);
+
+// Service Add-ons
+Route::get('/service-addons', [ServiceAddonController::class, 'index']);
+
+// Booking Management
+Route::post('/lock-slot', [ApiBookingController::class, 'lockSlot']);
+Route::delete('/release-lock/{lockId}', [ApiBookingController::class, 'releaseLock']);

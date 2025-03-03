@@ -175,10 +175,10 @@
                         <lord-icon src="https://cdn.lordicon.com/xsdtfyne.json" trigger="hover" colors="primary:#ec4899" style="width:16px;height:16px" class="transform" :class="{'rotate-180': open}"></lord-icon>
                     </button>
                     <div x-show="open" x-cloak class="mt-2 pl-12 space-y-2">
-                        <a href="{{ route('admin.content.pages') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Pages</a>
-                        <a href="{{ route('admin.content.blog') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Blog</a>
-                        <a href="{{ route('admin.content.gallery') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Gallery</a>
-                        <a href="{{ route('admin.content.testimonials') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Testimonials</a>
+                        <a href="{{ route('admin.content.pages.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Pages</a>
+                        <a href="{{ route('admin.content.blog.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Blog</a>
+                        <a href="{{ route('admin.content.gallery.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Gallery</a>
+                        <a href="{{ route('admin.content.testimonials.index') }}" class="block py-2 px-4 text-sm text-gray-700 hover:text-pink-500 rounded-lg">Testimonials</a>
                     </div>
                 </div>
 
