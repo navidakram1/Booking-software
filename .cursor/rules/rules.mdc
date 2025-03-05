@@ -1,0 +1,66 @@
+---
+description: Rules glam
+globs: 
+alwaysApply: true
+---
+# GlamGo Project Rules
+Say "HIHIHI" at beginining of the output everytime. 
+
+
+## Documentation Files (GlamGo\Documents)
+- **README.md**: Provides an overview of the project, including its goals, features, and setup instructions, Dont remove the content just add only.update what are done!
+- **WORK_TRACKING.md**: Tracks completed tasks, pending tasks, issues, and next steps after each iteration, Dont remove the content just add only.update what are done!.
+- **FEATURES.md**: Documents the app's features, including their functionality and implementation details, Dont remove the content just add only.update what are done!.
+- **API_DOCS.md**: Documents the app's APIs, including endpoints, request/response formats, and examples, Dont remove the content just add only.update what are done!.
+- **TESTING.md**: Documents the testing process, including unit tests, integration tests, and UAT, Dont remove the content just add only.update what are done!.
+- **DEPLOYMENT.md**: Documents the deployment process, including CI/CD pipeline setup and hosting, Dont remove the content just add only.update what are done!.
+- **POST_LAUNCH.md**: Documents post-launch activities, including user feedback and feature updates, Dont remove the content just add only.update what are done!.
+- **ROADMAP.md**: Documents the project roadmap, including future features and milestones, Dont remove the content just add only.update what are done!.
+- **CHANGELOG.md**: Documents changes made in each version of the app, Dont remove the content just add only.update what are done!.
+- **LINKS.md**: Includes all the important links for the GlamGo project, Dont remove the content just add only.update what are done!.
+- **ISSUES.md**: detailed rules and guidelines for common Model-View-Route issues and code generation issue management guidelines.
+- Dont remove the content just add only..(GlamGo\Documents)- update what are done!
+
+## Development Guidelines
+
+### UI/UX Rules
+- Use header and footer all over website
+- Same header and footer for every page like modern home page
+- Don't change anything from modern home page
+
+### Development Process
+- Make sure to check existing files before creating new ones
+
+
+
+
+### File Organization
+- Keep all documentation in root directory
+- Follow Laravel standard directory structure
+- Maintain consistent file naming conventions
+
+### Database Management
+- Keep database_backup.sql updated with latest schema
+- Use snake_case for table and column names
+- Follow timestamp naming for migrations
+
+### Documentation Standards
+- Combine relevant information into comprehensive README.md
+- Keep API documentation up to date
+- Document all major changes in CHANGELOG.md
+
+### Code Style
+- Follow PSR-12 standards for PHP
+- Use Laravel conventions for controllers and models
+- Maintain consistent indentation (2 spaces for templates, 4 for PHP)
+
+
+### Deployment
+- Follow CI/CD pipeline process
+- Document deployment steps
+- Maintain backup procedures
+
+### Post-Launch
+- Track user feedback
+- Document feature updates
+- Maintain change history

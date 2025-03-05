@@ -70,7 +70,7 @@
 - Revenue metrics
 - Customer insights
 
-### Appointment Management
+### Booking Management
 - Calendar view
 - Booking details
 - Status updates
@@ -175,7 +175,7 @@
 - Status management workflow
   - Status updates (confirm, complete, cancel)
   - Automated customer notifications
-  - Rebooking options for cancelled appointments
+  - Rebooking options for cancelled bookings
 
 ### Technical Features
 - WebSocket Integration

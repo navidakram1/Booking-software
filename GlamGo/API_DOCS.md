@@ -82,8 +82,7 @@ Request Body:
 {
     "service_id": 1,
     "specialist_id": 2,
-    "date": "2025-03-01",
-    "time": "14:00",
+    "start_time": "2025-03-01 14:00:00",
     "customer": {
         "name": "John Doe",
         "email": "john@example.com",
@@ -100,7 +99,9 @@ Response:
     "booking_reference": "BK123456",
     "service": {...},
     "specialist": {...},
-    "datetime": "2025-03-01T14:00:00Z"
+    "start_time": "2025-03-01T14:00:00Z",
+    "rating": null,
+    "rating_comment": null
 }
 ```
 
@@ -117,8 +118,33 @@ Response:
     "booking_reference": "BK123456",
     "service": {...},
     "specialist": {...},
-    "datetime": "2025-03-01T14:00:00Z",
-    "customer": {...}
+    "start_time": "2025-03-01T14:00:00Z",
+    "customer": {...},
+    "rating": 5,
+    "rating_comment": "Great service!"
+}
+```
+
+#### Update Booking Rating
+```http
+POST /bookings/{id}/rating
+```
+
+Request Body:
+```json
+{
+    "rating": 5,
+    "comment": "Great service!"
+}
+```
+
+Response:
+```json
+{
+    "id": 123,
+    "status": "completed",
+    "rating": 5,
+    "rating_comment": "Great service!"
 }
 ```
 
@@ -220,6 +246,7 @@ Webhooks are available for:
 - Booking updated
 - Booking cancelled
 - Payment completed
+- Rating submitted
 
 ## SDK Support
 - PHP SDK: [GitHub Link]

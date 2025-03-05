@@ -357,3 +357,46 @@ php artisan down --secret="your-secret-token"
 # Perform updates
 php artisan up
 ```
+
+# Database Backup System
+
+## Automatic Backups
+The system includes an automated database backup solution that:
+- Creates daily backups at midnight
+- Stores backups in `storage/app/backups/database`
+- Maintains the last 7 backups, automatically removing older ones
+- Logs all backup operations
+
+### Manual Backup
+To create a manual backup, run:
+```bash
+php artisan db:backup
+```
+
+Optional: Specify a custom filename:
+```bash
+php artisan db:backup --filename=custom_backup.sql
+```
+
+### Backup Location
+- Default location: `storage/app/backups/database/`
+- Backup naming format: `backup_YYYY-MM-DD_HH-mm-ss.sql`
+- Log file: `storage/logs/db-backups.log`
+
+### Monitoring
+- Check `storage/logs/db-backups.log` for backup operation logs
+- Monitor `storage/app/backups/database/` for backup files
+- Failed backups are logged with error details
+
+### Recovery
+To restore from a backup:
+```bash
+mysql -u [username] -p [database_name] < storage/app/backups/database/[backup_file].sql
+```
+
+### Best Practices
+1. Regularly verify backup integrity
+2. Store backups offsite (recommended)
+3. Test restore process periodically
+4. Monitor available storage space
+5. Review backup logs weekly

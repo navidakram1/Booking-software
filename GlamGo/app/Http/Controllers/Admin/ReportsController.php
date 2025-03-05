@@ -53,23 +53,23 @@ class ReportsController extends Controller
     public function appointments()
     {
         // Sample data for demonstration
-        $appointmentStats = [
+        $bookingStats = [
             'total' => 450,
             'completed' => 380,
             'cancelled' => 40,
             'no_show' => 30,
             'chart_data' => [
-                ['date' => '2024-12-10', 'appointments' => 15],
-                ['date' => '2024-12-11', 'appointments' => 18],
-                ['date' => '2024-12-12', 'appointments' => 12],
-                ['date' => '2024-12-13', 'appointments' => 20],
-                ['date' => '2024-12-14', 'appointments' => 25],
-                ['date' => '2024-12-15', 'appointments' => 22],
-                ['date' => '2024-12-16', 'appointments' => 15],
+                ['date' => '2024-12-10', 'bookings' => 15],
+                ['date' => '2024-12-11', 'bookings' => 18],
+                ['date' => '2024-12-12', 'bookings' => 12],
+                ['date' => '2024-12-13', 'bookings' => 20],
+                ['date' => '2024-12-14', 'bookings' => 25],
+                ['date' => '2024-12-15', 'bookings' => 22],
+                ['date' => '2024-12-16', 'bookings' => 15],
             ]
         ];
 
-        return view('admin.reports.appointments', compact('appointmentStats'));
+        return view('admin.reports.bookings', compact('bookingStats'));
     }
 
     public function staff()
@@ -81,19 +81,19 @@ class ReportsController extends Controller
             'top_performers' => [
                 [
                     'name' => 'John Smith',
-                    'appointments' => 85,
+                    'bookings' => 85,
                     'revenue' => 8500,
                     'rating' => 4.9
                 ],
                 [
                     'name' => 'Sarah Johnson',
-                    'appointments' => 75,
+                    'bookings' => 75,
                     'revenue' => 7500,
                     'rating' => 4.8
                 ],
                 [
                     'name' => 'Michael Brown',
-                    'appointments' => 70,
+                    'bookings' => 70,
                     'revenue' => 7000,
                     'rating' => 4.7
                 ]

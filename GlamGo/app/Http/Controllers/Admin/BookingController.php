@@ -43,15 +43,15 @@ class BookingController extends Controller
 
     public function calendar()
     {
-        $bookings = Booking::with(['customer', 'service', 'specialist'])
+        $bookings = Booking::with(['service', 'specialist'])
             ->get()
             ->map(function ($booking) {
+                $customerDetails = json_decode($booking->customer_details, true);
                 return [
                     'id' => $booking->id,
-                    'title' => $booking->customer->name . ' - ' . $booking->service->name,
-                    'start' => $booking->appointment_date,
-                    'end' => Carbon::parse($booking->appointment_date)
-                        ->addMinutes($booking->service->duration),
+                    'title' => ($customerDetails['name'] ?? 'N/A') . ' - ' . $booking->service->name,
+                    'start' => $booking->start_time,
+                    'end' => $booking->end_time,
                     'url' => route('admin.bookings.edit', $booking),
                     'className' => $this->getStatusClass($booking->status)
                 ];

@@ -28,16 +28,17 @@ DB_USERNAME=root
 
 3. **services**
    - Main services offered
-   - Related to: appointments, reviews, service_packages
+   - Related to: bookings, reviews, service_packages
 
-4. **appointments**
+4. **bookings**
    - Customer bookings
    - Related to: customers, services, staff
+   - Includes: rating, rating_comment fields for feedback
 
 ### Customer Management
 1. **customers**
    - Customer profiles
-   - Related to: appointments, reviews, loyalty_points
+   - Related to: bookings, reviews, loyalty_points
 
 2. **customer_preferences**
    - Customer settings and preferences
@@ -50,7 +51,7 @@ DB_USERNAME=root
 ### Staff Management
 1. **staff**
    - Staff profiles and details
-   - Related to: services, appointments
+   - Related to: services, bookings
 
 2. **team_members**
    - Team member profiles

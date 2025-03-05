@@ -11,13 +11,11 @@ return new class extends Migration
         Schema::create('specialists', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->string('title');
             $table->text('bio')->nullable();
-            $table->string('avatar')->nullable();
-            $table->string('email')->unique();
-            $table->string('phone')->nullable();
+            $table->string('profile_image')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->json('settings')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('services', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->decimal('price', 8, 2);
             $table->integer('duration'); // in minutes
-            $table->string('category');
-            $table->string('image_url')->nullable();
+            $table->foreignId('category_id')->constrained('categories');
+            $table->string('image')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();

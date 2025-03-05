@@ -197,7 +197,7 @@ class StaffController extends Controller
 
         // Calculate average rating for each staff member
         $staff->each(function($member) {
-            $member->rating = $member->appointments->whereNotNull('rating')->avg('rating') ?? 0;
+            $member->rating = $member->bookings->whereNotNull('rating')->avg('rating') ?? 0;
         });
 
         return view('admin.staff.list', compact(

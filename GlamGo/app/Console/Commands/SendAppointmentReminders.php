@@ -4,34 +4,34 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Booking;
-use App\Notifications\AppointmentNotification;
+use App\Notifications\BookingNotification;
 use Carbon\Carbon;
 
 class SendAppointmentReminders extends Command
 {
-    protected $signature = 'appointments:send-reminders';
-    protected $description = 'Send reminders for upcoming appointments';
+    protected $signature = 'bookings:send-reminders';
+    protected $description = 'Send reminders for upcoming bookings';
 
     public function handle()
     {
-        // Get appointments for tomorrow
+        // Get bookings for tomorrow
         $tomorrow = Carbon::tomorrow();
-        $appointments = Booking::with(['client', 'staff', 'service'])
-            ->whereDate('appointment_date', $tomorrow)
+        $bookings = Booking::with(['user', 'staff', 'service'])
+            ->whereDate('start_time', $tomorrow)
             ->where('status', 'confirmed')
             ->get();
 
-        $this->info("Found {$appointments->count()} appointments for tomorrow.");
+        $this->info("Found {$bookings->count()} bookings for tomorrow.");
 
-        foreach ($appointments as $appointment) {
+        foreach ($bookings as $booking) {
             try {
-                $appointment->client->notify(new AppointmentNotification($appointment, 'reminder'));
-                $this->info("Sent reminder for appointment #{$appointment->id}");
+                $booking->user->notify(new BookingNotification($booking, 'reminder'));
+                $this->info("Sent reminder for booking #{$booking->id}");
             } catch (\Exception $e) {
-                $this->error("Failed to send reminder for appointment #{$appointment->id}: {$e->getMessage()}");
+                $this->error("Failed to send reminder for booking #{$booking->id}: {$e->getMessage()}");
             }
         }
 
-        $this->info('Finished sending appointment reminders.');
+        $this->info('Finished sending booking reminders.');
     }
 }

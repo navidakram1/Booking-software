@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         Commands\SendAppointmentReminders::class,
+        Commands\BackupDatabase::class,
     ];
 
     /**
@@ -31,6 +32,11 @@ class Kernel extends ConsoleKernel
                 ->weekly()
                 ->sundays()
                 ->at('00:00');
+
+        // Database backup schedule - run daily at midnight
+        $schedule->command('db:backup')
+                ->dailyAt('00:00')
+                ->appendOutputTo(storage_path('logs/db-backups.log'));
     }
 
     /**

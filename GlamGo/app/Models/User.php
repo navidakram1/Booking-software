@@ -27,7 +27,8 @@ class User extends Authenticatable
         'date_of_birth',
         'gender',
         'role',
-        'is_active'
+        'is_active',
+        'is_admin'
     ];
 
     /**
@@ -49,6 +50,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'date_of_birth' => 'date',
         'password' => 'hashed',
+        'is_admin' => 'boolean',
     ];
 
     public function bookings()
@@ -74,5 +76,10 @@ class User extends Authenticatable
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true;
     }
 }

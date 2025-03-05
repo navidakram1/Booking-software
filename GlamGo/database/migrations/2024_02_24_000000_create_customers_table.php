@@ -10,16 +10,17 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
-            $table->string('first_name');
-            $table->string('last_name');
+            $table->string('name');
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
             $table->date('date_of_birth')->nullable();
             $table->string('gender')->nullable();
             $table->text('notes')->nullable();
-            $table->boolean('marketing_consent')->default(false);
-            $table->json('preferences')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->boolean('email_notifications')->default(true);
+            $table->boolean('sms_notifications')->default(true);
+            $table->boolean('marketing_emails')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });

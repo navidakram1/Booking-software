@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'Appointment Calendar - GlamGo Admin')
-@section('page-title', 'Appointment Calendar')
+@section('title', 'Booking Calendar - GlamGo Admin')
+@section('page-title', 'Booking Calendar')
 
 @push('styles')
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
@@ -20,17 +20,17 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
         <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Appointment Calendar</h1>
-            <p class="mt-1 text-sm text-gray-600">View and manage appointments in calendar view</p>
+            <h1 class="text-2xl font-semibold text-gray-900">Booking Calendar</h1>
+            <p class="mt-1 text-sm text-gray-600">View and manage bookings in calendar view</p>
         </div>
         <div class="flex space-x-3">
-            <a href="{{ route('admin.appointments.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+            <a href="{{ route('admin.bookings.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
                 <i class="fas fa-list mr-2"></i>
                 List View
             </a>
-            <a href="{{ route('admin.appointments.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+            <a href="{{ route('admin.bookings.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
                 <i class="fas fa-plus mr-2"></i>
-                New Appointment
+                New Booking
             </a>
         </div>
     </div>
@@ -101,7 +101,12 @@ document.addEventListener('DOMContentLoaded', function() {
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        events: @json($appointments),
+        events: @json($bookings),
+        eventTimeFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            meridiem: 'short'
+        },
         eventClick: function(info) {
             showAppointmentDetails(info.event);
         }
@@ -118,7 +123,7 @@ function showAppointmentDetails(event) {
     statusEl.textContent = event.extendedProps.status.charAt(0).toUpperCase() + event.extendedProps.status.slice(1);
     statusEl.className = 'mt-1 text-sm ' + getStatusColor(event.extendedProps.status);
     
-    document.getElementById('modalEdit').href = `/admin/appointments/${event.id}/edit`;
+    document.getElementById('modalEdit').href = `/admin/bookings/${event.id}/edit`;
     document.getElementById('appointmentModal').classList.remove('hidden');
 }
 
