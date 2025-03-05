@@ -100,7 +100,24 @@ Route::prefix('api')->group(function () {
     Route::post('/bookings/confirm', [BookingController::class, 'confirmBooking']);
 });
 
-// Admin routes
+// Admin Authentication Routes
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
+        Route::post('login', [AuthController::class, 'login']);
+        Route::get('password/reset', [AuthController::class, 'showResetForm'])->name('password.reset');
+        Route::post('password/reset', [AuthController::class, 'resetPassword'])->name('password.reset');
+        Route::get('password/reset/{token}', [AuthController::class, 'showResetForm'])->name('password.reset.token');
+        Route::post('password/reset/{token}', [AuthController::class, 'updatePassword'])->name('password.update');
+    });
+
+    Route::middleware('auth')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+        Route::get('check-session', [AuthController::class, 'checkSessionTimeout'])->name('check-session');
+    });
+});
+
+// Admin Protected Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');

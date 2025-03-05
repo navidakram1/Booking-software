@@ -4,13 +4,24 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Auth\AuthenticationException;
-use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
+    /**
+     * Maximum number of login attempts allowed
+     */
+    private const MAX_LOGIN_ATTEMPTS = 5;
+
+    /**
+     * Time in minutes to block after max attempts
+     */
+    private const BLOCK_TIME = 15;
+
     /**
      * Handle an incoming request.
      *
@@ -18,82 +29,75 @@ class AdminMiddleware
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        try {
-            // Check if user is authenticated
-            if (!auth()->check()) {
-                Log::warning('Unauthenticated admin access attempt', [
-                    'ip' => $request->ip(),
-                    'url' => $request->fullUrl()
-                ]);
-                throw new AuthenticationException('Please login to access admin area');
-            }
-
-            $user = auth()->user();
-
-            // Verify admin role
-            if (!$user->isAdmin()) {
-                Log::error('Unauthorized admin access attempt', [
-                    'user_id' => $user->id,
-                    'ip' => $request->ip(),
-                    'url' => $request->fullUrl()
-                ]);
-                throw new AuthorizationException('Unauthorized access: Admin privileges required');
-            }
-
-            // Validate admin session
-            if (!session()->has('admin_session')) {
-                Log::warning('Admin session expired', [
-                    'user_id' => $user->id,
-                    'ip' => $request->ip()
-                ]);
-                throw new AuthenticationException('Your session has expired. Please login again');
-            }
-
-            // Rate limiting check
-            $key = 'admin_attempts_' . $request->ip();
-            $maxAttempts = 5; // Max attempts per minute
-            $attempts = cache()->get($key, 0);
-
-            if ($attempts > $maxAttempts) {
-                Log::error('Admin rate limit exceeded', [
-                    'ip' => $request->ip(),
-                    'attempts' => $attempts
-                ]);
-                return response()->json([
-                    'error' => 'Too many attempts. Please try again later.'
-                ], Response::HTTP_TOO_MANY_REQUESTS);
-            }
-
-            cache()->put($key, $attempts + 1, 60); // Increment attempts, expire in 60 seconds
-
-            // Audit logging for successful admin access
-            Log::info('Admin access granted', [
-                'user_id' => $user->id,
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            Log::warning('Unauthenticated admin access attempt', [
                 'ip' => $request->ip(),
-                'url' => $request->fullUrl(),
-                'method' => $request->method()
+                'url' => $request->url(),
+                'user_agent' => $request->userAgent()
             ]);
 
-            return $next($request);
-
-        } catch (AuthenticationException $e) {
             return redirect()->route('admin.login')
-                ->with('error', $e->getMessage());
+                ->with('error', 'Please login to access admin area');
+        }
 
-        } catch (AuthorizationException $e) {
-            return redirect()->route('home')
-                ->with('error', 'Unauthorized access to admin area');
-
-        } catch (\Exception $e) {
-            Log::error('Admin middleware error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+        // Verify admin role
+        if (!Auth::user()->isAdmin()) {
+            Log::error('Unauthorized admin access attempt', [
+                'user_id' => Auth::id(),
+                'ip' => $request->ip(),
+                'url' => $request->url()
             ]);
 
-            return redirect()->route('home')
-                ->with('error', 'An unexpected error occurred');
+            return redirect()->route('admin.login')
+                ->with('error', 'Unauthorized access: Admin privileges required');
         }
+
+        // Check admin session
+        if (!Session::has('admin_session')) {
+            Log::warning('Admin session expired', [
+                'user_id' => Auth::id(),
+                'ip' => $request->ip()
+            ]);
+
+            return redirect()->route('admin.login')
+                ->with('error', 'Admin session expired. Please login again');
+        }
+
+        // Rate limiting for admin routes
+        $key = 'admin_attempts_' . $request->ip();
+        if (RateLimiter::tooManyAttempts($key, self::MAX_LOGIN_ATTEMPTS)) {
+            $seconds = RateLimiter::availableIn($key);
+            
+            Log::error('Admin rate limit exceeded', [
+                'ip' => $request->ip(),
+                'seconds_remaining' => $seconds
+            ]);
+
+            return redirect()->route('admin.login')
+                ->with('error', "Too many attempts. Please try again in {$seconds} seconds.");
+        }
+
+        // Increment rate limiter
+        RateLimiter::hit($key, self::BLOCK_TIME * 60);
+
+        // Log successful admin access
+        Log::info('Admin access granted', [
+            'user_id' => Auth::id(),
+            'ip' => $request->ip(),
+            'url' => $request->url()
+        ]);
+
+        // Add security headers
+        $response = $next($request);
+        $response->headers->set('X-Frame-Options', 'DENY');
+        $response->headers->set('X-XSS-Protection', '1; mode=block');
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';");
+
+        return $response;
     }
 }
