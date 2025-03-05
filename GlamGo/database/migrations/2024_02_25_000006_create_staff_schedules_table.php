@@ -6,23 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('staff_schedules', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('specialist_id')->constrained()->onDelete('cascade');
-            $table->string('day_of_week'); // Monday, Tuesday, etc.
+            $table->foreignId('staff_id')->constrained()->onDelete('cascade');
+            $table->string('day_of_week');
             $table->time('start_time');
             $table->time('end_time');
             $table->boolean('is_working_day')->default(true);
-            $table->json('breaks')->nullable(); // Store lunch breaks or other breaks
-            $table->boolean('is_active')->default(true);
+            $table->json('breaks')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('staff_schedules');
     }
