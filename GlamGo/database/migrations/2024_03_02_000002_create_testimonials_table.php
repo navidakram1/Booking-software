@@ -10,11 +10,11 @@ return new class extends Migration
     {
         Schema::create('testimonials', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained()->onDelete('cascade');
-            $table->foreignId('service_id')->nullable()->constrained()->onDelete('set null');
+            $table->string('client_name');
             $table->text('content');
             $table->integer('rating');
-            $table->string('status')->default('pending');
+            $table->boolean('is_featured')->default(false);
+            $table->boolean('is_active')->default(true);
             $table->string('image')->nullable();
             $table->timestamps();
             $table->softDeletes();

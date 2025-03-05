@@ -11,6 +11,8 @@ use App\Models\ServiceReview;
 use App\Models\WorkingHour;
 use App\Models\Customer;
 use Carbon\Carbon;
+use App\Models\Booking;
+use Illuminate\Support\Str;
 
 class DashboardDemoSeeder extends Seeder
 {
@@ -24,27 +26,42 @@ class DashboardDemoSeeder extends Seeder
             [
                 'name' => 'Hair Care',
                 'description' => 'Professional hair care services including cuts, coloring, and styling',
-                'image_url' => 'categories/hair-care.jpg'
+                'image' => 'categories/hair-care.jpg',
+                'slug' => 'hair-care',
+                'is_active' => true,
+                'order' => 1
             ],
             [
                 'name' => 'Skin Care',
                 'description' => 'Facial treatments, skin analysis, and personalized skin care routines',
-                'image_url' => 'categories/skin-care.jpg'
+                'image' => 'categories/skin-care.jpg',
+                'slug' => 'skin-care',
+                'is_active' => true,
+                'order' => 2
             ],
             [
                 'name' => 'Nail Care',
                 'description' => 'Professional nail services including manicures, pedicures, and nail art',
-                'image_url' => 'categories/nail-care.jpg'
+                'image' => 'categories/nail-care.jpg',
+                'slug' => 'nail-care',
+                'is_active' => true,
+                'order' => 3
             ],
             [
                 'name' => 'Massage',
                 'description' => 'Relaxing massage treatments for stress relief and muscle tension',
-                'image_url' => 'categories/massage.jpg'
+                'image' => 'categories/massage.jpg',
+                'slug' => 'massage',
+                'is_active' => true,
+                'order' => 4
             ],
             [
                 'name' => 'Makeup',
                 'description' => 'Professional makeup services for all occasions',
-                'image_url' => 'categories/makeup.jpg'
+                'image' => 'categories/makeup.jpg',
+                'slug' => 'makeup',
+                'is_active' => true,
+                'order' => 5
             ]
         ];
 
@@ -61,7 +78,7 @@ class DashboardDemoSeeder extends Seeder
                 'description' => 'Professional haircut and styling service customized to your preferences',
                 'duration' => 60,
                 'price' => 50.00,
-                'image_url' => 'services/haircut.jpg',
+                'image' => 'services/haircut.jpg',
                 'is_active' => true
             ],
             [
@@ -70,7 +87,7 @@ class DashboardDemoSeeder extends Seeder
                 'description' => 'Full hair coloring service with premium products',
                 'duration' => 120,
                 'price' => 100.00,
-                'image_url' => 'services/hair-coloring.jpg',
+                'image' => 'services/hair-coloring.jpg',
                 'is_active' => true
             ],
             [
@@ -79,7 +96,7 @@ class DashboardDemoSeeder extends Seeder
                 'description' => 'Deep conditioning and repair treatment for damaged hair',
                 'duration' => 45,
                 'price' => 75.00,
-                'image_url' => 'services/hair-treatment.jpg',
+                'image' => 'services/hair-treatment.jpg',
                 'is_active' => true
             ],
             // Skin Care Services
@@ -89,7 +106,7 @@ class DashboardDemoSeeder extends Seeder
                 'description' => 'Deep cleansing facial with steam and extraction',
                 'duration' => 60,
                 'price' => 75.00,
-                'image_url' => 'services/facial.jpg',
+                'image' => 'services/facial.jpg',
                 'is_active' => true
             ],
             [
@@ -98,7 +115,7 @@ class DashboardDemoSeeder extends Seeder
                 'description' => 'Advanced anti-aging facial with premium products',
                 'duration' => 75,
                 'price' => 120.00,
-                'image_url' => 'services/anti-aging.jpg',
+                'image' => 'services/anti-aging.jpg',
                 'is_active' => true
             ],
             // Nail Care Services
@@ -108,7 +125,7 @@ class DashboardDemoSeeder extends Seeder
                 'description' => 'Professional nail care service with regular polish',
                 'duration' => 45,
                 'price' => 35.00,
-                'image_url' => 'services/manicure.jpg',
+                'image' => 'services/manicure.jpg',
                 'is_active' => true
             ],
             [
@@ -117,7 +134,7 @@ class DashboardDemoSeeder extends Seeder
                 'description' => 'Long-lasting gel polish pedicure with foot massage',
                 'duration' => 60,
                 'price' => 55.00,
-                'image_url' => 'services/pedicure.jpg',
+                'image' => 'services/pedicure.jpg',
                 'is_active' => true
             ],
             // Massage Services
@@ -127,7 +144,7 @@ class DashboardDemoSeeder extends Seeder
                 'description' => 'Relaxing full body massage with medium pressure',
                 'duration' => 60,
                 'price' => 80.00,
-                'image_url' => 'services/swedish-massage.jpg',
+                'image' => 'services/swedish-massage.jpg',
                 'is_active' => true
             ],
             [
@@ -136,7 +153,7 @@ class DashboardDemoSeeder extends Seeder
                 'description' => 'Therapeutic massage focusing on muscle tension',
                 'duration' => 60,
                 'price' => 90.00,
-                'image_url' => 'services/deep-tissue.jpg',
+                'image' => 'services/deep-tissue.jpg',
                 'is_active' => true
             ],
             // Makeup Services
@@ -146,7 +163,7 @@ class DashboardDemoSeeder extends Seeder
                 'description' => 'Complete bridal makeup with trial session',
                 'duration' => 90,
                 'price' => 150.00,
-                'image_url' => 'services/bridal-makeup.jpg',
+                'image' => 'services/bridal-makeup.jpg',
                 'is_active' => true
             ],
             [
@@ -155,82 +172,83 @@ class DashboardDemoSeeder extends Seeder
                 'description' => 'Glamorous evening makeup for special occasions',
                 'duration' => 60,
                 'price' => 85.00,
-                'image_url' => 'services/evening-makeup.jpg',
+                'image' => 'services/evening-makeup.jpg',
                 'is_active' => true
             ]
         ];
 
         foreach ($services as $service) {
-            Service::create($service);
+            Service::create([
+                'category_id' => $service['category_id'],
+                'name' => $service['name'],
+                'slug' => Str::slug($service['name']),
+                'description' => $service['description'],
+                'duration' => $service['duration'],
+                'price' => $service['price'],
+                'image' => $service['image'],
+                'is_active' => $service['is_active'],
+            ]);
         }
 
         // Create Specialists
         $specialists = [
             [
                 'name' => 'Emily Johnson',
-                'email' => 'emily.johnson@glamgo.com',
-                'phone' => '123-456-7890',
+                'title' => 'Master Hair Stylist',
                 'bio' => 'Master hair stylist with over 12 years of experience specializing in color transformations and modern cutting techniques. Certified in advanced coloring techniques from Vidal Sassoon.',
                 'profile_image' => 'specialists/emily-johnson.jpg',
-                'specialization' => 'Hair Styling, Coloring, Treatments',
-                'years_of_experience' => 12,
                 'is_active' => true
             ],
             [
                 'name' => 'Sarah Chen',
-                'email' => 'sarah.chen@glamgo.com',
-                'phone' => '123-456-7891',
+                'title' => 'Senior Esthetician',
                 'bio' => 'Licensed esthetician with expertise in anti-aging treatments and problematic skin solutions. Advanced certification in medical aesthetics.',
                 'profile_image' => 'specialists/sarah-chen.jpg',
-                'specialization' => 'Facial Treatments, Skin Care, Anti-Aging',
-                'years_of_experience' => 8,
                 'is_active' => true
             ],
             [
                 'name' => 'Maria Rodriguez',
-                'email' => 'maria.rodriguez@glamgo.com',
-                'phone' => '123-456-7892',
+                'title' => 'Nail Art Specialist',
                 'bio' => 'Nail art specialist known for intricate designs and long-lasting manicures. Certified in gel and acrylic applications.',
                 'profile_image' => 'specialists/maria-rodriguez.jpg',
-                'specialization' => 'Manicure, Pedicure, Nail Art',
-                'years_of_experience' => 6,
                 'is_active' => true
             ],
             [
                 'name' => 'David Kim',
-                'email' => 'david.kim@glamgo.com',
-                'phone' => '123-456-7893',
+                'title' => 'Massage Therapist',
                 'bio' => 'Licensed massage therapist specializing in deep tissue and sports massage. Certified in multiple massage modalities.',
                 'profile_image' => 'specialists/david-kim.jpg',
-                'specialization' => 'Swedish Massage, Deep Tissue, Sports Massage',
-                'years_of_experience' => 10,
                 'is_active' => true
             ],
             [
                 'name' => 'Sophie Anderson',
-                'email' => 'sophie.anderson@glamgo.com',
-                'phone' => '123-456-7894',
+                'title' => 'Makeup Artist',
                 'bio' => 'Professional makeup artist with experience in bridal, editorial, and special effects makeup. Trained at Make Up For Ever Academy.',
                 'profile_image' => 'specialists/sophie-anderson.jpg',
-                'specialization' => 'Bridal Makeup, Special Occasion Makeup',
-                'years_of_experience' => 7,
                 'is_active' => true
             ]
         ];
 
         foreach ($specialists as $specialist) {
-            $newSpecialist = Specialist::create($specialist);
+            $newSpecialist = Specialist::create([
+                'name' => $specialist['name'],
+                'slug' => Str::slug($specialist['name']),
+                'title' => $specialist['title'],
+                'bio' => $specialist['bio'],
+                'profile_image' => $specialist['profile_image'],
+                'is_active' => $specialist['is_active'],
+            ]);
             
-            // Assign services to specialists based on their specialization
-            if (str_contains($specialist['specialization'], 'Hair')) {
+            // Assign services to specialists based on their title
+            if (str_contains($specialist['title'], 'Hair')) {
                 $newSpecialist->services()->attach([1, 2, 3]); // Hair services
-            } elseif (str_contains($specialist['specialization'], 'Facial')) {
+            } elseif (str_contains($specialist['title'], 'Esthetician')) {
                 $newSpecialist->services()->attach([4, 5]); // Skin services
-            } elseif (str_contains($specialist['specialization'], 'Manicure')) {
+            } elseif (str_contains($specialist['title'], 'Nail')) {
                 $newSpecialist->services()->attach([6, 7]); // Nail services
-            } elseif (str_contains($specialist['specialization'], 'Massage')) {
+            } elseif (str_contains($specialist['title'], 'Massage')) {
                 $newSpecialist->services()->attach([8, 9]); // Massage services
-            } elseif (str_contains($specialist['specialization'], 'Makeup')) {
+            } elseif (str_contains($specialist['title'], 'Makeup')) {
                 $newSpecialist->services()->attach([10, 11]); // Makeup services
             }
 
@@ -350,21 +368,28 @@ class DashboardDemoSeeder extends Seeder
                     if ($specialist) {
                         $status = $currentDate->isPast() ? 'completed' : $statuses[array_rand($statuses)];
                         
-                        $appointment = Appointment::create([
-                            'customer_id' => $customer->id,
+                        $booking = Booking::create([
                             'service_id' => $service->id,
                             'specialist_id' => $specialist->id,
-                            'appointment_date' => $currentDate->format('Y-m-d'),
-                            'appointment_time' => sprintf('%02d:00:00', rand(9, 17)),
+                            'start_time' => $currentDate->copy()->setTime(rand(9, 17), 0, 0),
+                            'end_time' => $currentDate->copy()->setTime(rand(9, 17), 0, 0)->addMinutes($service->duration),
                             'status' => $status,
-                            'special_requests' => rand(0, 1) ? 'Please be gentle' : null,
-                            'total_amount' => $service->price
+                            'confirmation_code' => uniqid('BK-'),
+                            'customer_details' => json_encode([
+                                'name' => $customer->name,
+                                'email' => $customer->email,
+                                'phone' => $customer->phone
+                            ]),
+                            'notes' => rand(0, 1) ? 'Please be gentle' : null,
+                            'timezone' => 'UTC',
+                            'total_price' => $service->price,
+                            'payment_status' => 'pending'
                         ]);
 
-                        // Add review for completed appointments
+                        // Add review for completed bookings
                         if ($status === 'completed' && rand(0, 1)) {
                             ServiceReview::create([
-                                'appointment_id' => $appointment->id,
+                                'booking_id' => $booking->id,
                                 'rating' => rand(4, 5),
                                 'review_text' => $reviews[array_rand($reviews)]
                             ]);

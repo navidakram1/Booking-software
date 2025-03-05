@@ -210,8 +210,8 @@ class CustomerController extends Controller
     {
         $stats = [
             'total_bookings' => Booking::count(),
-            'upcoming_appointments' => Booking::where('date', '>=', Carbon::today())->count(),
-            'completed_appointments' => Booking::where('date', '<', Carbon::today())->count(),
+            'upcoming_appointments' => Booking::where('start_time', '>=', Carbon::today())->count(),
+            'completed_appointments' => Booking::where('start_time', '<', Carbon::today())->count(),
             'favorite_services' => Service::take(3)->get(),
             'recent_bookings' => Booking::with(['service', 'staff'])
                 ->orderBy('created_at', 'desc')

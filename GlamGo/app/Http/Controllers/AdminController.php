@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use App\Events\AppointmentStatusChanged;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Events\BookingStatusChanged;
 
 class AdminController extends Controller
 {
@@ -83,13 +84,13 @@ class AdminController extends Controller
 
         // Current month metrics
         $currentRevenue = Booking::where('status', 'completed')
-            ->whereMonth('appointment_date', $now->month)
-            ->whereYear('appointment_date', $now->year)
+            ->whereMonth('start_time', $now->month)
+            ->whereYear('start_time', $now->year)
             ->sum('price');
 
         $lastMonthRevenue = Booking::where('status', 'completed')
-            ->whereMonth('appointment_date', $lastMonth->month)
-            ->whereYear('appointment_date', $lastMonth->year)
+            ->whereMonth('start_time', $lastMonth->month)
+            ->whereYear('start_time', $lastMonth->year)
             ->sum('price');
 
         $revenueGrowth = $lastMonthRevenue > 0 
@@ -97,12 +98,12 @@ class AdminController extends Controller
             : 100;
 
         // Bookings metrics
-        $currentBookings = Booking::whereMonth('appointment_date', $now->month)
-            ->whereYear('appointment_date', $now->year)
+        $currentBookings = Booking::whereMonth('start_time', $now->month)
+            ->whereYear('start_time', $now->year)
             ->count();
 
-        $lastMonthBookings = Booking::whereMonth('appointment_date', $lastMonth->month)
-            ->whereYear('appointment_date', $lastMonth->year)
+        $lastMonthBookings = Booking::whereMonth('start_time', $lastMonth->month)
+            ->whereYear('start_time', $lastMonth->year)
             ->count();
 
         $bookingsGrowth = $lastMonthBookings > 0 
@@ -131,7 +132,7 @@ class AdminController extends Controller
         // Get analytics data
         $analytics = [
             'total_appointments' => Booking::count(),
-            'today_appointments' => Booking::whereDate('appointment_date', Carbon::today())->count(),
+            'today_appointments' => Booking::whereDate('start_time', Carbon::today())->count(),
             'pending_appointments' => Booking::where('status', 'pending')->count(),
             'total_revenue' => Booking::where('status', 'completed')->sum('price'),
             'current_revenue' => $currentRevenue,
@@ -146,9 +147,9 @@ class AdminController extends Controller
         ];
 
         // Get today's appointments
-        $todayAppointments = Booking::with(['customer', 'service', 'staff'])
-            ->whereDate('appointment_date', Carbon::today())
-            ->orderBy('appointment_date')
+        $todayAppointments = Booking::with(['user', 'service', 'staff'])
+            ->whereDate('start_time', Carbon::today())
+            ->orderBy('start_time')
             ->get();
 
         // Get recent bookings
@@ -232,20 +233,20 @@ class AdminController extends Controller
 
     public function appointments()
     {
-        $appointments = Booking::with(['client', 'staff', 'service'])
-            ->orderBy('appointment_date', 'desc')
+        $bookings = Booking::with(['user', 'staff', 'service'])
+            ->orderBy('start_time', 'desc')
             ->paginate(20);
 
-        return view('admin.appointments.index', compact('appointments'));
+        return view('admin.bookings.index', compact('bookings'));
     }
 
     public function appointmentCreate()
     {
         $services = Service::all();
         $staff = Staff::with('services')->get();
-        $customers = User::all();
+        $customers = User::where('role', 'customer')->get();
         
-        return view('admin.appointments.create', compact('services', 'staff', 'customers'));
+        return view('admin.bookings.create', compact('services', 'staff', 'customers'));
     }
 
     public function appointmentStore(Request $request)
@@ -254,30 +255,26 @@ class AdminController extends Controller
             'customer_id' => 'required|exists:users,id',
             'service_id' => 'required|exists:services,id',
             'staff_id' => 'required|exists:staff,id',
-            'appointment_date' => 'required|date|after:today',
-            'appointment_time' => 'required',
+            'start_time' => 'required|date|after:today',
             'notes' => 'nullable|string'
         ]);
-
-        // Combine date and time
-        $appointmentDateTime = Carbon::parse($request->appointment_date . ' ' . $request->appointment_time);
 
         // Create the booking
         $booking = Booking::create([
             'user_id' => $request->customer_id,
             'service_id' => $request->service_id,
             'staff_id' => $request->staff_id,
-            'appointment_date' => $appointmentDateTime,
+            'start_time' => $request->start_time,
             'status' => 'pending',
             'notes' => $request->notes,
             'price' => Service::find($request->service_id)->price
         ]);
 
-        // Fire appointment created event
-        event(new AppointmentStatusChanged($booking));
+        // Fire booking created event
+        event(new BookingStatusChanged($booking));
 
-        return redirect()->route('admin.appointments.index')
-            ->with('success', 'Appointment created successfully');
+        return redirect()->route('admin.bookings.index')
+            ->with('success', 'Booking created successfully');
     }
 
     public function appointmentUpdate(Request $request, $id)
@@ -286,26 +283,26 @@ class AdminController extends Controller
             'status' => 'required|in:pending,confirmed,completed,cancelled'
         ]);
 
-        $appointment = Booking::findOrFail($id);
-        $appointment->status = $request->status;
-        $appointment->save();
+        $booking = Booking::findOrFail($id);
+        $booking->status = $request->status;
+        $booking->save();
 
         // Send notification
-        event(new AppointmentStatusChanged($appointment));
+        event(new BookingStatusChanged($booking));
 
-        return back()->with('success', 'Appointment status updated successfully');
+        return back()->with('success', 'Booking status updated successfully');
     }
 
     public function reports()
     {
         // Calculate current month's revenue
         $currentRevenue = Booking::where('status', 'completed')
-            ->whereMonth('appointment_date', Carbon::now()->month)
-            ->whereYear('appointment_date', Carbon::now()->year)
+            ->whereMonth('start_time', Carbon::now()->month)
+            ->whereYear('start_time', Carbon::now()->year)
             ->sum('price');
 
         $monthlyRevenue = Booking::where('status', 'completed')
-            ->selectRaw('MONTH(appointment_date) as month, SUM(price) as revenue')
+            ->selectRaw('MONTH(start_time) as month, SUM(price) as revenue')
             ->groupBy('month')
             ->get();
 
@@ -357,10 +354,10 @@ class AdminController extends Controller
         
         // Get daily revenue for current month
         $dailyRevenue = Booking::where('status', 'completed')
-            ->whereMonth('appointment_date', $now->month)
-            ->whereYear('appointment_date', $now->year)
+            ->whereMonth('start_time', $now->month)
+            ->whereYear('start_time', $now->year)
             ->select(
-                DB::raw('DATE(appointment_date) as date'),
+                DB::raw('DATE(start_time) as date'),
                 DB::raw('SUM(price) as revenue')
             )
             ->groupBy('date')
@@ -369,10 +366,10 @@ class AdminController extends Controller
 
         // Get monthly revenue for past 12 months
         $monthlyRevenue = Booking::where('status', 'completed')
-            ->where('appointment_date', '>=', $now->copy()->subMonths(11))
+            ->where('start_time', '>=', $now->copy()->subMonths(11))
             ->select(
-                DB::raw('YEAR(appointment_date) as year'),
-                DB::raw('MONTH(appointment_date) as month'),
+                DB::raw('YEAR(start_time) as year'),
+                DB::raw('MONTH(start_time) as month'),
                 DB::raw('SUM(price) as revenue')
             )
             ->groupBy('year', 'month')
@@ -395,8 +392,8 @@ class AdminController extends Controller
 
         // Calculate average transaction value
         $avgTransaction = Booking::where('status', 'completed')
-            ->whereMonth('appointment_date', $now->month)
-            ->whereYear('appointment_date', $now->year)
+            ->whereMonth('start_time', $now->month)
+            ->whereYear('start_time', $now->year)
             ->avg('price') ?? 0;
 
         // Calculate customer LTV
@@ -441,10 +438,10 @@ class AdminController extends Controller
         $now = Carbon::now();
         
         // Get daily bookings for current month
-        $dailyBookings = Booking::whereMonth('appointment_date', $now->month)
-            ->whereYear('appointment_date', $now->year)
+        $dailyBookings = Booking::whereMonth('start_time', $now->month)
+            ->whereYear('start_time', $now->year)
             ->select(
-                DB::raw('DATE(appointment_date) as date'),
+                DB::raw('DATE(start_time) as date'),
                 DB::raw('COUNT(*) as count')
             )
             ->groupBy('date')
@@ -452,10 +449,10 @@ class AdminController extends Controller
             ->get();
 
         // Get monthly bookings for past 12 months
-        $monthlyBookings = Booking::where('appointment_date', '>=', $now->copy()->subMonths(11))
+        $monthlyBookings = Booking::where('start_time', '>=', $now->copy()->subMonths(11))
             ->select(
-                DB::raw('YEAR(appointment_date) as year'),
-                DB::raw('MONTH(appointment_date) as month'),
+                DB::raw('YEAR(start_time) as year'),
+                DB::raw('MONTH(start_time) as month'),
                 DB::raw('COUNT(*) as count')
             )
             ->groupBy('year', 'month')
@@ -548,8 +545,8 @@ class AdminController extends Controller
         
         // Get staff performance metrics
         $staff = Staff::withCount(['bookings' => function($query) use ($now) {
-                $query->whereMonth('appointment_date', $now->month)
-                    ->whereYear('appointment_date', $now->year);
+                $query->whereMonth('start_time', $now->month)
+                    ->whereYear('start_time', $now->year);
             }])
             ->withSum(['bookings' => function($query) {
                 $query->where('status', 'completed');
@@ -732,7 +729,7 @@ class AdminController extends Controller
         $waitlist->phone = $validated['phone'];
         $waitlist->service_id = $validated['service_id'];
         $waitlist->staff_id = $validated['staff_id'];
-        $waitlist->preferred_date = Carbon::parse($validated['preferred_date'] . ' ' . $validated['preferred_time']);
+        $waitlist->start_time = Carbon::parse($validated['preferred_date'] . ' ' . $validated['preferred_time']);
         $waitlist->notes = $validated['notes'];
         $waitlist->status = 'pending';
         $waitlist->save();
@@ -807,7 +804,7 @@ class AdminController extends Controller
         $booking = new Booking();
         $booking->service_id = $validated['service_id'];
         $booking->staff_id = $validated['staff_id'];
-        $booking->appointment_date = Carbon::parse($validated['date'] . ' ' . $validated['time']);
+        $booking->start_time = Carbon::parse($validated['date'] . ' ' . $validated['time']);
         $booking->participants = $validated['participants'];
         $booking->notes = $validated['notes'];
         $booking->is_group = true;
@@ -842,7 +839,7 @@ class AdminController extends Controller
         $booking = Booking::findOrFail($id);
         $booking->service_id = $validated['service_id'];
         $booking->staff_id = $validated['staff_id'];
-        $booking->appointment_date = Carbon::parse($validated['date'] . ' ' . $validated['time']);
+        $booking->start_time = Carbon::parse($validated['date'] . ' ' . $validated['time']);
         $booking->participants = $validated['participants'];
         $booking->notes = $validated['notes'];
         $booking->status = $validated['status'];

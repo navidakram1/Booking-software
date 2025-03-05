@@ -5,62 +5,31 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use Carbon\Carbon;
+use App\Models\Service;
 
-class AppointmentsController extends Controller
+class BookingsController extends Controller
 {
     public function index()
     {
-        // Get user's appointments
-        $appointments = [
+        // Get user's bookings
+        $bookings = [
             'upcoming' => Booking::where('user_id', auth()->id())
-                ->where('appointment_date', '>=', now())
-                ->orderBy('appointment_date')
+                ->where('start_time', '>=', now())
+                ->orderBy('start_time')
                 ->get(),
             'past' => Booking::where('user_id', auth()->id())
-                ->where('appointment_date', '<', now())
-                ->orderBy('appointment_date', 'desc')
+                ->where('start_time', '<', now())
+                ->orderBy('start_time', 'desc')
                 ->get()
         ];
 
-        return view('customer.appointments', compact('appointments'));
+        return view('customer.bookings', compact('bookings'));
     }
 
     public function create()
     {
         // Get available services
-        $services = [
-            [
-                'id' => 1,
-                'name' => 'Haircut & Styling',
-                'duration' => 60,
-                'price' => 50.00
-            ],
-            [
-                'id' => 2,
-                'name' => 'Hair Coloring',
-                'duration' => 120,
-                'price' => 100.00
-            ],
-            [
-                'id' => 3,
-                'name' => 'Manicure',
-                'duration' => 45,
-                'price' => 35.00
-            ],
-            [
-                'id' => 4,
-                'name' => 'Pedicure',
-                'duration' => 60,
-                'price' => 45.00
-            ],
-            [
-                'id' => 5,
-                'name' => 'Facial',
-                'duration' => 90,
-                'price' => 80.00
-            ]
-        ];
-
+        $services = Service::where('is_active', true)->get();
         return view('book.create', compact('services'));
     }
 
@@ -70,17 +39,13 @@ class AppointmentsController extends Controller
         $request->validate([
             'service_id' => 'required|integer',
             'staff_id' => 'required|integer',
-            'appointment_date' => 'required|date|after:today',
-            'appointment_time' => 'required|date_format:H:i',
+            'start_time' => 'required|date|after:today',
             'notes' => 'nullable|string|max:500'
         ]);
 
-        // Combine date and time
-        $appointmentDateTime = Carbon::parse($request->appointment_date . ' ' . $request->appointment_time);
-
         // Check if slot is available
         $conflictingBooking = Booking::where('staff_id', $request->staff_id)
-            ->where('appointment_date', $appointmentDateTime)
+            ->where('start_time', $request->start_time)
             ->exists();
 
         if ($conflictingBooking) {
@@ -92,73 +57,36 @@ class AppointmentsController extends Controller
         $booking->user_id = auth()->id();
         $booking->staff_id = $request->staff_id;
         $booking->service_id = $request->service_id;
-        $booking->appointment_date = $appointmentDateTime;
+        $booking->start_time = $request->start_time;
         $booking->notes = $request->notes;
         $booking->status = 'pending';
         $booking->save();
 
-        // Send confirmation email (implement later)
-        // Mail::to(auth()->user()->email)->send(new BookingConfirmation($booking));
-
-        return redirect()->route('appointments.index')
-            ->with('success', 'Appointment booked successfully! Check your email for confirmation.');
+        return redirect()->route('customer.bookings.index')
+            ->with('success', 'Booking created successfully! Check your email for confirmation.');
     }
 
     public function cancel(Request $request, $id)
     {
-        $appointment = Booking::findOrFail($id);
+        $booking = Booking::findOrFail($id);
         
-        // Check if appointment belongs to user
-        if ($appointment->user_id !== auth()->id()) {
+        // Check if booking belongs to user
+        if ($booking->user_id !== auth()->id()) {
             return back()->with('error', 'Unauthorized action.');
         }
 
-        // Check if appointment can be cancelled (e.g., not within 24 hours)
-        if ($appointment->appointment_date->diffInHours(now()) < 24) {
-            return back()->with('error', 'Appointments cannot be cancelled within 24 hours.');
+        // Check if booking can be cancelled (e.g., not within 24 hours)
+        if ($booking->start_time->diffInHours(now()) < 24) {
+            return back()->with('error', 'Bookings cannot be cancelled within 24 hours.');
         }
 
-        $appointment->status = 'cancelled';
-        $appointment->save();
+        $booking->status = 'cancelled';
+        $booking->save();
 
-        return back()->with('success', 'Appointment cancelled successfully.');
+        return back()->with('success', 'Booking cancelled successfully.');
     }
 
     public function reschedule(Request $request, $id)
-    {
-        $request->validate([
-            'new_date' => 'required|date|after:now',
-            'new_time' => 'required|date_format:H:i',
-        ]);
-
-        $appointment = Booking::findOrFail($id);
-
-        // Check if appointment belongs to user
-        if ($appointment->user_id !== auth()->id()) {
-            return back()->with('error', 'Unauthorized action.');
-        }
-
-        // Combine date and time
-        $newDateTime = Carbon::parse($request->new_date . ' ' . $request->new_time);
-
-        // Check if new slot is available
-        $conflictingBooking = Booking::where('staff_id', $appointment->staff_id)
-            ->where('appointment_date', $newDateTime)
-            ->where('id', '!=', $id)
-            ->exists();
-
-        if ($conflictingBooking) {
-            return back()->with('error', 'This time slot is not available. Please choose another time.');
-        }
-
-        $appointment->appointment_date = $newDateTime;
-        $appointment->status = 'rescheduled';
-        $appointment->save();
-
-        return back()->with('success', 'Appointment rescheduled successfully.');
-    }
-
-    public function getAvailableSlots(Request $request)
     {
         $request->validate([
             'date' => 'required|date|after:today',
@@ -174,8 +102,8 @@ class AppointmentsController extends Controller
         
         // Get booked slots
         $bookedSlots = Booking::where('staff_id', $request->staff_id)
-            ->whereDate('appointment_date', $date)
-            ->pluck('appointment_date')
+            ->whereDate('start_time', $date)
+            ->pluck('start_time')
             ->map(function($slot) {
                 return Carbon::parse($slot)->format('H:i');
             });

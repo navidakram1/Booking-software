@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Category;
-use App\Models\Appointment;
+use App\Models\Booking;
 use App\Models\Specialist;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -41,11 +41,11 @@ class Service extends Model
     }
 
     /**
-     * Get all appointments for this service.
+     * Get all bookings for this service.
      */
-    public function appointments(): HasMany
+    public function bookings(): HasMany
     {
-        return $this->hasMany(Appointment::class);
+        return $this->hasMany(Booking::class);
     }
 
     /**

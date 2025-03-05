@@ -1,0 +1,90 @@
+// GlamGo Project Rules
+
+// Documentation Files
+*.md {
+  // Core documentation files
+  README.md = "Project overview, goals, features, setup instructions"
+  WORK_TRACKING.md = "Tasks tracking, issues, iteration next steps"
+  FEATURES.md = "App features, functionality, implementation details"
+  API_DOCS.md = "API endpoints, request/response formats, examples"
+  TESTING.md = "Testing process, unit tests, integration tests, UAT"
+  DEPLOYMENT.md = "Deployment process, CI/CD pipeline, hosting"
+  POST_LAUNCH.md = "Post-launch activities, user feedback, updates"
+  ROADMAP.md = "Project roadmap, future features, milestones"
+  CHANGELOG.md = "Version changes documentation"
+  LINKS.md = "Important project links"
+}
+
+// Development Rules
+development {
+  // UI/UX Rules
+  header_footer = "Use consistent header/footer across all pages"
+  home_page = "Don't modify modern home page design"
+  
+  // Development Process
+  file_creation = "Check existing files before creating new ones"
+  authentication = "Skip authentication during development phase"
+  
+  // Database
+  database_management = "Update database_backup.sql when schema changes"
+}
+
+// File Structure
+file_structure {
+  // Documentation
+  docs_location = "root directory"
+  docs_format = "markdown"
+  
+  // Source Code
+  src_structure = "Laravel standard directory structure"
+  views_location = "resources/views"
+  controllers_location = "app/Http/Controllers"
+  models_location = "app/Models"
+}
+
+// Coding Standards
+coding_standards {
+  // PHP
+  php_standard = "PSR-12"
+  framework = "Laravel"
+  
+  // Frontend
+  css_framework = "Tailwind CSS"
+  js_framework = "Vue.js"
+  
+  // Database
+  db_naming = "snake_case"
+  migrations = "timestamp_description_format"
+}
+
+// Deployment Rules
+deployment {
+  // Environment
+  env_template = "Copy from .env.example"
+  env_location = "root directory"
+  
+  // Database
+  backup_location = "database_backup.sql"
+  backup_frequency = "On schema changes"
+}
+
+// Documentation Guidelines
+documentation {
+  // README
+  readme_sections = [
+    "Project Overview",
+    "Features",
+    "Setup Instructions",
+    "API Documentation",
+    "Development Guidelines"
+  ]
+  
+  // API Docs
+  api_doc_format = "RESTful endpoints with examples"
+  api_sections = [
+    "Authentication",
+    "Endpoints",
+    "Request/Response Format",
+    "Error Handling"
+  ]
+}

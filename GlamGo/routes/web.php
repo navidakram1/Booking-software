@@ -18,6 +18,7 @@ use App\Http\Controllers\HelpController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ContentController;
+use App\Http\Controllers\BookingsController;
 
 // Admin Controllers
 use App\Http\Controllers\Admin\AdminController;
@@ -39,6 +40,7 @@ use App\Http\Controllers\Admin\ServicePackageController;
 use App\Http\Controllers\Admin\RevenueController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
+use App\Http\Controllers\Admin\ContentPageController;
 
 // Authentication routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -76,7 +78,7 @@ Route::prefix('contact')->name('contact.')->group(function () {
 Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/dashboard', [CustomerController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile', [CustomerController::class, 'profile'])->name('profile');
-    Route::get('/appointments', [CustomerController::class, 'appointments'])->name('appointments');
+    Route::get('/bookings', [CustomerController::class, 'bookings'])->name('bookings');
     Route::get('/reviews', [CustomerController::class, 'reviews'])->name('reviews');
     Route::get('/favorites', [CustomerController::class, 'favorites'])->name('favorites');
 });
@@ -99,22 +101,22 @@ Route::prefix('api')->group(function () {
 });
 
 // Admin routes
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Bookings Management
     Route::prefix('bookings')->name('bookings.')->group(function () {
-        Route::get('/', [BookingController::class, 'index'])->name('index');
-        Route::get('/calendar', [BookingController::class, 'calendar'])->name('calendar');
-        Route::get('/create', [BookingController::class, 'create'])->name('create');
-        Route::post('/', [BookingController::class, 'store'])->name('store');
-        Route::get('/{booking}/edit', [BookingController::class, 'edit'])->name('edit');
-        Route::put('/{booking}', [BookingController::class, 'update'])->name('update');
-        Route::delete('/{booking}', [BookingController::class, 'destroy'])->name('destroy');
-        Route::put('/{booking}/status', [BookingController::class, 'updateStatus'])->name('status.update');
-        Route::put('/{booking}/reschedule', [BookingController::class, 'reschedule'])->name('reschedule');
-        Route::put('/{booking}/cancel', [BookingController::class, 'cancel'])->name('cancel');
+        Route::get('/', [AppointmentController::class, 'index'])->name('index');
+        Route::get('/calendar', [AppointmentController::class, 'calendar'])->name('calendar');
+        Route::get('/create', [AppointmentController::class, 'create'])->name('create');
+        Route::post('/', [AppointmentController::class, 'store'])->name('store');
+        Route::get('/{booking}/edit', [AppointmentController::class, 'edit'])->name('edit');
+        Route::put('/{booking}', [AppointmentController::class, 'update'])->name('update');
+        Route::delete('/{booking}', [AppointmentController::class, 'destroy'])->name('destroy');
+        Route::put('/{booking}/status', [AppointmentController::class, 'updateStatus'])->name('status.update');
+        Route::put('/{booking}/reschedule', [AppointmentController::class, 'reschedule'])->name('reschedule');
+        Route::put('/{booking}/cancel', [AppointmentController::class, 'cancel'])->name('cancel');
     });
 
     // Revenue Management
@@ -147,17 +149,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/{staff}', [StaffController::class, 'destroy'])->name('destroy');
         Route::get('/schedule', [StaffController::class, 'schedule'])->name('schedule');
         Route::post('/schedule', [StaffController::class, 'updateSchedule'])->name('schedule.update');
-    });
-
-    // Appointments
-    Route::prefix('appointments')->name('appointments.')->group(function () {
-        Route::get('/', [AppointmentController::class, 'index'])->name('index');
-        Route::get('/calendar', [AppointmentController::class, 'calendar'])->name('calendar');
-        Route::get('/create', [AppointmentController::class, 'create'])->name('create');
-        Route::post('/', [AppointmentController::class, 'store'])->name('store');
-        Route::get('/{appointment}/edit', [AppointmentController::class, 'edit'])->name('edit');
-        Route::put('/{appointment}', [AppointmentController::class, 'update'])->name('update');
-        Route::delete('/{appointment}', [AppointmentController::class, 'destroy'])->name('destroy');
     });
 
     // Services
@@ -257,16 +248,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Content Management
     Route::prefix('content')->name('content.')->group(function () {
         // Pages
-        Route::prefix('pages')->name('pages.')->group(function () {
-            Route::get('/', [AdminPageController::class, 'index'])->name('index');
-            Route::get('/create', [AdminPageController::class, 'create'])->name('create');
-            Route::post('/', [AdminPageController::class, 'store'])->name('store');
-            Route::get('/{page}/edit', [AdminPageController::class, 'edit'])->name('edit');
-            Route::put('/{page}', [AdminPageController::class, 'update'])->name('update');
-            Route::delete('/{page}', [AdminPageController::class, 'destroy'])->name('destroy');
-            Route::put('/{page}/status', [AdminPageController::class, 'toggleStatus'])->name('toggle-status');
-        });
-
+        Route::resource('pages', ContentPageController::class);
+        
         // Blog
         Route::prefix('blog')->name('blog.')->group(function () {
             Route::get('/', [ContentController::class, 'blog'])->name('index');
@@ -307,7 +290,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/staff', [ReportsController::class, 'staff'])->name('staff');
         Route::get('/services', [ReportsController::class, 'services'])->name('services');
         Route::get('/revenue', [ReportsController::class, 'revenue'])->name('revenue');
-        Route::get('/appointments', [ReportsController::class, 'appointments'])->name('appointments');
+        Route::get('/bookings', [ReportsController::class, 'bookings'])->name('bookings');
     });
 
     // Profile Management
@@ -337,3 +320,25 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Cache Management
     Route::get('/cache', [AdminController::class, 'cache'])->name('cache');
 });
+
+Route::get('/bookings', [BookingsController::class, 'index'])->name('bookings');
+Route::get('/bookings/create', [BookingsController::class, 'create'])->name('bookings.create');
+Route::post('/bookings', [BookingsController::class, 'store'])->name('bookings.store');
+Route::post('/bookings/{id}/cancel', [BookingsController::class, 'cancel'])->name('bookings.cancel');
+Route::post('/bookings/{id}/reschedule', [BookingsController::class, 'reschedule'])->name('bookings.reschedule');
+Route::get('/bookings/available-slots', [BookingsController::class, 'getAvailableSlots'])->name('bookings.slots');
+
+// API routes
+Route::prefix('api')->group(function () {
+    Route::get('/bookings/check-availability', [BookingController::class, 'checkAvailability']);
+    Route::post('/bookings/book', [BookingController::class, 'book']);
+    Route::post('bookings', [ApiBookingController::class, 'createBooking']);
+});
+
+Route::get('/admin/login', function () {
+    return view('admin.login');
+})->name('admin.login');
+
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');

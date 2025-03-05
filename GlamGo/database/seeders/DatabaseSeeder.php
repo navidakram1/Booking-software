@@ -10,6 +10,9 @@ use Database\Seeders\ServiceSeeder;
 use Database\Seeders\SalonSeeder;
 use Database\Seeders\DashboardDemoSeeder;
 use Illuminate\Database\Seeder;
+use Database\Seeders\ServiceCategorySeeder;
+use Database\Seeders\SpecialistSeeder;
+use Database\Seeders\TestimonialSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,7 +23,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             DashboardDemoSeeder::class,
-            ServicesTableSeeder::class,
         ]);
     }
 }
