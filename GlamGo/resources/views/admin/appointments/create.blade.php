@@ -1,69 +1,108 @@
 @extends('layouts.admin')
 
-@section('title', 'Create Appointment - GlamGo Admin')
-@section('page-title', 'Create Appointment')
+@section('title', 'New Booking - GlamGo Admin')
+@section('page-title', 'New Booking')
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+@endpush
 
 @section('content')
-<div class="max-w-4xl mx-auto">
-    <div class="bg-white rounded-2xl p-8 shadow-sm">
-        <form action="{{ route('admin.appointments.store') }}" method="POST" class="space-y-6">
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-semibold text-gray-900">New Booking</h1>
+            <p class="mt-1 text-sm text-gray-600">Create a new booking for a customer</p>
+        </div>
+        <div>
+            <a href="{{ route('admin.bookings.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to List
+            </a>
+        </div>
+    </div>
+
+    <!-- Booking Form -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <form action="{{ route('admin.bookings.store') }}" method="POST" class="p-6">
             @csrf
-            
-            <!-- Customer Selection -->
-            <div>
-                <label for="customer_id" class="block text-sm font-medium text-gray-700 mb-2">Customer</label>
-                <select name="customer_id" id="customer_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 rounded-md" required>
-                    <option value="">Select Customer</option>
-                    @foreach($customers as $customer)
-                        <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Service Selection -->
-            <div>
-                <label for="service_id" class="block text-sm font-medium text-gray-700 mb-2">Service</label>
-                <select name="service_id" id="service_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 rounded-md" required>
-                    <option value="">Select Service</option>
-                    @foreach($services as $service)
-                        <option value="{{ $service->id }}">{{ $service->name }} - {{ $service->formatted_price }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Staff Selection -->
-            <div>
-                <label for="staff_id" class="block text-sm font-medium text-gray-700 mb-2">Staff Member</label>
-                <select name="staff_id" id="staff_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 rounded-md" required>
-                    <option value="">Select Staff Member</option>
-                    @foreach($staff as $member)
-                        <option value="{{ $member->id }}">{{ $member->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Date & Time -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Customer Details -->
                 <div>
-                    <label for="appointment_date" class="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                    <input type="date" name="appointment_date" id="appointment_date" class="mt-1 block w-full border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 rounded-md" required>
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Customer Information</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="customer_name" class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" name="customer_details[name]" id="customer_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
+                        </div>
+                        <div>
+                            <label for="customer_email" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" name="customer_details[email]" id="customer_email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
+                        </div>
+                        <div>
+                            <label for="customer_phone" class="block text-sm font-medium text-gray-700">Phone</label>
+                            <input type="tel" name="customer_details[phone]" id="customer_phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Service Details -->
                 <div>
-                    <label for="appointment_time" class="block text-sm font-medium text-gray-700 mb-2">Time</label>
-                    <input type="time" name="appointment_time" id="appointment_time" class="mt-1 block w-full border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 rounded-md" required>
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Service Information</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="service_id" class="block text-sm font-medium text-gray-700">Service</label>
+                            <select name="service_id" id="service_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
+                                <option value="">Select a service</option>
+                                @foreach($services as $service)
+                                <option value="{{ $service->id }}" data-duration="{{ $service->duration }}" data-price="{{ $service->price }}">
+                                    {{ $service->name }} - {{ $service->duration }}min - ${{ number_format($service->price, 2) }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="specialist_id" class="block text-sm font-medium text-gray-700">Specialist</label>
+                            <select name="specialist_id" id="specialist_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
+                                <option value="">Select a specialist</option>
+                                @foreach($specialists as $specialist)
+                                <option value="{{ $specialist->id }}">{{ $specialist->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="start_time" class="block text-sm font-medium text-gray-700">Date & Time</label>
+                            <input type="text" name="start_time" id="start_time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Notes -->
-            <div>
-                <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                <textarea name="notes" id="notes" rows="3" class="mt-1 block w-full border-gray-300 focus:outline-none focus:ring-pink-500 focus:border-pink-500 rounded-md"></textarea>
+            <!-- Additional Details -->
+            <div class="mt-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
+                        <textarea name="notes" id="notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm"></textarea>
+                    </div>
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                        <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <!-- Submit Button -->
-            <div class="flex justify-end">
-                <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
-                    Create Appointment
+            <div class="mt-6">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+                    Create Booking
                 </button>
             </div>
         </form>
@@ -72,29 +111,24 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Set minimum date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('appointment_date').min = today;
+    // Initialize datetime picker
+    flatpickr("#start_time", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        minuteIncrement: 15
+    });
 
-    // Update staff options based on selected service
+    // Handle service selection to update end time
     const serviceSelect = document.getElementById('service_id');
-    const staffSelect = document.getElementById('staff_id');
-    const staffMembers = @json($staff);
-
     serviceSelect.addEventListener('change', function() {
-        const selectedServiceId = this.value;
-        staffSelect.innerHTML = '<option value="">Select Staff Member</option>';
-
-        if (selectedServiceId) {
-            staffMembers.forEach(member => {
-                if (member.services.some(service => service.id == selectedServiceId)) {
-                    const option = new Option(member.name, member.id);
-                    staffSelect.add(option);
-                }
-            });
-        }
+        const selectedOption = this.options[this.selectedIndex];
+        const duration = selectedOption.dataset.duration;
+        // You can use the duration to calculate and display the end time
+        // based on the selected start time
     });
 });
 </script>

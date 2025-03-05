@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Booking;
+use App\Models\Service;
 
 class StaffController extends Controller
 {
@@ -51,64 +53,41 @@ class StaffController extends Controller
 
     public function appointments()
     {
-        // Sample data for development
-        $appointments = [
-            'upcoming' => [
-                [
-                    'id' => 1,
-                    'date' => '2025-02-25',
-                    'time' => '10:00 AM',
-                    'duration' => '60',
-                    'service' => 'Hair Coloring',
-                    'client' => 'Emma Watson',
-                    'status' => 'confirmed',
-                    'price' => 120.00,
-                    'notes' => 'Full head color, previous color was done 6 weeks ago'
-                ],
-                [
-                    'id' => 2,
-                    'date' => '2025-02-25',
-                    'time' => '2:00 PM',
-                    'duration' => '90',
-                    'service' => 'Balayage + Cut',
-                    'client' => 'Sophie Turner',
-                    'status' => 'pending',
-                    'price' => 180.00,
-                    'notes' => 'First time client, wants ashy blonde'
-                ]
-            ],
+        $bookings = [
+            'upcoming' => Booking::with(['user', 'service'])
+                ->where('staff_id', auth()->id())
+                ->where('start_time', '>=', now())
+                ->orderBy('start_time')
+                ->get()
+                ->map(function($booking) {
+                    return [
+                        'id' => $booking->id,
+                        'date' => $booking->start_time->format('Y-m-d'),
+                        'time' => $booking->start_time->format('g:i A'),
+                        'duration' => $booking->service->duration,
+                        'service' => $booking->service->name,
+                        'client' => $booking->user->name,
+                        'status' => $booking->status,
+                        'price' => $booking->price,
+                        'notes' => $booking->notes
+                    ];
+                }),
             'available_times' => [
                 '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
                 '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'
             ],
-            'services' => [
-                [
-                    'id' => 1,
-                    'name' => 'Hair Cut',
-                    'duration' => 45,
-                    'price' => 65.00
-                ],
-                [
-                    'id' => 2,
-                    'name' => 'Hair Coloring',
-                    'duration' => 60,
-                    'price' => 120.00
-                ],
-                [
-                    'id' => 3,
-                    'name' => 'Balayage',
-                    'duration' => 90,
-                    'price' => 150.00
-                ],
-                [
-                    'id' => 4,
-                    'name' => 'Styling',
-                    'duration' => 30,
-                    'price' => 45.00
-                ]
-            ]
+            'services' => Service::where('is_active', true)
+                ->get()
+                ->map(function($service) {
+                    return [
+                        'id' => $service->id,
+                        'name' => $service->name,
+                        'duration' => $service->duration,
+                        'price' => $service->price
+                    ];
+                })
         ];
 
-        return view('staff.appointments', ['appointments' => $appointments]);
+        return view('staff.appointments', ['bookings' => $bookings]);
     }
 }

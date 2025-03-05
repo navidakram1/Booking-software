@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Appointment;
+use App\Models\Booking;
 use App\Models\Service;
 use App\Models\ServicePackage;
 use Illuminate\Http\Request;
@@ -24,18 +24,19 @@ class RevenueController extends Controller
         $thisYear = $this->getRevenueSummary('year');
 
         // Get top performing services
-        $topServices = Service::withCount('appointments')
-            ->withSum('appointments', 'total_amount')
-            ->orderByDesc('appointments_sum_total_amount')
+        $topServices = Service::withCount('bookings')
+            ->withSum('bookings', 'total_price')
+            ->orderByDesc('bookings_sum_total_price')
             ->limit(5)
             ->get();
 
         // Get revenue by service category
-        $revenueByCategory = Appointment::join('services', 'appointments.service_id', '=', 'services.id')
+        $revenueByCategory = DB::table('bookings')
+            ->join('services', 'bookings.service_id', '=', 'services.id')
             ->join('categories', 'services.category_id', '=', 'categories.id')
             ->select(
                 DB::raw('COALESCE(categories.name, "Uncategorized") as category'),
-                DB::raw('SUM(appointments.total_amount) as total_revenue')
+                DB::raw('SUM(bookings.total_price) as total_revenue')
             )
             ->groupBy('categories.name')
             ->orderByDesc('total_revenue')
@@ -86,7 +87,7 @@ class RevenueController extends Controller
 
     private function getRevenueSummary($period)
     {
-        $query = Appointment::query();
+        $query = DB::table('bookings');
 
         switch ($period) {
             case 'today':
@@ -105,19 +106,20 @@ class RevenueController extends Controller
         }
 
         return [
-            'total' => $query->sum('total_amount'),
+            'total' => $query->sum('total_price'),
             'count' => $query->count(),
-            'average' => $query->avg('total_amount')
+            'average' => $query->avg('total_price')
         ];
     }
 
     private function getMonthlyRevenue()
     {
-        return Appointment::select(
-            DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
-            DB::raw('SUM(total_amount) as total_revenue'),
-            DB::raw('COUNT(*) as appointment_count')
-        )
+        return DB::table('bookings')
+            ->select(
+                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
+                DB::raw('SUM(total_price) as total_revenue'),
+                DB::raw('COUNT(*) as booking_count')
+            )
             ->groupBy('month')
             ->orderBy('month', 'desc')
             ->limit(12)
@@ -126,13 +128,15 @@ class RevenueController extends Controller
 
     private function calculateRevenueGrowth()
     {
-        $currentMonth = Appointment::whereMonth('created_at', Carbon::now()->month)
+        $currentMonth = DB::table('bookings')
+            ->whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
-            ->sum('total_amount');
+            ->sum('total_price');
 
-        $lastMonth = Appointment::whereMonth('created_at', Carbon::now()->subMonth()->month)
+        $lastMonth = DB::table('bookings')
+            ->whereMonth('created_at', Carbon::now()->subMonth()->month)
             ->whereYear('created_at', Carbon::now()->subMonth()->year)
-            ->sum('total_amount');
+            ->sum('total_price');
 
         if ($lastMonth > 0) {
             return (($currentMonth - $lastMonth) / $lastMonth) * 100;

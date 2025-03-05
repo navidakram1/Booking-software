@@ -31,10 +31,8 @@ Route::get('/status', [StatusController::class, 'index']);
 
 // Booking Routes
 Route::post('/bookings', [BookingController::class, 'store']);
-Route::get('/bookings/{booking}', [BookingController::class, 'show'])
-    ->middleware('auth:sanctum');
-Route::get('/bookings', [BookingController::class, 'index'])
-    ->middleware('auth:sanctum');
+Route::get('/bookings/{booking}', [BookingController::class, 'show']);
+Route::get('/bookings', [BookingController::class, 'index']);
 
 // Service Routes
 Route::get('/services', [ServiceController::class, 'index']);
@@ -75,3 +73,6 @@ Route::get('/service-addons', [ServiceAddonController::class, 'index']);
 // Booking Management
 Route::post('/lock-slot', [ApiBookingController::class, 'lockSlot']);
 Route::delete('/release-lock/{lockId}', [ApiBookingController::class, 'releaseLock']);
+Route::get('/bookings/check-availability', [BookingController::class, 'checkAvailability']);
+Route::post('/bookings/book', [BookingController::class, 'book']);
+Route::post('bookings', [ApiBookingController::class, 'createBooking']);

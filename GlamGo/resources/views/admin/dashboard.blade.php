@@ -123,7 +123,7 @@
     <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm" data-aos="fade-up">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-lg font-semibold text-gray-800">Recent Bookings</h2>
-            <a href="{{ route('admin.appointments.index') }}" class="text-sm text-pink-500 hover:text-pink-600">View All</a>
+            <a href="{{ route('admin.bookings.index') }}" class="text-sm text-pink-500 hover:text-pink-600">View All</a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
@@ -142,13 +142,13 @@
                         <td class="py-4">
                             <div class="flex items-center space-x-3">
                                 <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-semibold">
-                                    {{ strtoupper(substr($booking->customer->name, 0, 1)) }}
+                                    {{ strtoupper(substr(json_decode($booking->customer_details, true)['name'] ?? '', 0, 1)) }}
                                 </div>
-                                <span class="font-medium text-gray-800">{{ $booking->customer->name }}</span>
+                                <span class="font-medium text-gray-800">{{ json_decode($booking->customer_details, true)['name'] ?? 'N/A' }}</span>
                             </div>
                         </td>
-                        <td class="py-4 text-gray-600">{{ $booking->service->name }}</td>
-                        <td class="py-4 text-gray-600">{{ $booking->scheduled_at->format('M d, Y g:i A') }}</td>
+                        <td class="py-4 text-gray-600">{{ $booking->service_name }}</td>
+                        <td class="py-4 text-gray-600">{{ \Carbon\Carbon::parse($booking->formatted_start_time)->format('M d, Y g:i A') }}</td>
                         <td class="py-4">
                             <span class="px-3 py-1 rounded-full text-xs font-medium
                                 @if($booking->status === 'completed') bg-green-100 text-green-600
@@ -158,7 +158,7 @@
                                 {{ ucfirst($booking->status) }}
                             </span>
                         </td>
-                        <td class="py-4 font-medium text-gray-800">${{ number_format($booking->total_amount, 2) }}</td>
+                        <td class="py-4 font-medium text-gray-800">${{ number_format($booking->total_price, 2) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -176,7 +176,7 @@
             @forelse($todaySchedule as $appointment)
             <div class="p-4 rounded-xl @if($appointment->status === 'completed') bg-green-50 @elseif($appointment->status === 'cancelled') bg-red-50 @else bg-gray-50 @endif">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-800">{{ $appointment->scheduled_at->format('g:i A') }}</span>
+                    <span class="text-sm font-medium text-gray-800">{{ \Carbon\Carbon::parse($appointment->formatted_start_time)->format('g:i A') }}</span>
                     <span class="px-3 py-1 rounded-full text-xs font-medium
                         @if($appointment->status === 'completed') bg-green-100 text-green-600
                         @elseif($appointment->status === 'cancelled') bg-red-100 text-red-600
@@ -185,10 +185,15 @@
                         {{ ucfirst($appointment->status) }}
                     </span>
                 </div>
-                <h3 class="font-medium text-gray-800">{{ $appointment->service->name }}</h3>
+                <h3 class="font-medium text-gray-800">{{ $appointment->service_name }}</h3>
                 <div class="flex items-center mt-2 text-sm text-gray-500">
                     <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="hover" colors="primary:#9ca3af" style="width:16px;height:16px"></lord-icon>
-                    <span class="ml-1">{{ $appointment->customer->name }}</span>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                            {{ strtoupper(substr(json_decode($appointment->customer_details, true)['name'] ?? '', 0, 1)) }}
+                        </div>
+                        <span class="ml-1">{{ json_decode($appointment->customer_details, true)['name'] ?? 'N/A' }}</span>
+                    </div>
                 </div>
             </div>
             @empty

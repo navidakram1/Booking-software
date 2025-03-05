@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Appointment;
-use App\Models\Customer;
 use App\Models\Service;
-use App\Models\Specialist;
-use App\Models\ServiceReview;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,71 +13,118 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Get current month's data
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
-        
-        // Get previous month's data for comparison
-        $startOfLastMonth = Carbon::now()->subMonth()->startOfMonth();
-        $endOfLastMonth = Carbon::now()->subMonth()->endOfMonth();
+        // Get recent bookings
+        $recentBookings = DB::table('bookings')
+            ->join('services', 'bookings.service_id', '=', 'services.id')
+            ->join('specialists', 'bookings.specialist_id', '=', 'specialists.id')
+            ->select(
+                'bookings.*',
+                'services.name as service_name',
+                'specialists.name as specialist_name',
+                DB::raw('DATE_FORMAT(bookings.start_time, "%Y-%m-%d %H:%i:%s") as formatted_start_time')
+            )
+            ->orderBy('bookings.created_at', 'desc')
+            ->limit(5)
+            ->get();
 
-        // Calculate total revenue
-        $currentRevenue = Appointment::whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->sum('total_amount') ?? 0;
-        $lastRevenue = Appointment::whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-            ->sum('total_amount') ?? 0;
-        $revenueGrowth = $lastRevenue > 0 ? (($currentRevenue - $lastRevenue) / $lastRevenue) * 100 : 0;
+        // Calculate current revenue
+        $currentRevenue = DB::table('bookings')
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->where('status', 'completed')
+            ->sum('total_price');
 
-        // Calculate total bookings
-        $currentBookings = Appointment::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
-        $lastBookings = Appointment::whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])->count();
-        $bookingsGrowth = $lastBookings > 0 ? (($currentBookings - $lastBookings) / $lastBookings) * 100 : 0;
+        // Calculate revenue growth
+        $lastMonthRevenue = DB::table('bookings')
+            ->whereMonth('created_at', Carbon::now()->subMonth()->month)
+            ->whereYear('created_at', Carbon::now()->subMonth()->year)
+            ->where('status', 'completed')
+            ->sum('total_price');
 
-        // Calculate new customers
-        $currentCustomers = Customer::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
-        $lastCustomers = Customer::whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])->count();
-        $customersGrowth = $lastCustomers > 0 ? (($currentCustomers - $lastCustomers) / $lastCustomers) * 100 : 0;
-        $newCustomers = $currentCustomers;
+        $revenueGrowth = $lastMonthRevenue > 0 
+            ? (($currentRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100 
+            : 100;
 
-        // Get active specialists count
-        $activeStaff = Specialist::where('is_active', true)->count();
-        $newStaffThisMonth = Specialist::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count();
+        // Calculate current bookings
+        $currentBookings = DB::table('bookings')
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->count();
+
+        // Calculate bookings growth
+        $lastMonthBookings = DB::table('bookings')
+            ->whereMonth('created_at', Carbon::now()->subMonth()->month)
+            ->whereYear('created_at', Carbon::now()->subMonth()->year)
+            ->count();
+
+        $bookingsGrowth = $lastMonthBookings > 0 
+            ? (($currentBookings - $lastMonthBookings) / $lastMonthBookings) * 100 
+            : 100;
+
+        // Calculate new customers (based on unique customer_details)
+        $newCustomers = DB::table('bookings')
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->distinct(DB::raw('JSON_UNQUOTE(JSON_EXTRACT(customer_details, "$.email"))'))
+            ->count();
+
+        // Calculate customers growth
+        $lastMonthCustomers = DB::table('bookings')
+            ->whereMonth('created_at', Carbon::now()->subMonth()->month)
+            ->whereYear('created_at', Carbon::now()->subMonth()->year)
+            ->distinct(DB::raw('JSON_UNQUOTE(JSON_EXTRACT(customer_details, "$.email"))'))
+            ->count();
+
+        $customersGrowth = $lastMonthCustomers > 0 
+            ? (($newCustomers - $lastMonthCustomers) / $lastMonthCustomers) * 100 
+            : 100;
+
+        // Get active staff count
+        $activeStaff = User::where('role', 'specialist')
+            ->where('is_active', true)
+            ->count();
+
+        // Get new staff this month
+        $newStaffThisMonth = User::where('role', 'specialist')
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->count();
 
         // Calculate average rating
-        $averageRating = ServiceReview::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+        $averageRating = DB::table('bookings')
+            ->whereNotNull('rating')
             ->avg('rating') ?? 0;
 
         // Get popular services
-        $popularServices = Service::withCount(['appointments' => function($query) use ($startOfMonth, $endOfMonth) {
-            $query->whereBetween('created_at', [$startOfMonth, $endOfMonth]);
-        }])
-        ->orderBy('appointments_count', 'desc')
-        ->take(5)
-        ->get();
-
-        // Get recent bookings
-        $recentBookings = Appointment::with(['customer', 'service', 'specialist'])
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get();
-
-        // Get revenue by service category
-        $revenueByCategory = DB::table('appointments')
-            ->join('services', 'appointments.service_id', '=', 'services.id')
-            ->join('categories', 'services.category_id', '=', 'categories.id')
-            ->whereBetween('appointments.created_at', [$startOfMonth, $endOfMonth])
-            ->select('categories.name', DB::raw('SUM(appointments.total_amount) as total_revenue'))
-            ->groupBy('categories.id', 'categories.name')
-            ->orderBy('total_revenue', 'desc')
+        $popularServices = Service::withCount('bookings')
+            ->orderByDesc('bookings_count')
+            ->limit(5)
             ->get();
 
         // Get today's schedule
-        $todaySchedule = Appointment::whereDate('appointment_date', Carbon::today())
-            ->with(['customer', 'specialist', 'services'])
+        $todaySchedule = DB::table('bookings')
+            ->whereDate('start_time', Carbon::today())
+            ->join('services', 'bookings.service_id', '=', 'services.id')
+            ->join('specialists', 'bookings.specialist_id', '=', 'specialists.id')
+            ->select(
+                'bookings.*',
+                'services.name as service_name',
+                'specialists.name as specialist_name',
+                DB::raw('DATE_FORMAT(bookings.start_time, "%Y-%m-%d %H:%i:%s") as formatted_start_time')
+            )
             ->get();
 
-        // Set monthly revenue
-        $monthlyRevenue = $currentRevenue; // Current month's revenue
+        // Set monthly revenue data for chart
+        $monthlyRevenue = DB::table('bookings')
+            ->select(
+                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as date'),
+                DB::raw('SUM(total_price) as total')
+            )
+            ->where('status', 'completed')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->limit(12)
+            ->get();
 
         return view('admin.dashboard', compact(
             'currentRevenue',

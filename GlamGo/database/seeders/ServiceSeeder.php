@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Service;
 use App\Models\Category;
+use App\Models\Service;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -11,80 +11,93 @@ class ServiceSeeder extends Seeder
 {
     public function run(): void
     {
-        $hairCategoryId = Category::where('name', 'Hair Care')->first()->id;
-        $skinCategoryId = Category::where('name', 'Skin Care')->first()->id;
-        $nailCategoryId = Category::where('name', 'Nail Care')->first()->id;
-        $massageCategoryId = Category::where('name', 'Massage')->first()->id;
-        $makeupCategoryId = Category::where('name', 'Makeup')->first()->id;
+        $hairCategory = Category::where('name', 'Hair Services')->first();
+        $nailCategory = Category::where('name', 'Nail Services')->first();
+        $facialCategory = Category::where('name', 'Facial Treatments')->first();
+        $massageCategory = Category::where('name', 'Massage')->first();
 
         $services = [
+            // Hair Services
             [
+                'category_id' => $hairCategory->id,
                 'name' => 'Haircut & Styling',
-                'description' => 'Professional haircut and styling services for all hair types',
+                'description' => 'Professional haircut and styling service customized to your preferences',
                 'duration' => 60,
                 'price' => 50.00,
-                'image' => 'images/services/haircut.jpg',
-                'category_id' => $hairCategoryId,
-                'is_active' => true
+                'is_active' => true,
             ],
             [
+                'category_id' => $hairCategory->id,
                 'name' => 'Hair Coloring',
-                'description' => 'Full hair coloring services including highlights and balayage',
+                'description' => 'Full hair coloring service with premium products',
                 'duration' => 120,
-                'price' => 120.00,
-                'image' => 'images/services/coloring.jpg',
-                'category_id' => $hairCategoryId,
-                'is_active' => true
+                'price' => 100.00,
+                'is_active' => true,
             ],
+            // Nail Services
             [
-                'name' => 'Facial Treatment',
-                'description' => 'Rejuvenating facial treatments for all skin types',
+                'category_id' => $nailCategory->id,
+                'name' => 'Classic Manicure',
+                'description' => 'Basic nail care and polish application',
                 'duration' => 45,
-                'price' => 75.00,
-                'image' => 'images/services/facial.jpg',
-                'category_id' => $skinCategoryId,
-                'is_active' => true
+                'price' => 35.00,
+                'is_active' => true,
             ],
             [
-                'name' => 'Manicure & Pedicure',
-                'description' => 'Luxurious nail care services for hands and feet',
-                'duration' => 90,
-                'price' => 65.00,
-                'image' => 'images/services/nails.jpg',
-                'category_id' => $nailCategoryId,
-                'is_active' => true
-            ],
-            [
-                'name' => 'Deep Tissue Massage',
-                'description' => 'Therapeutic deep tissue massage for muscle relief',
+                'category_id' => $nailCategory->id,
+                'name' => 'Deluxe Pedicure',
+                'description' => 'Luxurious foot care treatment with massage',
                 'duration' => 60,
-                'price' => 85.00,
-                'image' => 'images/services/massage.jpg',
-                'category_id' => $massageCategoryId,
-                'is_active' => true
+                'price' => 45.00,
+                'is_active' => true,
+            ],
+            // Facial Treatments
+            [
+                'category_id' => $facialCategory->id,
+                'name' => 'Deep Cleansing Facial',
+                'description' => 'Thorough facial cleansing and treatment',
+                'duration' => 60,
+                'price' => 75.00,
+                'is_active' => true,
             ],
             [
-                'name' => 'Bridal Makeup',
-                'description' => 'Complete bridal makeup package for your special day',
-                'duration' => 120,
-                'price' => 150.00,
-                'image' => 'images/services/makeup.jpg',
-                'category_id' => $makeupCategoryId,
-                'is_active' => true
-            ]
+                'category_id' => $facialCategory->id,
+                'name' => 'Anti-Aging Facial',
+                'description' => 'Premium facial treatment targeting signs of aging',
+                'duration' => 75,
+                'price' => 90.00,
+                'is_active' => true,
+            ],
+            // Massage Services
+            [
+                'category_id' => $massageCategory->id,
+                'name' => 'Swedish Massage',
+                'description' => 'Relaxing full body massage',
+                'duration' => 60,
+                'price' => 80.00,
+                'is_active' => true,
+            ],
+            [
+                'category_id' => $massageCategory->id,
+                'name' => 'Deep Tissue Massage',
+                'description' => 'Therapeutic massage targeting deep muscle tension',
+                'duration' => 60,
+                'price' => 90.00,
+                'is_active' => true,
+            ],
         ];
 
         foreach ($services as $service) {
             Service::create([
+                'category_id' => $service['category_id'],
                 'name' => $service['name'],
                 'slug' => Str::slug($service['name']),
                 'description' => $service['description'],
                 'duration' => $service['duration'],
                 'price' => $service['price'],
-                'image' => $service['image'],
-                'category_id' => $service['category_id'],
-                'is_active' => $service['is_active']
+                'is_active' => $service['is_active'],
             ]);
         }
     }
 }
+
