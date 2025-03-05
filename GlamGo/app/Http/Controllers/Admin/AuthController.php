@@ -55,13 +55,24 @@ class AuthController extends Controller
 
         RateLimiter::hit($key, 60);
 
+        // Log the attempt
+        Log::info('Admin login attempt', [
+            'email' => $credentials['email'],
+            'ip' => $request->ip()
+        ]);
+
         // Attempt login
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
+            Log::info('User found', ['user' => $user->toArray()]);
 
             // Verify admin role
             if (!$user->isAdmin()) {
                 Auth::logout();
+                Log::warning('Non-admin login attempt', [
+                    'email' => $credentials['email'],
+                    'is_admin' => $user->is_admin
+                ]);
                 $this->logAdminActivity(
                     'login_attempt',
                     'Non-admin login attempt',
@@ -76,7 +87,7 @@ class AuthController extends Controller
             // Set admin session with timeout
             Session::put('admin_session', true);
             Session::put('admin_last_activity', now());
-            Session::put('admin_session_timeout', config('session.admin_timeout', 30)); // 30 minutes default
+            Session::put('admin_session_timeout', config('session.admin_timeout', 120));
 
             $this->logAdminActivity(
                 'login',
@@ -88,6 +99,11 @@ class AuthController extends Controller
 
             return redirect()->intended(route('admin.dashboard'));
         }
+
+        Log::warning('Invalid credentials', [
+            'email' => $credentials['email'],
+            'ip' => $request->ip()
+        ]);
 
         $this->logAdminActivity(
             'login_attempt',

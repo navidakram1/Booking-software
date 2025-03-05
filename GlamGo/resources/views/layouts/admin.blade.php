@@ -88,5 +88,33 @@
                 @yield('content')
         </main>
     </div>
+
+    @push('scripts')
+    <script>
+        // Check session timeout every minute
+        setInterval(function() {
+            fetch('{{ route("admin.check-session") }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.timeout) {
+                        window.location.href = '{{ route("admin.login") }}';
+                    }
+                })
+                .catch(error => {
+                    console.error('Session check failed:', error);
+                });
+        }, 60000);
+
+        // Update last activity timestamp on user interaction
+        document.addEventListener('mousemove', updateLastActivity);
+        document.addEventListener('keypress', updateLastActivity);
+        document.addEventListener('click', updateLastActivity);
+
+        function updateLastActivity() {
+            fetch('{{ route("admin.check-session") }}')
+                .catch(error => console.error('Activity update failed:', error));
+        }
+    </script>
+    @endpush
 </body>
 </html>

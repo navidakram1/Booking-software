@@ -214,4 +214,15 @@ return [
 
     'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Session Timeout
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify the number of minutes that the admin session
+    | should remain active before timing out. The default is 120 minutes (2 hours).
+    |
+    */
+    'admin_timeout' => env('ADMIN_SESSION_TIMEOUT', 120),
+
 ];
