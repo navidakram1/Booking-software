@@ -1,297 +1,186 @@
 @extends('layouts.admin')
 
-@section('title', 'Dashboard - GlamGo Admin')
-
-@push('styles')
-<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-@endpush
+@section('title', 'Dashboard')
 
 @section('content')
-<!-- Stats Overview -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <!-- Total Revenue -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300" data-aos="fade-up" data-aos-delay="0">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-gray-500 text-sm">Total Revenue</h3>
-            <lord-icon src="https://cdn.lordicon.com/qhviklyi.json" trigger="loop" colors="primary:#121331,secondary:#ec4899" style="width:28px;height:28px"></lord-icon>
-        </div>
-        <p class="text-2xl font-bold text-gray-800">${{ number_format($currentRevenue, 2) }}</p>
-        <p class="text-sm {{ $revenueGrowth >= 0 ? 'text-green-500' : 'text-red-500' }} mt-2 flex items-center">
-            <span class="mr-1">{{ $revenueGrowth >= 0 ? '↑' : '↓' }}</span>
-            {{ abs(number_format($revenueGrowth, 1)) }}% from last month
-        </p>
-    </div>
-
-    <!-- Total Bookings -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300" data-aos="fade-up" data-aos-delay="100">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-gray-500 text-sm">Total Bookings</h3>
-            <lord-icon src="https://cdn.lordicon.com/uukerzzv.json" trigger="loop" colors="primary:#121331,secondary:#ec4899" style="width:28px;height:28px"></lord-icon>
-        </div>
-        <p class="text-2xl font-bold text-gray-800">{{ $currentBookings }}</p>
-        <p class="text-sm {{ $bookingsGrowth >= 0 ? 'text-green-500' : 'text-red-500' }} mt-2 flex items-center">
-            <span class="mr-1">{{ $bookingsGrowth >= 0 ? '↑' : '↓' }}</span>
-            {{ abs(number_format($bookingsGrowth, 1)) }}% from last month
-        </p>
-    </div>
-
-    <!-- New Customers -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300" data-aos="fade-up" data-aos-delay="200">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-gray-500 text-sm">New Customers</h3>
-            <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="loop" colors="primary:#121331,secondary:#ec4899" style="width:28px;height:28px"></lord-icon>
-        </div>
-        <p class="text-2xl font-bold text-gray-800">{{ $newCustomers }}</p>
-        <p class="text-sm {{ $customersGrowth >= 0 ? 'text-green-500' : 'text-red-500' }} mt-2 flex items-center">
-            <span class="mr-1">{{ $customersGrowth >= 0 ? '↑' : '↓' }}</span>
-            {{ abs(number_format($customersGrowth, 1)) }}% from last month
-        </p>
-    </div>
-
-    <!-- Staff Performance -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300" data-aos="fade-up" data-aos-delay="300">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-gray-500 text-sm">Staff Performance</h3>
-            <lord-icon src="https://cdn.lordicon.com/nocovwne.json" trigger="loop" colors="primary:#121331,secondary:#ec4899" style="width:28px;height:28px"></lord-icon>
-        </div>
-        <p class="text-2xl font-bold text-gray-800">{{ number_format($averageRating, 1) }}</p>
-        <div class="flex items-center mt-2">
-            @for($i = 1; $i <= 5; $i++)
-                @if($i <= round($averageRating))
-                    <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                    </svg>
-                @else
-                    <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                    </svg>
-                @endif
-            @endfor
-        </div>
-    </div>
-</div>
-
-<!-- Charts and Tables -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Revenue Chart -->
-    <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm" data-aos="fade-up">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-semibold text-gray-800">Revenue Overview</h2>
-            <div class="relative" x-data="{ open: false }">
-                <button @click="open = !open" class="text-gray-500 hover:text-gray-700">
-                    <lord-icon src="https://cdn.lordicon.com/gwuqcxrh.json" trigger="hover" colors="primary:#121331" style="width:24px;height:24px"></lord-icon>
-                </button>
-                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50">This Week</a>
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50">This Month</a>
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50">This Year</a>
-                </div>
-            </div>
-        </div>
-        <canvas id="revenueChart" class="w-full h-64"></canvas>
-    </div>
-
-    <!-- Popular Services -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm" data-aos="fade-up">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-semibold text-gray-800">Popular Services</h2>
-            <a href="{{ route('admin.services.index') }}" class="text-sm text-pink-500 hover:text-pink-600">View All</a>
-        </div>
-        <div class="space-y-4">
-            @foreach($popularServices as $service)
-            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-pink-50 transition-all duration-300">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                        {{ strtoupper(substr($service->name, 0, 2)) }}
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-gray-800">{{ $service->name }}</h3>
-                        <p class="text-sm text-gray-500">{{ $service->bookings_count }} bookings</p>
-                    </div>
-                </div>
-                <span class="text-lg font-semibold text-gray-800">${{ number_format($service->price, 2) }}</span>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</div>
-
-<!-- Recent Activity and Schedule -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-    <!-- Recent Bookings -->
-    <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm" data-aos="fade-up">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-semibold text-gray-800">Recent Bookings</h2>
-            <a href="{{ route('admin.bookings.index') }}" class="text-sm text-pink-500 hover:text-pink-600">View All</a>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead>
-                    <tr class="text-left text-sm text-gray-500">
-                        <th class="pb-4">Customer</th>
-                        <th class="pb-4">Service</th>
-                        <th class="pb-4">Date & Time</th>
-                        <th class="pb-4">Status</th>
-                        <th class="pb-4">Amount</th>
-                    </tr>
-                </thead>
-                <tbody class="text-sm">
-                    @foreach($recentBookings as $booking)
-                    <tr class="border-t border-gray-100">
-                        <td class="py-4">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-semibold">
-                                    {{ strtoupper(substr(json_decode($booking->customer_details, true)['name'] ?? '', 0, 1)) }}
-                                </div>
-                                <span class="font-medium text-gray-800">{{ json_decode($booking->customer_details, true)['name'] ?? 'N/A' }}</span>
-                            </div>
-                        </td>
-                        <td class="py-4 text-gray-600">{{ $booking->service_name }}</td>
-                        <td class="py-4 text-gray-600">{{ \Carbon\Carbon::parse($booking->formatted_start_time)->format('M d, Y g:i A') }}</td>
-                        <td class="py-4">
-                            <span class="px-3 py-1 rounded-full text-xs font-medium
-                                @if($booking->status === 'completed') bg-green-100 text-green-600
-                                @elseif($booking->status === 'cancelled') bg-red-100 text-red-600
-                                @else bg-yellow-100 text-yellow-600
-                                @endif">
-                                {{ ucfirst($booking->status) }}
-                            </span>
-                        </td>
-                        <td class="py-4 font-medium text-gray-800">${{ number_format($booking->total_price, 2) }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+        <div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="fas fa-download fa-sm"></i> Export Report
+            </button>
         </div>
     </div>
 
-    <!-- Today's Schedule -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm" data-aos="fade-up">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-semibold text-gray-800">Today's Schedule</h2>
-            <span class="text-sm text-gray-500">{{ now()->format('l, F j, Y') }}</span>
-        </div>
-        <div class="space-y-4">
-            @forelse($todaySchedule as $appointment)
-            <div class="p-4 rounded-xl @if($appointment->status === 'completed') bg-green-50 @elseif($appointment->status === 'cancelled') bg-red-50 @else bg-gray-50 @endif">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-800">{{ \Carbon\Carbon::parse($appointment->formatted_start_time)->format('g:i A') }}</span>
-                    <span class="px-3 py-1 rounded-full text-xs font-medium
-                        @if($appointment->status === 'completed') bg-green-100 text-green-600
-                        @elseif($appointment->status === 'cancelled') bg-red-100 text-red-600
-                        @else bg-yellow-100 text-yellow-600
-                        @endif">
-                        {{ ucfirst($appointment->status) }}
-                    </span>
-                </div>
-                <h3 class="font-medium text-gray-800">{{ $appointment->service_name }}</h3>
-                <div class="flex items-center mt-2 text-sm text-gray-500">
-                    <lord-icon src="https://cdn.lordicon.com/dxjqoygy.json" trigger="hover" colors="primary:#9ca3af" style="width:16px;height:16px"></lord-icon>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                            {{ strtoupper(substr(json_decode($appointment->customer_details, true)['name'] ?? '', 0, 1)) }}
+    <!-- Statistics Cards -->
+    <div class="row">
+        <!-- Total Bookings -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Bookings</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalBookings ?? 0 }}</div>
                         </div>
-                        <span class="ml-1">{{ json_decode($appointment->customer_details, true)['name'] ?? 'N/A' }}</span>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            @empty
-            <div class="text-center py-8">
-                <lord-icon src="https://cdn.lordicon.com/kxoxiwrf.json" trigger="loop" colors="primary:#9ca3af" style="width:48px;height:48px"></lord-icon>
-                <p class="mt-2 text-gray-500">No appointments scheduled for today</p>
+        </div>
+
+        <!-- Revenue -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Revenue (Monthly)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">£{{ number_format($monthlyRevenue ?? 0, 2) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            @endforelse
+        </div>
+
+        <!-- Active Services -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Active Services</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $activeServices ?? 0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Customers -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Customers</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalCustomers ?? 0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bookings Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Recent Bookings</h6>
+            <a href="{{ route('admin.bookings.index') }}" class="btn btn-sm btn-primary">
+                View All
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($recentBookings ?? [] as $booking)
+                        <tr>
+                            <td>{{ $booking->customer->name ?? 'N/A' }}</td>
+                            <td>{{ $booking->service->name ?? 'N/A' }}</td>
+                            <td>{{ $booking->appointment_date ?? 'N/A' }}</td>
+                            <td>
+                                <span class="badge bg-{{ $booking->status_color ?? 'secondary' }}">
+                                    {{ $booking->status ?? 'N/A' }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ route('admin.bookings.show', $booking->id) }}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center">No recent bookings found.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
-@push('scripts')
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script>
-    // Initialize AOS
-    AOS.init({
-        duration: 800,
-        easing: 'ease-out-cubic',
-        once: true
-    });
-
-    // Revenue Chart
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    const revenueData = @json($monthlyRevenue);
-    
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: revenueData.map(item => item.date),
-            datasets: [{
-                label: 'Revenue',
-                data: revenueData.map(item => item.total),
-                borderColor: '#EC4899',
-                backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    titleColor: '#fff',
-                    titleFont: {
-                        size: 14,
-                        weight: 'bold',
-                        family: "'Poppins', sans-serif"
-                    },
-                    bodyFont: {
-                        size: 13,
-                        family: "'Poppins', sans-serif"
-                    },
-                    callbacks: {
-                        label: function(context) {
-                            return '$ ' + context.raw.toLocaleString('en-US', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            });
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        font: {
-                            family: "'Poppins', sans-serif"
-                        }
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    },
-                    ticks: {
-                        font: {
-                            family: "'Poppins', sans-serif"
-                        },
-                        callback: function(value) {
-                            return '$ ' + value.toLocaleString('en-US');
-                        }
-                    }
-                }
-            }
-        }
-    });
-</script>
-@endpush
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ route('admin.analytics.revenue.export') }}" method="GET">
+                    <div class="mb-3">
+                        <label class="form-label">Date Range</label>
+                        <select name="range" class="form-select">
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Export</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('styles')
+<style>
+.card-body {
+    padding: 1.25rem;
+}
+.border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+</style>
+@endpush

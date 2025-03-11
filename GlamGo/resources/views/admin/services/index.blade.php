@@ -1,126 +1,106 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-semibold text-gray-800">Services Management</h2>
-        <div class="flex gap-3">
-            <a href="{{ route('admin.services.create') }}" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">
-                Add New Service
-            </a>
-            <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg" onclick="exportServices()">
-                Export List
-            </button>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow-sm">
-        <div class="p-6">
-            <!-- Filters -->
-            <div class="mb-6">
-                <div class="flex gap-4">
-                    <input type="text" placeholder="Search services..." class="border rounded-lg px-4 py-2 w-64">
-                    <select class="border rounded-lg px-4 py-2">
-                        <option>All Categories</option>
-                        <option>Hair Services</option>
-                        <option>Nail Services</option>
-                        <option>Spa Services</option>
-                        <option>Makeup Services</option>
-                    </select>
-                    <select class="border rounded-lg px-4 py-2">
-                        <option>All Status</option>
-                        <option>Active</option>
-                        <option>Inactive</option>
-                    </select>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Services</h3>
+                    <a href="{{ route('admin.services.create') }}" class="btn btn-primary">Add New Service</a>
                 </div>
-            </div>
-
-            <!-- Services Table -->
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="bg-gray-50">
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Service Name</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Category</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Duration</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Price</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Status</th>
-                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        <!-- Sample row, will be replaced with actual data -->
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3">
-                                <div class="flex items-center">
-                                    <img src="/images/services/haircut.jpg" alt="Haircut" class="w-10 h-10 rounded-lg object-cover mr-3">
-                                    <div>
-                                        <div class="font-medium">Haircut & Styling</div>
-                                        <div class="text-sm text-gray-500">Basic trim to complete makeover</div>
+                <div class="card-body">
+                    <!-- Simplified Search Form -->
+                    <form action="{{ route('admin.services.search') }}" method="GET" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input type="text" name="query" class="form-control" placeholder="Search services..." value="{{ request('query') }}">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-search"></i> Search
+                                        </button>
                                     </div>
                                 </div>
-                            </td>
-                            <td class="px-4 py-3 text-sm">Hair Services</td>
-                            <td class="px-4 py-3 text-sm">45 mins</td>
-                            <td class="px-4 py-3 text-sm">$45.00</td>
-                            <td class="px-4 py-3 text-sm">
-                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Active</span>
-                            </td>
-                            <td class="px-4 py-3 text-sm">
-                                <div class="flex gap-2">
-                                    <a href="{{ route('admin.services.edit', 1) }}" class="text-blue-500 hover:text-blue-700">Edit</a>
-                                    <button onclick="toggleStatus(1)" class="text-yellow-500 hover:text-yellow-700">Toggle</button>
-                                    <button onclick="deleteService(1)" class="text-red-500 hover:text-red-700">Delete</button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="category" class="form-control">
+                                    <option value="">All Categories</option>
+                                    <option value="hair" {{ request('category') == 'hair' ? 'selected' : '' }}>Hair</option>
+                                    <option value="nails" {{ request('category') == 'nails' ? 'selected' : '' }}>Nails</option>
+                                    <option value="facial" {{ request('category') == 'facial' ? 'selected' : '' }}>Facial</option>
+                                    <option value="massage" {{ request('category') == 'massage' ? 'selected' : '' }}>Massage</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="status" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                                    <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <a href="{{ route('admin.services.index') }}" class="btn btn-secondary w-100">Reset</a>
+                            </div>
+                        </div>
+                    </form>
 
-            <!-- Pagination -->
-            <div class="mt-6 flex justify-between items-center">
-                <div class="text-sm text-gray-600">
-                    Showing 1 to 10 of 45 services
-                </div>
-                <div class="flex gap-2">
-                    <button class="px-3 py-1 border rounded hover:bg-gray-50">Previous</button>
-                    <button class="px-3 py-1 border rounded bg-pink-500 text-white">1</button>
-                    <button class="px-3 py-1 border rounded hover:bg-gray-50">2</button>
-                    <button class="px-3 py-1 border rounded hover:bg-gray-50">3</button>
-                    <button class="px-3 py-1 border rounded hover:bg-gray-50">Next</button>
+                    <!-- Services Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($services as $service)
+                                    <tr>
+                                        <td>{{ $service->name }}</td>
+                                        <td>{{ ucfirst($service->category) }}</td>
+                                        <td>${{ number_format($service->price, 2) }}</td>
+                                        <td>{{ $service->duration }} minutes</td>
+                                        <td>
+                                            <span class="badge badge-{{ $service->status === 'active' ? 'success' : 'danger' }}">
+                                                {{ ucfirst($service->status) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ route('admin.services.edit', $service) }}" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="{{ route('admin.services.destroy', $service) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this service?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center">No services found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="mt-4">
+                        {{ $services->links() }}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-    function exportServices() {
-        // Handle services export
-    }
-
-    function toggleStatus(id) {
-        // Handle service status toggle
-        fetch(`/admin/services/${id}/toggle`, {
-            method: 'PUT',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        }).then(() => window.location.reload());
-    }
-
-    function deleteService(id) {
-        if (confirm('Are you sure you want to delete this service?')) {
-            fetch(`/admin/services/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            }).then(() => window.location.reload());
-        }
-    }
-</script>
-@endpush
 @endsection

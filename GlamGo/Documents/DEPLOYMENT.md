@@ -400,3 +400,143 @@ mysql -u [username] -p [database_name] < storage/app/backups/database/[backup_fi
 3. Test restore process periodically
 4. Monitor available storage space
 5. Review backup logs weekly
+
+## Service Search Functionality Deployment
+
+### Database Considerations
+1. Index Optimization
+   ```sql
+   -- Add indexes for search fields
+   ALTER TABLE services ADD INDEX idx_name (name);
+   ALTER TABLE services ADD INDEX idx_category (category);
+   ALTER TABLE services ADD INDEX idx_status (status);
+   ALTER TABLE services ADD INDEX idx_price (price);
+   ```
+
+2. Query Optimization
+   - Enable query caching
+   - Configure database connection pooling
+   - Set appropriate buffer pool size
+
+### Cache Configuration
+1. Redis Setup
+   ```env
+   CACHE_DRIVER=redis
+   REDIS_HOST=127.0.0.1
+   REDIS_PASSWORD=null
+   REDIS_PORT=6379
+   ```
+
+2. Cache Keys
+   ```php
+   // Example cache key structure
+   'services:search:' . md5($query . $category . $status . $priceRange)
+   ```
+
+### Performance Tuning
+1. PHP Configuration
+   ```ini
+   memory_limit = 256M
+   max_execution_time = 30
+   opcache.enable = 1
+   opcache.memory_consumption = 128
+   ```
+
+2. Nginx Configuration
+   ```nginx
+   location /admin/services/search {
+       proxy_cache_use_stale error timeout http_500 http_502 http_503 http_504;
+       proxy_cache_valid 200 60m;
+       proxy_cache_bypass $http_cache_control;
+       add_header X-Cache-Status $upstream_cache_status;
+   }
+   ```
+
+### Monitoring Setup
+1. Performance Metrics
+   - Response time tracking
+   - Query execution time
+   - Cache hit/miss ratio
+   - Memory usage
+
+2. Error Tracking
+   - Search query errors
+   - Cache failures
+   - Database connection issues
+
+### Security Measures
+1. Rate Limiting
+   ```php
+   // In routes/web.php
+   Route::middleware(['throttle:60,1'])->group(function () {
+       Route::get('/admin/services/search', [ServiceController::class, 'search']);
+   });
+   ```
+
+2. Input Validation
+   ```php
+   // In ServiceController
+   $validated = $request->validate([
+       'query' => 'nullable|string|max:255',
+       'category' => 'nullable|string|in:hair,nails,facial,massage',
+       'status' => 'nullable|string|in:active,inactive',
+       'price_range' => 'nullable|string|in:low,medium,high'
+   ]);
+   ```
+
+### Backup Strategy
+1. Database Backups
+   ```bash
+   # Daily backup script
+   mysqldump -u user -p database > backup_$(date +%Y%m%d).sql
+   ```
+
+2. Cache Backups
+   ```bash
+   # Redis backup
+   redis-cli SAVE
+   ```
+
+### Rollback Plan
+1. Database Rollback
+   ```bash
+   # Restore from backup
+   mysql -u user -p database < backup_20240315.sql
+   ```
+
+2. Code Rollback
+   ```bash
+   # Revert to previous version
+   git checkout v1.0.0
+   composer install
+   php artisan migrate:rollback
+   ```
+
+### Health Checks
+1. Service Monitoring
+   ```php
+   // Health check endpoint
+   Route::get('/health', function () {
+       return response()->json([
+           'status' => 'healthy',
+           'database' => DB::connection()->getPdo() ? 'connected' : 'disconnected',
+           'cache' => Cache::get('test') ? 'working' : 'failed',
+           'search' => Service::count() > 0 ? 'ready' : 'not ready'
+       ]);
+   });
+   ```
+
+### Deployment Checklist
+- [ ] Run database migrations
+- [ ] Clear application cache
+- [ ] Optimize autoloader
+- [ ] Set up monitoring
+- [ ] Configure rate limiting
+- [ ] Enable query caching
+- [ ] Set up error tracking
+- [ ] Configure backup system
+- [ ] Test search functionality
+- [ ] Verify security measures
+- [ ] Check performance metrics
+- [ ] Monitor error logs
+- [ ] Test rollback procedures

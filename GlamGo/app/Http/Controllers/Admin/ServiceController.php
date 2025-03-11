@@ -8,6 +8,39 @@ use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
+    /**
+     * Search services based on query parameters.
+     */
+    public function search(Request $request)
+    {
+        $query = Service::query();
+
+        // Search by name or description
+        if ($request->filled('query')) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', "%{$request->query}%")
+                  ->orWhere('description', 'like', "%{$request->query}%");
+            });
+        }
+
+        // Filter by category
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $services = $query->latest()->paginate(10);
+
+        return view('admin.services.index', compact('services'));
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
         $services = Service::latest()->paginate(10);

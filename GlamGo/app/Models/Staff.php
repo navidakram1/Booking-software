@@ -19,15 +19,11 @@ class Staff extends Model
         'name',
         'email',
         'phone',
-        'bio',
-        'profile_image',
         'specialization',
-        'years_of_experience',
         'is_active'
     ];
 
     protected $casts = [
-        'years_of_experience' => 'integer',
         'is_active' => 'boolean'
     ];
 

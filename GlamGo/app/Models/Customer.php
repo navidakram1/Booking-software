@@ -13,14 +13,7 @@ class Customer extends Model
         'name',
         'email',
         'phone',
-        'date_of_birth',
-        'gender',
-        'address',
-        'notes',
-        'is_active',
-        'email_notifications',
-        'sms_notifications',
-        'marketing_emails',
+        'address'
     ];
 
     protected $casts = [

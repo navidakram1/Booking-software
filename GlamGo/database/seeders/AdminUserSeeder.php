@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-class AdminSeeder extends Seeder
+class AdminUserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,9 +16,8 @@ class AdminSeeder extends Seeder
         User::create([
             'name' => 'Admin',
             'email' => 'admin@glamgo.com',
-            'password' => Hash::make('Admin@123'),
+            'password' => Hash::make('password'),
             'is_admin' => true,
-            'email_verified_at' => now(),
         ]);
     }
-}
+} 

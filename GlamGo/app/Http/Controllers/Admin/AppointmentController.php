@@ -3,182 +3,243 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Appointment;
 use App\Models\Service;
+use App\Models\Staff;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
-use App\Models\Booking;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of appointments.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $bookings = Booking::with(['service', 'specialist'])
-            ->orderBy('start_time', 'desc')
-            ->paginate(10);
+        $query = Appointment::with(['customer', 'service', 'staff']);
 
-        return view('admin.bookings.index', compact('bookings'));
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by date range
+        if ($request->filled('start_date')) {
+            $query->whereDate('appointment_date', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('appointment_date', '<=', $request->end_date);
+        }
+
+        // Filter by service
+        if ($request->filled('service_id')) {
+            $query->where('service_id', $request->service_id);
+        }
+
+        // Filter by staff
+        if ($request->filled('staff_id')) {
+            $query->where('staff_id', $request->staff_id);
+        }
+
+        // Search by customer name
+        if ($request->filled('search')) {
+            $query->whereHas('customer', function($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                  ->orWhere('email', 'like', "%{$request->search}%");
+            });
+        }
+
+        $appointments = $query->latest()->paginate(10);
+        $services = Service::orderBy('name')->get();
+        $staff = Staff::orderBy('name')->get();
+
+        return view('admin.appointments.index', compact('appointments', 'services', 'staff'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the form for creating a new appointment.
      */
     public function create()
     {
-        $services = Service::where('is_active', true)->get();
-        $specialists = User::where('role', 'specialist')
-            ->where('is_active', true)
-            ->get();
+        $services = Service::active()->orderBy('name')->get();
+        $staff = Staff::where('is_active', true)->orderBy('name')->get();
+        $customers = User::where('role', 'customer')->orderBy('name')->get();
 
-        return view('admin.bookings.create', compact('services', 'specialists'));
+        return view('admin.appointments.create', compact('services', 'staff', 'customers'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created appointment.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'customer_details' => 'required|array',
-            'customer_details.name' => 'required|string|max:100',
-            'customer_details.email' => 'required|email|max:100',
-            'customer_details.phone' => 'required|string|max:20',
+            'customer_id' => 'required|exists:users,id',
             'service_id' => 'required|exists:services,id',
-            'specialist_id' => 'required|exists:users,id',
-            'start_time' => 'required|date',
-            'special_requests' => 'nullable|string',
+            'staff_id' => 'required|exists:users,id',
+            'appointment_date' => 'required|date|after:now',
+            'notes' => 'nullable|string|max:500',
         ]);
 
-        // Calculate end time based on service duration
         $service = Service::findOrFail($request->service_id);
-        $startTime = Carbon::parse($validated['start_time']);
-        $endTime = $startTime->copy()->addMinutes($service->duration);
+        $validated['total_amount'] = $service->price;
+        $validated['status'] = 'pending';
 
-        $booking = Booking::create([
-            'service_id' => $validated['service_id'],
-            'specialist_id' => $validated['specialist_id'],
-            'start_time' => $startTime,
-            'end_time' => $endTime,
-            'customer_details' => $validated['customer_details'],
-            'special_requests' => $validated['special_requests'],
-            'total_price' => $service->price,
-            'status' => 'pending'
-        ]);
+        $appointment = Appointment::create($validated);
 
         return redirect()
-            ->route('admin.bookings.index')
-            ->with('success', 'Booking created successfully.');
+            ->route('admin.appointments.index')
+            ->with('success', 'Appointment created successfully.');
     }
 
     /**
-     * Display the specified resource.
+     * Show the appointment details.
      */
-    public function show(Booking $booking)
+    public function show(Appointment $appointment)
     {
-        $booking->load(['service', 'specialist']);
-        return view('admin.bookings.show', compact('booking'));
+        $appointment->load(['customer', 'service', 'staff']);
+        return view('admin.appointments.show', compact('appointment'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Show the form for editing the appointment.
      */
-    public function edit(Booking $booking)
+    public function edit(Appointment $appointment)
     {
-        $services = Service::where('is_active', true)->get();
-        $specialists = User::where('role', 'specialist')
-            ->where('is_active', true)
-            ->get();
+        $services = Service::active()->orderBy('name')->get();
+        $staff = Staff::where('is_active', true)->orderBy('name')->get();
+        $customers = User::where('role', 'customer')->orderBy('name')->get();
 
-        return view('admin.bookings.edit', compact('booking', 'services', 'specialists'));
+        return view('admin.appointments.edit', compact('appointment', 'services', 'staff', 'customers'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the appointment.
      */
-    public function update(Request $request, Booking $booking)
+    public function update(Request $request, Appointment $appointment)
     {
         $validated = $request->validate([
-            'customer_details' => 'required|array',
-            'customer_details.name' => 'required|string|max:100',
-            'customer_details.email' => 'required|email|max:100',
-            'customer_details.phone' => 'required|string|max:20',
+            'customer_id' => 'required|exists:users,id',
             'service_id' => 'required|exists:services,id',
-            'specialist_id' => 'required|exists:users,id',
-            'start_time' => 'required|date',
-            'status' => 'required|in:pending,confirmed,completed,cancelled',
-            'special_requests' => 'nullable|string',
+            'staff_id' => 'required|exists:users,id',
+            'appointment_date' => 'required|date',
+            'notes' => 'nullable|string|max:500',
         ]);
 
-        // Update total price if service changed
-        if ($booking->service_id != $request->service_id) {
+        if ($request->service_id !== $appointment->service_id) {
             $service = Service::findOrFail($request->service_id);
-            $validated['total_price'] = $service->price;
-            
-            // Update end time based on new service duration
-            $startTime = Carbon::parse($validated['start_time']);
-            $validated['end_time'] = $startTime->copy()->addMinutes($service->duration);
+            $validated['total_amount'] = $service->price;
         }
 
-        $booking->update($validated);
+        $appointment->update($validated);
 
         return redirect()
-            ->route('admin.bookings.index')
-            ->with('success', 'Booking updated successfully.');
+            ->route('admin.appointments.index')
+            ->with('success', 'Appointment updated successfully.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the appointment.
      */
-    public function destroy(Booking $booking)
+    public function destroy(Appointment $appointment)
     {
-        $booking->delete();
+        $appointment->delete();
 
         return redirect()
-            ->route('admin.bookings.index')
-            ->with('success', 'Booking deleted successfully.');
+            ->route('admin.appointments.index')
+            ->with('success', 'Appointment deleted successfully.');
     }
 
     /**
-     * Display the calendar view of appointments.
+     * Update appointment status.
      */
-    public function calendar()
+    public function updateStatus(Request $request, Appointment $appointment)
     {
-        $bookings = Booking::with(['service', 'specialist'])
-            ->get()
-            ->map(function ($booking) {
-                return [
-                    'id' => $booking->id,
-                    'title' => $booking->service->name . ' - ' . $booking->customer_details['name'],
-                    'start' => $booking->start_time,
-                    'end' => $booking->end_time,
-                    'url' => route('admin.bookings.edit', $booking),
-                    'className' => $this->getStatusClass($booking->status),
-                    'extendedProps' => [
-                        'customer' => $booking->customer_details['name'],
-                        'service' => $booking->service->name,
-                        'staff' => $booking->specialist->name,
-                        'status' => $booking->status
-                    ]
-                ];
-            });
+        $validated = $request->validate([
+            'status' => 'required|in:pending,confirmed,completed,cancelled'
+        ]);
 
-        return view('admin.bookings.calendar', compact('bookings'));
+        $appointment->update($validated);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Appointment status updated successfully.');
     }
 
     /**
-     * Get the CSS class for a booking status.
+     * Reschedule appointment.
      */
-    private function getStatusClass($status)
+    public function reschedule(Request $request, Appointment $appointment)
     {
-        return match ($status) {
-            'completed' => 'bg-green-100 text-green-800 border-green-200',
-            'cancelled' => 'bg-red-100 text-red-800 border-red-200',
-            'confirmed' => 'bg-blue-100 text-blue-800 border-blue-200',
-            'pending' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            default => 'bg-gray-100 text-gray-800 border-gray-200',
-        };
+        $validated = $request->validate([
+            'appointment_date' => 'required|date|after:now'
+        ]);
+
+        $appointment->update($validated);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Appointment rescheduled successfully.');
+    }
+
+    /**
+     * Export appointments.
+     */
+    public function export(Request $request)
+    {
+        $query = Appointment::with(['customer', 'service', 'staff']);
+
+        // Apply filters
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('start_date')) {
+            $query->whereDate('appointment_date', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('appointment_date', '<=', $request->end_date);
+        }
+
+        $appointments = $query->get();
+
+        // Generate CSV
+        $filename = 'appointments_' . Carbon::now()->format('Y-m-d') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $columns = [
+            'ID',
+            'Customer',
+            'Service',
+            'Staff',
+            'Date',
+            'Status',
+            'Amount',
+            'Notes'
+        ];
+
+        return response()->stream(function() use ($appointments, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($appointments as $appointment) {
+                fputcsv($file, [
+                    $appointment->id,
+                    $appointment->customer->name,
+                    $appointment->service->name,
+                    $appointment->staff->name,
+                    $appointment->appointment_date->format('Y-m-d H:i:s'),
+                    $appointment->status,
+                    $appointment->total_amount,
+                    $appointment->notes
+                ]);
+            }
+
+            fclose($file);
+        }, 200, $headers);
     }
 }

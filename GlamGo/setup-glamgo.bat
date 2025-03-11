@@ -28,6 +28,13 @@ if not exist .env (
     php artisan key:generate
 )
 
+:: Clear all caches
+echo Clearing all caches...
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+
 :: Run migrations and seeders
 echo Setting up database...
 php artisan migrate:fresh --seed
@@ -38,6 +45,10 @@ call npm run build
 
 echo.
 echo Setup completed successfully!
+echo Default admin credentials:
+echo Email: admin@glamgo.com
+echo Password: Admin@123
+echo.
 echo You can now use start-glamgo.bat to start the application.
 echo.
 pause 

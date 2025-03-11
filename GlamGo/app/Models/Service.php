@@ -21,8 +21,8 @@ class Service extends Model
         'description',
         'price',
         'duration',
-        'category_id',
-        'image_url',
+        'category',
+        'image',
         'is_active'
     ];
 
@@ -56,10 +56,53 @@ class Service extends Model
         return $this->belongsToMany(Specialist::class);
     }
 
-    // Scope for active services
+    /**
+     * Get the appointments for the service.
+     */
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+    /**
+     * Get the formatted price.
+     */
+    public function getFormattedPriceAttribute()
+    {
+        return number_format($this->price, 2);
+    }
+
+    /**
+     * Get the formatted duration.
+     */
+    public function getFormattedDurationAttribute()
+    {
+        $hours = floor($this->duration / 60);
+        $minutes = $this->duration % 60;
+        
+        if ($hours > 0 && $minutes > 0) {
+            return "{$hours}h {$minutes}m";
+        } elseif ($hours > 0) {
+            return "{$hours}h";
+        } else {
+            return "{$minutes}m";
+        }
+    }
+
+    /**
+     * Scope a query to only include active services.
+     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope a query to only include services in a specific category.
+     */
+    public function scopeInCategory($query, $category)
+    {
+        return $query->where('category', $category);
     }
 
     // Scope for price range
@@ -92,17 +135,5 @@ class Service extends Model
               ->orWhere('description', 'like', "%{$search}%")
               ->orWhere('category_id', 'like', "%{$search}%");
         });
-    }
-
-    // Get formatted price
-    public function getFormattedPriceAttribute()
-    {
-        return '$' . number_format($this->price, 2);
-    }
-
-    // Get formatted duration
-    public function getFormattedDurationAttribute()
-    {
-        return $this->duration . ' min';
     }
 }

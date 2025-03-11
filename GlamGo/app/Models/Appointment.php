@@ -6,50 +6,108 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Appointment extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'customer_id',
+        'staff_id',
         'service_id',
-        'specialist_id',
         'appointment_date',
-        'appointment_time',
+        'total_amount',
         'status',
-        'special_requests',
-        'total_amount'
+        'notes',
+        'rating',
+        'review'
     ];
 
     protected $casts = [
-        'appointment_date' => 'date',
-        'appointment_time' => 'datetime',
-        'total_amount' => 'decimal:2'
+        'appointment_date' => 'datetime',
+        'total_amount' => 'decimal:2',
+        'rating' => 'integer'
     ];
 
     /**
-     * Get the customer for this appointment.
+     * Get the customer that owns the appointment.
      */
-    public function customer(): BelongsTo
+    public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    /**
+     * Get the staff member assigned to the appointment.
+     */
+    public function staff()
+    {
+        return $this->belongsTo(User::class, 'staff_id');
     }
 
     /**
      * Get the service for this appointment.
      */
-    public function service(): BelongsTo
+    public function service()
     {
         return $this->belongsTo(Service::class);
     }
 
     /**
-     * Get the specialist for this appointment.
+     * Scope a query to only include completed appointments.
      */
-    public function specialist(): BelongsTo
+    public function scopeCompleted($query)
     {
-        return $this->belongsTo(Specialist::class);
+        return $query->where('status', 'completed');
+    }
+
+    /**
+     * Scope a query to only include pending appointments.
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    /**
+     * Scope a query to only include cancelled appointments.
+     */
+    public function scopeCancelled($query)
+    {
+        return $query->where('status', 'cancelled');
+    }
+
+    /**
+     * Scope a query to only include confirmed appointments.
+     */
+    public function scopeConfirmed($query)
+    {
+        return $query->where('status', 'confirmed');
+    }
+
+    /**
+     * Get the formatted status.
+     */
+    public function getFormattedStatusAttribute()
+    {
+        return ucfirst($this->status);
+    }
+
+    /**
+     * Get the formatted appointment date.
+     */
+    public function getFormattedDateAttribute()
+    {
+        return $this->appointment_date->format('M d, Y g:i A');
+    }
+
+    /**
+     * Get the formatted total amount.
+     */
+    public function getFormattedAmountAttribute()
+    {
+        return number_format($this->total_amount, 2);
     }
 
     /**
