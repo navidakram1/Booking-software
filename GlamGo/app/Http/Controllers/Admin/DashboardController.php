@@ -20,46 +20,132 @@ class DashboardController extends Controller
 
     public function index()
     {
-        // Initialize all variables with default values
-        $data = [
-            'totalBookings' => 0,
-            'monthlyRevenue' => 0,
-            'activeServices' => 0,
-            'totalCustomers' => 0,
-            'recentBookings' => []
-        ];
-
         try {
-            // Get total bookings
-            $data['totalBookings'] = Booking::count();
-
-            // Get monthly revenue
-            $data['monthlyRevenue'] = Booking::whereMonth('created_at', Carbon::now()->month)
-                ->whereYear('created_at', Carbon::now()->year)
-                ->sum('total_amount');
-
-            // Get active services
-            $data['activeServices'] = Service::where('status', 'active')->count();
-
-            // Get total customers
-            $data['totalCustomers'] = Customer::count();
-
-            // Get recent bookings
-            $data['recentBookings'] = Booking::with(['customer', 'service'])
-                ->latest()
+            // Get the start of current and previous months
+            $currentMonthStart = Carbon::now()->startOfMonth();
+            $previousMonthStart = Carbon::now()->subMonth()->startOfMonth();
+            
+            // Calculate total revenue and growth
+            $currentMonthRevenue = Booking::where('status', 'completed')
+                ->whereMonth('created_at', $currentMonthStart->month)
+                ->whereYear('created_at', $currentMonthStart->year)
+                ->sum('total_amount'); // Changed from amount to total_amount
+                
+            $previousMonthRevenue = Booking::where('status', 'completed')
+                ->whereMonth('created_at', $previousMonthStart->month)
+                ->whereYear('created_at', $previousMonthStart->year)
+                ->sum('total_amount'); // Changed from amount to total_amount
+                
+            $totalRevenue = $currentMonthRevenue;
+            $revenueGrowth = $previousMonthRevenue > 0 
+                ? (($currentMonthRevenue - $previousMonthRevenue) / $previousMonthRevenue) * 100 
+                : 100;
+                
+            // Calculate total bookings and growth
+            $currentMonthBookings = Booking::whereMonth('created_at', $currentMonthStart->month)
+                ->whereYear('created_at', $currentMonthStart->year)
+                ->count();
+                
+            $previousMonthBookings = Booking::whereMonth('created_at', $previousMonthStart->month)
+                ->whereYear('created_at', $previousMonthStart->year)
+                ->count();
+                
+            $totalBookings = $currentMonthBookings;
+            $bookingsGrowth = $previousMonthBookings > 0 
+                ? (($currentMonthBookings - $previousMonthBookings) / $previousMonthBookings) * 100 
+                : 100;
+                
+            // Get active services count and growth
+            $currentMonthServices = Service::where('status', 'active')
+                ->whereMonth('created_at', $currentMonthStart->month)
+                ->whereYear('created_at', $currentMonthStart->year)
+                ->count();
+                
+            $previousMonthServices = Service::where('status', 'active')
+                ->whereMonth('created_at', $previousMonthStart->month)
+                ->whereYear('created_at', $previousMonthStart->year)
+                ->count();
+                
+            $activeServices = Service::where('status', 'active')->count();
+            $servicesGrowth = $previousMonthServices > 0 
+                ? (($currentMonthServices - $previousMonthServices) / $previousMonthServices) * 100 
+                : 100;
+                
+            // Calculate total customers and growth
+            $currentMonthCustomers = Customer::whereMonth('created_at', $currentMonthStart->month)
+                ->whereYear('created_at', $currentMonthStart->year)
+                ->count();
+                
+            $previousMonthCustomers = Customer::whereMonth('created_at', $previousMonthStart->month)
+                ->whereYear('created_at', $previousMonthStart->year)
+                ->count();
+                
+            $totalCustomers = Customer::count();
+            $customersGrowth = $previousMonthCustomers > 0 
+                ? (($currentMonthCustomers - $previousMonthCustomers) / $previousMonthCustomers) * 100 
+                : 100;
+                
+            // Get popular services with proper relationship
+            $popularServices = Service::withCount(['bookings' => function($query) {
+                    $query->where('status', 'completed');
+                }])
+                ->where('status', 'active')
+                ->orderByDesc('bookings_count')
                 ->take(5)
                 ->get()
-                ->map(function ($booking) {
-                    $booking->status_color = $this->getStatusColor($booking->status);
-                    return $booking;
+                ->map(function ($service) {
+                    $service->color = $this->getRandomColor();
+                    $service->color_bg = $this->getRandomColorBg($service->color);
+                    $service->icon = $this->getServiceIcon($service->name);
+                    return $service;
                 });
-
+                
+            // Get recent bookings with proper relationships
+            $recentBookings = Booking::with(['customer', 'service'])
+                ->latest()
+                ->take(5)
+                ->get();
+                
+            // Get today's schedule
+            $todaySchedule = Booking::with(['customer', 'service'])
+                ->whereDate('scheduled_at', Carbon::today())
+                ->orderBy('scheduled_at')
+                ->get();
+                
+            // Get revenue data for chart
+            $revenueData = $this->getRevenueData('week');
+            
+            return view('admin.dashboard', compact(
+                'totalRevenue',
+                'revenueGrowth',
+                'totalBookings',
+                'bookingsGrowth',
+                'activeServices',
+                'servicesGrowth',
+                'totalCustomers',
+                'customersGrowth',
+                'popularServices',
+                'recentBookings',
+                'todaySchedule',
+                'revenueData'
+            ));
         } catch (\Exception $e) {
-            // Log the error but don't throw it
-            \Log::error('Dashboard data fetch error: ' . $e->getMessage());
+            \Log::error('Dashboard Error: ' . $e->getMessage());
+            return view('admin.dashboard', [
+                'totalRevenue' => 0,
+                'revenueGrowth' => 0,
+                'totalBookings' => 0,
+                'bookingsGrowth' => 0,
+                'activeServices' => 0,
+                'servicesGrowth' => 0,
+                'totalCustomers' => 0,
+                'customersGrowth' => 0,
+                'popularServices' => collect([]),
+                'recentBookings' => collect([]),
+                'todaySchedule' => collect([]),
+                'revenueData' => ['labels' => [], 'values' => []]
+            ])->with('error', 'There was an error loading the dashboard data.');
         }
-
-        return view('admin.dashboard', $data);
     }
 
     private function getStatusColor($status)
@@ -78,123 +164,122 @@ class DashboardController extends Controller
      */
     public function revenueAnalytics(Request $request)
     {
-        $query = Appointment::query()
-            ->where('status', 'completed')
-            ->with(['service', 'customer', 'staff']);
+        try {
+            $query = Booking::query() // Changed from Appointment to Booking
+                ->where('status', 'completed')
+                ->with(['service', 'customer', 'staff']);
 
-        // Date range filter
-        $startDate = $request->input('start_date', Carbon::now()->startOfMonth());
-        $endDate = $request->input('end_date', Carbon::now()->endOfMonth());
-        
-        if ($startDate && $endDate) {
-            $query->whereBetween('created_at', [
-                Carbon::parse($startDate)->startOfDay(),
-                Carbon::parse($endDate)->endOfDay()
-            ]);
-        }
+            // Date range filter
+            $startDate = $request->input('start_date', Carbon::now()->startOfMonth());
+            $endDate = $request->input('end_date', Carbon::now()->endOfMonth());
+            
+            if ($startDate && $endDate) {
+                $query->whereBetween('created_at', [
+                    Carbon::parse($startDate)->startOfDay(),
+                    Carbon::parse($endDate)->endOfDay()
+                ]);
+            }
 
-        // Service category filter
-        if ($request->filled('category')) {
-            $query->whereHas('service', function($q) use ($request) {
-                $q->where('category', $request->category);
-            });
-        }
+            // Service category filter
+            if ($request->filled('category')) {
+                $query->whereHas('service', function($q) use ($request) {
+                    $q->where('category', $request->category);
+                });
+            }
 
-        // Service filter
-        if ($request->filled('service_id')) {
-            $query->where('service_id', $request->service_id);
-        }
+            // Service filter
+            if ($request->filled('service_id')) {
+                $query->where('service_id', $request->service_id);
+            }
 
-        // Staff filter
-        if ($request->filled('staff_id')) {
-            $query->where('staff_id', $request->staff_id);
-        }
+            // Staff filter
+            if ($request->filled('staff_id')) {
+                $query->where('staff_id', $request->staff_id);
+            }
 
-        // Customer filter
-        if ($request->filled('customer_id')) {
-            $query->where('customer_id', $request->customer_id);
-        }
+            // Customer filter
+            if ($request->filled('customer_id')) {
+                $query->where('customer_id', $request->customer_id);
+            }
 
-        // Price range filter
-        if ($request->filled('min_price')) {
-            $query->where('total_amount', '>=', $request->min_price);
-        }
-        if ($request->filled('max_price')) {
-            $query->where('total_amount', '<=', $request->max_price);
-        }
+            // Price range filter
+            if ($request->filled('min_price')) {
+                $query->where('total_amount', '>=', $request->min_price);
+            }
+            if ($request->filled('max_price')) {
+                $query->where('total_amount', '<=', $request->max_price);
+            }
 
-        // Get filtered data
-        $appointments = $query->get();
+            $bookings = $query->get();
 
-        // Calculate analytics
-        $analytics = [
-            'total_revenue' => $appointments->sum('total_amount'),
-            'average_revenue' => $appointments->avg('total_amount'),
-            'total_appointments' => $appointments->count(),
-            'revenue_by_service' => $appointments->groupBy('service.name')
-                ->map(function($group) {
+            // Calculate analytics
+            $analytics = [
+                'total_revenue' => $bookings->sum('total_amount'),
+                'average_revenue' => $bookings->avg('total_amount'),
+                'total_bookings' => $bookings->count(),
+                'revenue_by_service' => $bookings->groupBy('service.name')
+                    ->map(function($group) {
+                        return [
+                            'count' => $group->count(),
+                            'revenue' => $group->sum('total_amount'),
+                            'average' => $group->avg('total_amount')
+                        ];
+                    }),
+                'revenue_by_staff' => $bookings->groupBy('staff.name')
+                    ->map(function($group) {
+                        return [
+                            'count' => $group->count(),
+                            'revenue' => $group->sum('total_amount'),
+                            'average' => $group->avg('total_amount')
+                        ];
+                    }),
+                'revenue_by_category' => $bookings->groupBy('service.category')
+                    ->map(function($group) {
+                        return [
+                            'count' => $group->count(),
+                            'revenue' => $group->sum('total_amount'),
+                            'average' => $group->avg('total_amount')
+                        ];
+                    }),
+                'daily_revenue' => $bookings->groupBy(function($item) {
+                    return $item->created_at->format('Y-m-d');
+                })->map(function($group) {
                     return [
                         'count' => $group->count(),
                         'revenue' => $group->sum('total_amount'),
                         'average' => $group->avg('total_amount')
                     ];
                 }),
-            'revenue_by_staff' => $appointments->groupBy('staff.name')
-                ->map(function($group) {
+                'monthly_revenue' => $bookings->groupBy(function($item) {
+                    return $item->created_at->format('Y-m');
+                })->map(function($group) {
                     return [
                         'count' => $group->count(),
                         'revenue' => $group->sum('total_amount'),
                         'average' => $group->avg('total_amount')
                     ];
-                }),
-            'revenue_by_category' => $appointments->groupBy('service.category')
-                ->map(function($group) {
-                    return [
-                        'count' => $group->count(),
-                        'revenue' => $group->sum('total_amount'),
-                        'average' => $group->avg('total_amount')
-                    ];
-                }),
-            'daily_revenue' => $appointments->groupBy(function($item) {
-                return $item->created_at->format('Y-m-d');
-            })->map(function($group) {
-                return [
-                    'count' => $group->count(),
-                    'revenue' => $group->sum('total_amount'),
-                    'average' => $group->avg('total_amount')
-                ];
-            }),
-            'monthly_revenue' => $appointments->groupBy(function($item) {
-                return $item->created_at->format('Y-m');
-            })->map(function($group) {
-                return [
-                    'count' => $group->count(),
-                    'revenue' => $group->sum('total_amount'),
-                    'average' => $group->avg('total_amount')
-                ];
-            })
-        ];
+                })
+            ];
 
-        // Get filter options
-        $filterOptions = [
-            'services' => Service::orderBy('name')->get(),
-            'staff' => Staff::orderBy('name')->get(),
-            'categories' => Service::distinct()->pluck('category'),
-            'customers' => Customer::orderBy('name')->get()
-        ];
+            // Get filter options
+            $filterOptions = [
+                'services' => Service::orderBy('name')->get(),
+                'staff' => Staff::orderBy('name')->get(),
+                'categories' => Service::distinct()->pluck('category'),
+                'customers' => Customer::orderBy('name')->get()
+            ];
 
-        // Get date range for the chart
-        $dateRange = [
-            'start' => $startDate,
-            'end' => $endDate
-        ];
-
-        return view('admin.analytics.revenue', compact(
-            'analytics',
-            'filterOptions',
-            'dateRange',
-            'request'
-        ));
+            return view('admin.analytics.revenue', compact(
+                'analytics',
+                'filterOptions',
+                'startDate',
+                'endDate',
+                'request'
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Revenue Analytics Error: ' . $e->getMessage());
+            return back()->with('error', 'There was an error loading the revenue analytics.');
+        }
     }
 
     /**
@@ -203,7 +288,7 @@ class DashboardController extends Controller
     public function exportRevenueAnalytics(Request $request)
     {
         // Reuse the same query from revenueAnalytics
-        $query = Appointment::query()
+        $query = Booking::query()
             ->where('status', 'completed')
             ->with(['service', 'customer', 'staff']);
 
@@ -220,18 +305,18 @@ class DashboardController extends Controller
 
         // ... apply other filters ...
 
-        $appointments = $query->get();
+        $bookings = $query->get();
 
         // Prepare data for export
-        $data = $appointments->map(function($appointment) {
+        $data = $bookings->map(function($booking) {
             return [
-                'Date' => $appointment->created_at->format('Y-m-d'),
-                'Service' => $appointment->service->name,
-                'Category' => $appointment->service->category,
-                'Customer' => $appointment->customer->name,
-                'Staff' => $appointment->staff->name,
-                'Amount' => $appointment->total_amount,
-                'Status' => $appointment->status
+                'Date' => $booking->created_at->format('Y-m-d'),
+                'Service' => $booking->service->name,
+                'Category' => $booking->service->category,
+                'Customer' => $booking->customer->name,
+                'Staff' => $booking->staff->name,
+                'Amount' => $booking->total_amount,
+                'Status' => $booking->status
             ];
         });
 
@@ -250,5 +335,127 @@ class DashboardController extends Controller
             }
             fclose($file);
         }, 200, $headers);
+    }
+
+    public function getRevenueData($period = 'week')
+    {
+        try {
+            $now = Carbon::now();
+            $labels = [];
+            $values = [];
+            
+            switch ($period) {
+                case 'week':
+                    $startDate = $now->copy()->startOfWeek();
+                    $endDate = $now->copy()->endOfWeek();
+                    
+                    while ($startDate <= $endDate) {
+                        $labels[] = $startDate->format('D');
+                        $values[] = Booking::whereDate('created_at', $startDate)
+                            ->where('status', 'completed')
+                            ->sum('total_amount'); // Changed from amount to total_amount
+                        $startDate->addDay();
+                    }
+                    break;
+                    
+                case 'month':
+                    $startDate = $now->copy()->startOfMonth();
+                    $endDate = $now->copy()->endOfMonth();
+                    
+                    while ($startDate <= $endDate) {
+                        $labels[] = $startDate->format('d M');
+                        $values[] = Booking::whereDate('created_at', $startDate)
+                            ->where('status', 'completed')
+                            ->sum('total_amount'); // Changed from amount to total_amount
+                        $startDate->addDay();
+                    }
+                    break;
+                    
+                case 'year':
+                    $startDate = $now->copy()->startOfYear();
+                    $endDate = $now->copy()->endOfYear();
+                    
+                    while ($startDate <= $endDate) {
+                        $labels[] = $startDate->format('M');
+                        $values[] = Booking::whereMonth('created_at', $startDate->month)
+                            ->whereYear('created_at', $startDate->year)
+                            ->where('status', 'completed')
+                            ->sum('total_amount'); // Changed from amount to total_amount
+                        $startDate->addMonth();
+                    }
+                    break;
+            }
+            
+            return [
+                'labels' => $labels,
+                'values' => $values
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Revenue Data Error: ' . $e->getMessage());
+            return [
+                'labels' => [],
+                'values' => []
+            ];
+        }
+    }
+    
+    private function getRandomColor()
+    {
+        $colors = [
+            '#3498db', // Blue
+            '#2ecc71', // Green
+            '#9b59b6', // Purple
+            '#e67e22', // Orange
+            '#e74c3c', // Red
+            '#1abc9c', // Turquoise
+            '#f1c40f'  // Yellow
+        ];
+        return $colors[array_rand($colors)];
+    }
+    
+    private function getRandomColorBg($color)
+    {
+        return str_replace(')', ', 0.1)', str_replace('#', 'rgba(', $this->hexToRgb($color)));
+    }
+    
+    private function hexToRgb($hex)
+    {
+        $hex = str_replace('#', '', $hex);
+        
+        if (strlen($hex) == 3) {
+            $r = hexdec(substr($hex, 0, 1).substr($hex, 0, 1));
+            $g = hexdec(substr($hex, 1, 1).substr($hex, 1, 1));
+            $b = hexdec(substr($hex, 2, 1).substr($hex, 2, 1));
+        } else {
+            $r = hexdec(substr($hex, 0, 2));
+            $g = hexdec(substr($hex, 2, 2));
+            $b = hexdec(substr($hex, 4, 2));
+        }
+        
+        return "rgb($r, $g, $b)";
+    }
+    
+    private function getServiceIcon($serviceName)
+    {
+        $icons = [
+            'haircut' => 'cut',
+            'massage' => 'hands',
+            'facial' => 'face-smile',
+            'manicure' => 'hand-sparkles',
+            'pedicure' => 'socks',
+            'spa' => 'spa',
+            'makeup' => 'paint-brush',
+            'hair-color' => 'palette',
+            'waxing' => 'leaf',
+            'default' => 'star'
+        ];
+        
+        foreach ($icons as $keyword => $icon) {
+            if (stripos($serviceName, $keyword) !== false) {
+                return $icon;
+            }
+        }
+        
+        return 'star';
     }
 }

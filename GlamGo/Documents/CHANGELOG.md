@@ -136,6 +136,44 @@ All notable changes to the GlamGo project will be documented in this file.
 - Migration conflicts
 - Some routing issues
 
+## [1.2.0] - 2024-03-XX
+
+### Added
+- Complete booking calendar implementation with FullCalendar.js integration
+- Drag-and-drop functionality for booking rescheduling
+- Event resizing for duration adjustment
+- Booking filters by staff, services, and status
+- Detailed booking information modal
+- Admin profile management system
+- Export functionality for bookings
+- Real-time calendar updates
+- Comprehensive booking status management
+
+### Changed
+- Enhanced routing structure for better organization
+- Improved booking management interface
+- Updated admin dashboard layout
+- Modernized UI components and styling
+- Streamlined booking creation process
+
+### Fixed
+- Route definition issues for admin profile
+- Calendar event handling improvements
+- Booking status update reliability
+- Date formatting consistency
+- Modal display issues
+
+### Security
+- Added proper authentication checks for admin routes
+- Implemented session management
+- Enhanced profile update security
+
+### Performance
+- Optimized calendar event loading
+- Improved booking query performance
+- Enhanced real-time updates
+- Streamlined API responses
+
 ## Version Format
 
 The versioning scheme we use is [SemVer](http://semver.org/).

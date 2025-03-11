@@ -4,7 +4,10 @@
 @section('page-title', 'Booking Calendar')
 
 @push('styles')
-<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core/main.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid/main.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid/main.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/list/main.css" rel="stylesheet" />
 <style>
 .fc-event {
     cursor: pointer;
@@ -12,77 +15,150 @@
 .fc-event:hover {
     opacity: 0.9;
 }
+.fc-toolbar-title {
+    font-size: 1.5rem !important;
+    font-weight: 600;
+}
+.fc-button {
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+}
+.fc-button:hover {
+    background-color: #4338ca !important;
+    border-color: #4338ca !important;
+}
+.fc-button-active {
+    background-color: #3730a3 !important;
+    border-color: #3730a3 !important;
+}
+.booking-details {
+    padding: 1rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.booking-details h3 {
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+.booking-details p {
+    margin-bottom: 0.5rem;
+}
+.booking-details .badge {
+    padding: 0.35rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Booking Calendar</h1>
-            <p class="mt-1 text-sm text-gray-600">View and manage bookings in calendar view</p>
-        </div>
-        <div class="flex space-x-3">
-            <a href="{{ route('admin.bookings.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
-                <i class="fas fa-list mr-2"></i>
-                List View
-            </a>
-            <a href="{{ route('admin.bookings.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
-                <i class="fas fa-plus mr-2"></i>
-                New Booking
-            </a>
-        </div>
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Booking Calendar</h1>
+        <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Booking
+        </a>
     </div>
 
-    <!-- Calendar -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="p-6">
-            <div id="calendar"></div>
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <!-- Appointment Details Modal -->
-    <div class="fixed inset-0 overflow-y-auto hidden" id="appointmentModal" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div class="sm:flex sm:items-start">
-                        <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                Appointment Details
-                            </h3>
-                            <div class="mt-4 space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Customer</label>
-                                    <p class="mt-1 text-sm text-gray-900" id="modalCustomer"></p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Service</label>
-                                    <p class="mt-1 text-sm text-gray-900" id="modalService"></p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Staff</label>
-                                    <p class="mt-1 text-sm text-gray-900" id="modalStaff"></p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Status</label>
-                                    <p class="mt-1 text-sm" id="modalStatus"></p>
-                                </div>
-                            </div>
+        <div class="col-lg-3">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Filters</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Staff</label>
+                        <select id="staff-filter" class="form-select">
+                            <option value="">All Staff</option>
+                            @foreach($staff as $member)
+                                <option value="{{ $member->id }}">{{ $member->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Service</label>
+                        <select id="service-filter" class="form-select">
+                            <option value="">All Services</option>
+                            @foreach($services as $service)
+                                <option value="{{ $service->id }}">{{ $service->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select id="status-filter" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="no_show">No Show</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="booking-details" class="card shadow mb-4 d-none">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Booking Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="booking-details">
+                        <h3 id="booking-customer"></h3>
+                        <p><strong>Service:</strong> <span id="booking-service"></span></p>
+                        <p><strong>Staff:</strong> <span id="booking-staff"></span></p>
+                        <p><strong>Time:</strong> <span id="booking-time"></span></p>
+                        <p><strong>Duration:</strong> <span id="booking-duration"></span></p>
+                        <p><strong>Amount:</strong> <span id="booking-amount"></span></p>
+                        <p><strong>Status:</strong> <span id="booking-status"></span></p>
+                        <div class="mt-3">
+                            <a href="#" id="booking-edit" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <button type="button" id="booking-cancel" class="btn btn-sm btn-danger">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <a href="#" id="modalEdit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-pink-600 text-base font-medium text-white hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 sm:ml-3 sm:w-auto sm:text-sm">
-                        Edit
-                    </a>
-                    <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                        Close
-                    </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Event Details -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Booking Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="booking-details">
+                    <h3 id="modal-customer"></h3>
+                    <p><strong>Service:</strong> <span id="modal-service"></span></p>
+                    <p><strong>Staff:</strong> <span id="modal-staff"></span></p>
+                    <p><strong>Time:</strong> <span id="modal-time"></span></p>
+                    <p><strong>Duration:</strong> <span id="modal-duration"></span></p>
+                    <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
+                    <p><strong>Status:</strong> <span id="modal-status"></span></p>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" id="modal-edit" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -90,55 +166,144 @@
 @endsection
 
 @push('scripts')
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/list/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction/main.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
+        plugins: ['dayGrid', 'timeGrid', 'list', 'interaction'],
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
-        events: @json($bookings),
+        initialView: 'timeGridWeek',
+        editable: true,
+        droppable: true,
+        selectable: true,
+        selectMirror: true,
+        dayMaxEvents: true,
+        slotMinTime: '08:00:00',
+        slotMaxTime: '20:00:00',
         eventTimeFormat: {
             hour: 'numeric',
             minute: '2-digit',
             meridiem: 'short'
         },
+        events: {
+            url: '{{ route("admin.bookings.calendar.events") }}',
+            failure: function() {
+                alert('Error loading events');
+            }
+        },
         eventClick: function(info) {
-            showAppointmentDetails(info.event);
+            showEventDetails(info.event);
+        },
+        eventDrop: function(info) {
+            updateEventTime(info.event, info.oldEvent);
+        },
+        eventResize: function(info) {
+            updateEventDuration(info.event, info.oldEvent);
+        },
+        select: function(info) {
+            window.location.href = '{{ route("admin.bookings.create") }}?' + 
+                'scheduled_at=' + info.startStr;
         }
     });
+
     calendar.render();
+
+    // Filter handling
+    document.getElementById('staff-filter').addEventListener('change', function() {
+        refreshCalendar();
+    });
+
+    document.getElementById('service-filter').addEventListener('change', function() {
+        refreshCalendar();
+    });
+
+    document.getElementById('status-filter').addEventListener('change', function() {
+        refreshCalendar();
+    });
+
+    function refreshCalendar() {
+        var staff = document.getElementById('staff-filter').value;
+        var service = document.getElementById('service-filter').value;
+        var status = document.getElementById('status-filter').value;
+
+        calendar.refetchEvents();
+    }
+
+    function showEventDetails(event) {
+        var modal = new bootstrap.Modal(document.getElementById('eventModal'));
+        
+        document.getElementById('modal-customer').textContent = event.extendedProps.customer;
+        document.getElementById('modal-service').textContent = event.extendedProps.service;
+        document.getElementById('modal-staff').textContent = event.extendedProps.staff;
+        document.getElementById('modal-time').textContent = event.start.toLocaleString();
+        document.getElementById('modal-duration').textContent = event.extendedProps.duration;
+        document.getElementById('modal-amount').textContent = event.extendedProps.amount;
+        document.getElementById('modal-status').textContent = event.extendedProps.status;
+        
+        document.getElementById('modal-edit').href = '/admin/bookings/' + event.id + '/edit';
+        
+        modal.show();
+    }
+
+    function updateEventTime(event, oldEvent) {
+        fetch('{{ route("admin.bookings.calendar.move") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                id: event.id,
+                start: event.start.toISOString()
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                calendar.getEventById(event.id).setStart(oldEvent.start);
+                alert('Failed to update booking time');
+            }
+        })
+        .catch(error => {
+            calendar.getEventById(event.id).setStart(oldEvent.start);
+            alert('Error updating booking time');
+        });
+    }
+
+    function updateEventDuration(event, oldEvent) {
+        fetch('{{ route("admin.bookings.calendar.resize") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                id: event.id,
+                start: event.start.toISOString(),
+                end: event.end.toISOString()
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                calendar.getEventById(event.id).setEnd(oldEvent.end);
+                alert('Failed to update booking duration');
+            }
+        })
+        .catch(error => {
+            calendar.getEventById(event.id).setEnd(oldEvent.end);
+            alert('Error updating booking duration');
+        });
+    }
 });
-
-function showAppointmentDetails(event) {
-    document.getElementById('modalCustomer').textContent = event.extendedProps.customer;
-    document.getElementById('modalService').textContent = event.extendedProps.service;
-    document.getElementById('modalStaff').textContent = event.extendedProps.staff;
-    
-    const statusEl = document.getElementById('modalStatus');
-    statusEl.textContent = event.extendedProps.status.charAt(0).toUpperCase() + event.extendedProps.status.slice(1);
-    statusEl.className = 'mt-1 text-sm ' + getStatusColor(event.extendedProps.status);
-    
-    document.getElementById('modalEdit').href = `/admin/bookings/${event.id}/edit`;
-    document.getElementById('appointmentModal').classList.remove('hidden');
-}
-
-function closeModal() {
-    document.getElementById('appointmentModal').classList.add('hidden');
-}
-
-function getStatusColor(status) {
-    const colors = {
-        'confirmed': 'text-green-600',
-        'cancelled': 'text-red-600',
-        'completed': 'text-blue-600',
-        'no-show': 'text-yellow-600'
-    };
-    return colors[status] || 'text-gray-600';
-}
 </script>
 @endpush

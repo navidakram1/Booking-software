@@ -1,60 +1,63 @@
-# GlamGo - Modern Salon Management System
+# GlamGo - Salon Management System
 
-GlamGo is a comprehensive salon management system designed to streamline the operations of modern beauty salons. With its intuitive interface and powerful features, it helps salon owners manage bookings, staff, services, and customer relationships effectively.
+GlamGo is a comprehensive salon management system designed to streamline operations for beauty salons and spas. The system provides powerful tools for managing bookings, services, staff, customers, and more.
 
 ## Features
 
-### Real-Time Booking System
-- Intuitive multi-step booking process
-- Real-time availability updates via WebSocket
-- Temporary slot locking to prevent double bookings
-- Multi-timezone support
-- Automated email confirmations with calendar invites
-- Mobile-responsive design
-
 ### Admin Dashboard
-- Comprehensive settings management:
-  - Security settings with password policies, 2FA, and session controls
-  - Payment configuration for multiple payment methods
-  - Integration settings for third-party services
-  - General salon settings and preferences
-- Booking management
-- Staff and service management
-- Customer relationship management
-- Revenue tracking and reporting
-- Content management for website pages
+- Real-time analytics and reporting
+- Revenue tracking and forecasting
+- Booking statistics and trends
+- Customer insights
 
-### Security Features
-- Configurable password requirements
-- Two-factor authentication support
-- Account lockout protection
-- Session timeout controls
-- HTTPS enforcement option
+### Booking Management
+- Interactive calendar interface with drag-and-drop
+- Multiple viewing options (calendar, list, pending)
+- Real-time availability updates
+- Automated status management
+- Export functionality
+- Comprehensive filtering system
 
-### Payment Processing
-- Multiple payment method support
-  - Cash payments
-  - Card payments
-  - Online payments
-- Customizable invoice settings
-- Flexible currency configuration
+### Service Management
+- Service categorization
+- Pricing management
+- Special offers and packages
+- Service catalog
 
-- **Booking Management**: Efficient appointment scheduling and management
-- **Service Management**: Easy service and pricing configuration
-- **Staff Management**: Staff scheduling and performance tracking
-- **Customer Management**: Customer profiles and booking history
-- **Revenue Management**: Financial tracking and reporting
-- **Marketing Tools**: Email and SMS campaign management
-- **Content Management**: Website and blog content control
+### Staff Management
+- Staff scheduling
+- Performance tracking
+- Availability management
+- Service assignments
 
-## Tech Stack
+### Customer Management
+- Customer profiles
+- Booking history
+- Loyalty program
+- Communication preferences
 
-- **Frontend**: HTML, CSS (Tailwind CSS), JavaScript
-- **Backend**: PHP (Laravel)
-- **Database**: MySQL
-- **Authentication**: Laravel Breeze
-- **UI Components**: Alpine.js
-- **Icons**: Heroicons
+### Marketing Tools
+- Campaign management
+- SMS marketing
+- Promotional offers
+- Customer engagement
+
+### Content Management
+- Gallery management
+- Blog system
+- Testimonials
+- Dynamic content pages
+
+## Technology Stack
+
+- PHP 8.1+
+- Laravel 10.x
+- MySQL 8.0+
+- Node.js 16+
+- Vue.js 3.x
+- TailwindCSS 3.x
+- FullCalendar.js
+- Bootstrap 5.x
 
 ## Installation
 
@@ -69,7 +72,7 @@ cd glamgo
 composer install
 ```
 
-3. Install NPM dependencies:
+3. Install JavaScript dependencies:
 ```bash
 npm install
 ```
@@ -84,64 +87,70 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-6. Configure your database in `.env` file:
-```env
+6. Configure database in .env file:
+```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=glamgo
-DB_USERNAME=root
-DB_PASSWORD=
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
 ```
 
-7. Run migrations:
+7. Run migrations and seeders:
 ```bash
-php artisan migrate
+php artisan migrate --seed
 ```
 
-8. Start the development server:
-```bash
-php artisan serve
-```
-
-9. In a new terminal, start the Vite development server:
+8. Build assets:
 ```bash
 npm run dev
 ```
 
-## Usage
-
-1. Access the admin dashboard at `http://localhost:8000/admin`
-2. Default admin credentials:
-   - Email: admin@glamgo.com
-   - Password: password
+9. Start the development server:
+```bash
+php artisan serve
+```
 
 ## Documentation
 
-- [Features](FEATURES.md)
+- [Features Documentation](FEATURES.md)
 - [API Documentation](API_DOCS.md)
-- [Database Schema](DATABASE.md)
+- [Testing Guide](TESTING.md)
+- [Deployment Guide](DEPLOYMENT.md)
+- [Work Tracking](WORK_TRACKING.md)
+- [Project Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)
-- [Contributing](CONTRIBUTING.md)
 
-## Support
+## Security
 
-For support, please email support@glamgo.com or create an issue in this repository.
+- Authentication and authorization
+- Role-based access control
+- Session management
+- Data encryption
+- CSRF protection
+- XSS prevention
+- Input validation
+- Secure password handling
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Contributors
+## Support
 
-- [Your Name](https://github.com/yourusername)
+For support, please email support@glamgo.com or visit our [help center](https://help.glamgo.com).
 
 ## Acknowledgments
 
-- [Laravel](https://laravel.com)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Alpine.js](https://alpinejs.dev)
-- [Heroicons](https://heroicons.com)
+- Laravel Team
+- Vue.js Team
+- FullCalendar.js Team
+- All contributors who have helped shape GlamGo
 
 ## 🌟 Features
 

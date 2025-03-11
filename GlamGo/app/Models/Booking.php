@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,28 +13,29 @@ use App\Models\Staff;
 
 class Booking extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'service_id',
-        'specialist_id',
         'customer_id',
-        'start_time',
-        'end_time',
+        'service_id',
+        'staff_id',
+        'scheduled_at',
+        'duration',
         'status',
-        'total_price',
-        'customer_details',
-        'notes',
-        'confirmation_code',
-        'timezone',
-        'payment_status',
-        'addons'
+        'total_amount',
+        'notes'
     ];
 
     protected $casts = [
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
-        'customer_details' => 'array',
-        'addons' => 'array',
-        'total_price' => 'decimal:2'
+        'scheduled_at' => 'datetime',
+        'total_amount' => 'decimal:2',
+        'duration' => 'integer'
+    ];
+
+    protected $dates = [
+        'scheduled_at',
+        'created_at',
+        'updated_at'
     ];
 
     const STATUS_PENDING = 'pending';
@@ -46,19 +48,19 @@ class Booking extends Model
     const PAYMENT_STATUS_PAID = 'paid';
     const PAYMENT_STATUS_REFUNDED = 'refunded';
 
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
     }
 
-    public function specialist(): BelongsTo
+    public function staff(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'specialist_id');
-    }
-
-    public function customer(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'customer_id');
+        return $this->belongsTo(Staff::class);
     }
 
     public function addons(): HasMany
@@ -66,16 +68,59 @@ class Booking extends Model
         return $this->hasMany(ServiceAddon::class);
     }
 
+    public function scopePending($query)
+    {
+        return $query->where('status', self::STATUS_PENDING);
+    }
+
+    public function scopeConfirmed($query)
+    {
+        return $query->where('status', self::STATUS_CONFIRMED);
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', self::STATUS_COMPLETED);
+    }
+
+    public function scopeCancelled($query)
+    {
+        return $query->where('status', self::STATUS_CANCELLED);
+    }
+
+    public function scopeNoShow($query)
+    {
+        return $query->where('status', self::STATUS_NO_SHOW);
+    }
+
     public function scopeUpcoming($query)
     {
-        return $query->where('start_time', '>=', now())
-                    ->whereNotIn('status', [self::STATUS_CANCELLED, self::STATUS_COMPLETED]);
+        return $query->where('scheduled_at', '>', Carbon::now())
+            ->whereIn('status', [self::STATUS_PENDING, self::STATUS_CONFIRMED]);
+    }
+
+    public function scopePast($query)
+    {
+        return $query->where('scheduled_at', '<', Carbon::now());
     }
 
     public function scopeToday($query)
     {
-        return $query->whereDate('start_time', Carbon::today())
-                    ->whereNotIn('status', [self::STATUS_CANCELLED]);
+        return $query->whereDate('scheduled_at', Carbon::today());
+    }
+
+    public function scopeThisWeek($query)
+    {
+        return $query->whereBetween('scheduled_at', [
+            Carbon::now()->startOfWeek(),
+            Carbon::now()->endOfWeek()
+        ]);
+    }
+
+    public function scopeThisMonth($query)
+    {
+        return $query->whereMonth('scheduled_at', Carbon::now()->month)
+            ->whereYear('scheduled_at', Carbon::now()->year);
     }
 
     public function scopeBySpecialist($query, $specialistId)
@@ -90,12 +135,12 @@ class Booking extends Model
 
     public function scopeByDateRange($query, $startDate, $endDate)
     {
-        return $query->whereBetween('start_time', [$startDate, $endDate]);
+        return $query->whereBetween('scheduled_at', [$startDate, $endDate]);
     }
 
     public function getDurationInMinutes(): int
     {
-        return $this->start_time->diffInMinutes($this->end_time);
+        return $this->duration;
     }
 
     public function isOverlapping(): bool
@@ -103,27 +148,32 @@ class Booking extends Model
         return static::where('specialist_id', $this->specialist_id)
             ->where('id', '!=', $this->id)
             ->where(function ($query) {
-                $query->whereBetween('start_time', [$this->start_time, $this->end_time])
-                    ->orWhereBetween('end_time', [$this->start_time, $this->end_time])
+                $query->whereBetween('scheduled_at', [$this->scheduled_at, $this->scheduled_at->copy()->addMinutes($this->duration)])
+                    ->orWhereBetween('scheduled_at', [$this->scheduled_at, $this->scheduled_at->copy()->addMinutes($this->duration)])
                     ->orWhere(function ($q) {
-                        $q->where('start_time', '<=', $this->start_time)
-                            ->where('end_time', '>=', $this->end_time);
+                        $q->where('scheduled_at', '<=', $this->scheduled_at)
+                            ->where('scheduled_at', '>=', $this->scheduled_at->copy()->addMinutes($this->duration));
                     });
             })
             ->whereNotIn('status', [self::STATUS_CANCELLED, self::STATUS_NO_SHOW])
             ->exists();
     }
 
+    public function canBeModified(): bool
+    {
+        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_CONFIRMED]);
+    }
+
     public function canBeCancelled(): bool
     {
-        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_CONFIRMED]) &&
-               $this->start_time->isFuture();
+        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_CONFIRMED]) 
+            && $this->scheduled_at > Carbon::now();
     }
 
     public function canBeRescheduled(): bool
     {
         return in_array($this->status, [self::STATUS_PENDING, self::STATUS_CONFIRMED]) &&
-               $this->start_time->isFuture();
+               $this->scheduled_at->isFuture();
     }
 
     public function getFormattedStatus(): string
@@ -140,5 +190,55 @@ class Booking extends Model
             self::STATUS_CANCELLED => '#F87171',   // Red
             self::STATUS_NO_SHOW => '#6B7280',     // Gray
         ][$this->status] ?? '#9CA3AF';
+    }
+
+    public function getFormattedScheduledAtAttribute()
+    {
+        return $this->scheduled_at ? $this->scheduled_at->format('M d, Y h:i A') : null;
+    }
+
+    public function getFormattedDurationAttribute()
+    {
+        return $this->duration . ' minutes';
+    }
+
+    public function getFormattedTotalAmountAttribute()
+    {
+        return '$' . number_format($this->total_amount, 2);
+    }
+
+    public function isPending()
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isConfirmed()
+    {
+        return $this->status === self::STATUS_CONFIRMED;
+    }
+
+    public function isCompleted()
+    {
+        return $this->status === self::STATUS_COMPLETED;
+    }
+
+    public function isCancelled()
+    {
+        return $this->status === self::STATUS_CANCELLED;
+    }
+
+    public function isNoShow()
+    {
+        return $this->status === self::STATUS_NO_SHOW;
+    }
+
+    public function isUpcoming()
+    {
+        return $this->scheduled_at > Carbon::now();
+    }
+
+    public function isPast()
+    {
+        return $this->scheduled_at < Carbon::now();
     }
 }

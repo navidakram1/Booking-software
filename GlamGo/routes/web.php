@@ -54,14 +54,19 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::prefix('admin')->name('admin.')->group(function () {
     // Guest routes (login only)
     Route::middleware(['web', 'guest:admin'])->group(function () {
-        Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
-        Route::post('login', [AuthController::class, 'login']);
+        Route::get('login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+        Route::post('login', [AdminAuthController::class, 'login']);
     });
 
     // Authenticated admin routes
     Route::middleware(['web', 'auth:admin'])->group(function () {
-        Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+        Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        
+        // Profile routes
+        Route::get('/profile', [AdminAuthController::class, 'profile'])->name('profile');
+        Route::put('/profile', [AdminAuthController::class, 'updateProfile'])->name('profile.update');
+        Route::put('/profile/password', [AdminAuthController::class, 'updatePassword'])->name('profile.password');
         
         // Session check
         Route::post('check-session', [AdminAuthController::class, 'checkSession'])->name('check-session');
@@ -69,30 +74,81 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Content Pages
         Route::resource('content/pages', ContentPageController::class)->names('content.pages');
         
-        // Bookings
-        Route::resource('bookings', AdminBookingsController::class)->names('bookings');
-        Route::get('bookings/export', [AdminBookingsController::class, 'export'])->name('bookings.export');
-        Route::post('bookings/{booking}/status', [AdminBookingsController::class, 'updateStatus'])->name('bookings.status');
-        Route::post('bookings/{booking}/reschedule', [AdminBookingsController::class, 'reschedule'])->name('bookings.reschedule');
-        
-        // Appointments
-        Route::resource('appointments', AppointmentController::class);
-        Route::get('appointments/export', [AppointmentController::class, 'export'])->name('appointments.export');
-        Route::post('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
-        Route::post('appointments/{appointment}/reschedule', [AppointmentController::class, 'reschedule'])->name('appointments.reschedule');
+        // Bookings Management
+        Route::prefix('bookings')->name('bookings.')->group(function () {
+            Route::get('/', [AdminBookingsController::class, 'index'])->name('index');
+            Route::get('/calendar', [AdminBookingsController::class, 'calendar'])->name('calendar');
+            Route::get('/list', [AdminBookingsController::class, 'list'])->name('list');
+            Route::get('/pending', [AdminBookingsController::class, 'pending'])->name('pending');
+            Route::get('/create', [AdminBookingsController::class, 'create'])->name('create');
+            Route::post('/', [AdminBookingsController::class, 'store'])->name('store');
+            Route::get('/{booking}', [AdminBookingsController::class, 'show'])->name('show');
+            Route::get('/{booking}/edit', [AdminBookingsController::class, 'edit'])->name('edit');
+            Route::put('/{booking}', [AdminBookingsController::class, 'update'])->name('update');
+            Route::delete('/{booking}', [AdminBookingsController::class, 'destroy'])->name('destroy');
+            Route::post('/{booking}/status', [AdminBookingsController::class, 'updateStatus'])->name('status');
+            Route::post('/{booking}/reschedule', [AdminBookingsController::class, 'reschedule'])->name('reschedule');
+            Route::get('/export', [AdminBookingsController::class, 'export'])->name('export');
+            
+            // Calendar specific routes
+            Route::get('/calendar/events', [AdminBookingsController::class, 'getCalendarEvents'])->name('calendar.events');
+            Route::post('/calendar/move', [AdminBookingsController::class, 'moveCalendarEvent'])->name('calendar.move');
+            Route::post('/calendar/resize', [AdminBookingsController::class, 'resizeCalendarEvent'])->name('calendar.resize');
+        });
         
         // Services
         Route::resource('services', ServiceController::class);
+        Route::get('services/categories', [ServiceController::class, 'categories'])->name('services.categories');
+        Route::get('services/offers', [ServiceController::class, 'offers'])->name('services.offers');
+        Route::get('services/catalog', [ServiceController::class, 'catalog'])->name('services.catalog');
         
         // Staff
-        Route::resource('staff', StaffController::class);
+        Route::prefix('staff')->name('staff.')->group(function () {
+            Route::get('/', [StaffController::class, 'index'])->name('index');
+            Route::get('/list', [StaffController::class, 'list'])->name('list');
+            Route::get('/schedule', [StaffController::class, 'schedule'])->name('schedule');
+            Route::get('/performance', [StaffController::class, 'performance'])->name('performance');
+        });
         
         // Customers
-        Route::resource('customers', CustomerController::class);
+        Route::prefix('customers')->name('customers.')->group(function () {
+            Route::get('/', [AdminCustomerController::class, 'index'])->name('index');
+            Route::get('/list', [AdminCustomerController::class, 'list'])->name('list');
+            Route::get('/loyalty', [AdminCustomerController::class, 'loyalty'])->name('loyalty');
+            Route::get('/communications', [AdminCustomerController::class, 'communications'])->name('communications');
+        });
+        
+        // Marketing
+        Route::prefix('marketing')->name('marketing.')->group(function () {
+            Route::get('/campaigns', [AdminMarketingController::class, 'campaigns'])->name('campaigns');
+            Route::get('/sms', [AdminMarketingController::class, 'sms'])->name('sms');
+            Route::get('/promotions', [AdminMarketingController::class, 'promotions'])->name('promotions');
+        });
+        
+        // Content
+        Route::prefix('content')->name('content.')->group(function () {
+            Route::get('/gallery', [ContentController::class, 'gallery'])->name('gallery');
+            Route::get('/blog', [ContentController::class, 'blog'])->name('blog');
+            Route::get('/testimonials', [ContentController::class, 'testimonials'])->name('testimonials');
+        });
         
         // Analytics
-        Route::get('analytics/revenue', [DashboardController::class, 'revenueAnalytics'])->name('analytics.revenue');
-        Route::get('analytics/revenue/export', [DashboardController::class, 'exportRevenueAnalytics'])->name('analytics.revenue.export');
+        Route::prefix('analytics')->name('analytics.')->group(function () {
+            Route::get('/revenue', [DashboardController::class, 'revenueAnalytics'])->name('revenue');
+            Route::get('/revenue/export', [DashboardController::class, 'exportRevenueAnalytics'])->name('revenue.export');
+            Route::get('/bookings', [DashboardController::class, 'bookingsAnalytics'])->name('bookings');
+            Route::get('/customers', [DashboardController::class, 'customersAnalytics'])->name('customers');
+        });
+        
+        // Settings
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/business', [AdminSettingsController::class, 'business'])->name('business');
+            Route::get('/integrations', [AdminSettingsController::class, 'integrations'])->name('integrations');
+            Route::get('/security', [AdminSettingsController::class, 'security'])->name('security');
+        });
+
+        // API endpoints
+        Route::get('/revenue-data', [DashboardController::class, 'getRevenueData'])->name('revenue-data');
     });
 });
 
