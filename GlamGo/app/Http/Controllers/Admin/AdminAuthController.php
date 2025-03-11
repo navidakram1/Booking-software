@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Log;
 use App\Models\Admin;
 
 class AdminAuthController extends Controller
@@ -75,31 +77,85 @@ class AdminAuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
-
-        if (Auth::guard('admin')->attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended(route('admin.dashboard'));
+        // Implement rate limiting
+        $key = 'login_attempts_'.$request->ip();
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $seconds = RateLimiter::availableIn($key);
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => "Too many login attempts. Please try again in {$seconds} seconds."]);
         }
 
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string'
         ]);
+
+        if (Auth::guard('admin')->attempt($credentials, $request->filled('remember'))) {
+            RateLimiter::clear($key);
+            
+            $request->session()->regenerate();
+            session(['admin_last_activity' => time()]);
+            
+            // Log successful login
+            $admin = Auth::guard('admin')->user();
+            $admin->update([
+                'last_login_at' => now(),
+                'last_login_ip' => $request->ip()
+            ]);
+            
+            Log::info('Admin login successful', [
+                'admin_id' => $admin->id,
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent()
+            ]);
+
+            return redirect()->intended(route('admin.dashboard'))
+                ->with('success', 'Welcome back, ' . $admin->name);
+        }
+
+        // Log failed login attempt
+        Log::warning('Failed admin login attempt', [
+            'email' => $request->email,
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
+
+        RateLimiter::hit($key);
+
+        return back()
+            ->withInput($request->only('email'))
+            ->withErrors(['email' => 'These credentials do not match our records.']);
     }
 
     public function logout(Request $request)
     {
+        $admin_id = Auth::guard('admin')->id();
+        
         Auth::guard('admin')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('admin.login');
+        
+        // Log logout
+        Log::info('Admin logged out', [
+            'admin_id' => $admin_id,
+            'ip' => $request->ip()
+        ]);
+
+        return redirect()->route('admin.login')
+            ->with('success', 'You have been successfully logged out.');
     }
 
     public function checkSession()
     {
-        return response()->json(['authenticated' => Auth::guard('admin')->check()]);
+        $isAuthenticated = Auth::guard('admin')->check();
+        $lastActivity = session('admin_last_activity', 0);
+        $timeout = config('session.admin_timeout', 120) * 60;
+        $isExpired = time() - $lastActivity > $timeout;
+
+        return response()->json([
+            'authenticated' => $isAuthenticated && !$isExpired,
+            'timeout' => $isExpired
+        ]);
     }
 } 

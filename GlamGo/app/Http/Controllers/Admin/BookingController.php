@@ -4,69 +4,56 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Models\Service;
-use App\Models\Specialist;
 use App\Models\Customer;
-use Illuminate\Http\Request;
+use App\Models\Service;
+use App\Models\Staff;
+use App\Notifications\BookingRescheduled;
+use App\Notifications\BookingStatusChanged;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\ValidationException;
 
 class BookingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Booking::with(['customer', 'service', 'specialist'])
-            ->latest();
-
-        // Apply filters
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('date')) {
-            $query->whereDate('appointment_date', $request->date);
-        }
-
-        if ($request->filled('specialist')) {
-            $query->where('specialist_id', $request->specialist);
-        }
-
-        if ($request->filled('service')) {
-            $query->where('service_id', $request->service);
-        }
-
-        $bookings = $query->paginate(15);
-        $specialists = Specialist::all();
-        $services = Service::all();
-
-        return view('admin.bookings.index', compact('bookings', 'specialists', 'services'));
-    }
-
-    public function calendar()
-    {
-        $bookings = Booking::with(['service', 'specialist'])
-            ->get()
-            ->map(function ($booking) {
-                $customerDetails = json_decode($booking->customer_details, true);
-                return [
-                    'id' => $booking->id,
-                    'title' => ($customerDetails['name'] ?? 'N/A') . ' - ' . $booking->service->name,
-                    'start' => $booking->start_time,
-                    'end' => $booking->end_time,
-                    'url' => route('admin.bookings.edit', $booking),
-                    'className' => $this->getStatusClass($booking->status)
-                ];
+        $query = Booking::with(['customer', 'service', 'staff'])
+            ->when($request->status, function ($q) use ($request) {
+                return $q->where('status', $request->status);
+            })
+            ->when($request->date, function ($q) use ($request) {
+                return $q->whereDate('start_time', Carbon::parse($request->date));
+            })
+            ->when($request->staff_id, function ($q) use ($request) {
+                return $q->where('staff_id', $request->staff_id);
             });
 
-        return view('admin.bookings.calendar', compact('bookings'));
+        if ($request->view === 'calendar') {
+            $bookings = $query->get()->map(function ($booking) {
+                return [
+                    'id' => $booking->id,
+                    'title' => $booking->service->name . ' - ' . $booking->customer->name,
+                    'start' => $booking->start_time,
+                    'end' => $booking->end_time,
+                    'color' => $this->getStatusColor($booking->status),
+                    'url' => route('admin.bookings.show', $booking)
+                ];
+            });
+            return response()->json($bookings);
+        }
+
+        $bookings = $query->latest()->paginate(15);
+        return view('admin.bookings.index', compact('bookings'));
     }
 
     public function create()
     {
-        $services = Service::active()->get();
-        $specialists = Specialist::active()->get();
         $customers = Customer::all();
-
-        return view('admin.bookings.create', compact('services', 'specialists', 'customers'));
+        $services = Service::all();
+        $staff = Staff::all();
+        return view('admin.bookings.create', compact('customers', 'services', 'staff'));
     }
 
     public function store(Request $request)
@@ -74,99 +61,107 @@ class BookingController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'service_id' => 'required|exists:services,id',
-            'specialist_id' => 'required|exists:specialists,id',
-            'appointment_date' => 'required|date|after:now',
-            'notes' => 'nullable|string',
-            'status' => 'required|in:pending,confirmed,completed,cancelled'
+            'staff_id' => 'required|exists:staff,id',
+            'start_time' => 'required|date|after:now',
+            'end_time' => 'required|date|after:start_time',
+            'notes' => 'nullable|string'
         ]);
 
-        $booking = Booking::create($validated);
+        try {
+            DB::beginTransaction();
 
-        return redirect()
-            ->route('admin.bookings.index')
-            ->with('success', 'Booking created successfully.');
+            $service = Service::findOrFail($validated['service_id']);
+            $booking = new Booking($validated);
+            $booking->status = 'pending';
+            $booking->total_amount = $service->price;
+            $booking->payment_status = 'pending';
+            $booking->save();
+
+            // Send notifications
+            $booking->customer->notify(new BookingStatusChanged($booking, null, 'pending'));
+
+            DB::commit();
+            return redirect()->route('admin.bookings.index')->with('success', 'Booking created successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw ValidationException::withMessages(['error' => 'Failed to create booking. ' . $e->getMessage()]);
+        }
     }
 
-    public function edit(Booking $booking)
+    public function show(Booking $booking)
     {
-        $booking->load(['customer', 'service', 'specialist']);
-        $services = Service::active()->get();
-        $specialists = Specialist::active()->get();
-        $customers = Customer::all();
-
-        return view('admin.bookings.edit', compact('booking', 'services', 'specialists', 'customers'));
+        $booking->load(['customer', 'service', 'staff']);
+        return view('admin.bookings.show', compact('booking'));
     }
 
     public function update(Request $request, Booking $booking)
     {
         $validated = $request->validate([
-            'customer_id' => 'required|exists:customers,id',
-            'service_id' => 'required|exists:services,id',
-            'specialist_id' => 'required|exists:specialists,id',
-            'appointment_date' => 'required|date',
+            'status' => 'sometimes|required|in:pending,confirmed,cancelled,completed',
             'notes' => 'nullable|string',
-            'status' => 'required|in:pending,confirmed,completed,cancelled'
+            'cancellation_reason' => 'required_if:status,cancelled|nullable|string'
         ]);
 
-        $booking->update($validated);
+        try {
+            DB::beginTransaction();
 
-        return redirect()
-            ->route('admin.bookings.index')
-            ->with('success', 'Booking updated successfully.');
-    }
+            $oldStatus = $booking->status;
+            $booking->update($validated);
 
-    public function destroy(Booking $booking)
-    {
-        $booking->delete();
+            if ($oldStatus !== $booking->status) {
+                $booking->customer->notify(new BookingStatusChanged($booking, $oldStatus, $booking->status));
+            }
 
-        return redirect()
-            ->route('admin.bookings.index')
-            ->with('success', 'Booking deleted successfully.');
-    }
-
-    public function updateStatus(Request $request, Booking $booking)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:pending,confirmed,completed,cancelled'
-        ]);
-
-        $booking->update($validated);
-
-        return redirect()
-            ->back()
-            ->with('success', 'Booking status updated successfully.');
+            DB::commit();
+            return redirect()->route('admin.bookings.show', $booking)->with('success', 'Booking updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw ValidationException::withMessages(['error' => 'Failed to update booking. ' . $e->getMessage()]);
+        }
     }
 
     public function reschedule(Request $request, Booking $booking)
     {
         $validated = $request->validate([
-            'appointment_date' => 'required|date|after:now',
-            'specialist_id' => 'sometimes|exists:specialists,id'
+            'start_time' => 'required|date|after:now',
+            'end_time' => 'required|date|after:start_time',
+            'staff_id' => 'sometimes|exists:staff,id'
         ]);
 
-        $booking->update($validated);
+        try {
+            DB::beginTransaction();
 
-        return redirect()
-            ->back()
-            ->with('success', 'Booking rescheduled successfully.');
+            // Create new booking with updated schedule
+            $newBooking = $booking->replicate();
+            $newBooking->start_time = $validated['start_time'];
+            $newBooking->end_time = $validated['end_time'];
+            $newBooking->staff_id = $validated['staff_id'] ?? $booking->staff_id;
+            $newBooking->rescheduled_from = $booking->id;
+            $newBooking->save();
+
+            // Update old booking status
+            $booking->status = 'cancelled';
+            $booking->cancellation_reason = 'Rescheduled to new time slot';
+            $booking->save();
+
+            // Send notifications
+            $booking->customer->notify(new BookingRescheduled($booking, $newBooking));
+
+            DB::commit();
+            return redirect()->route('admin.bookings.show', $newBooking)->with('success', 'Booking rescheduled successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw ValidationException::withMessages(['error' => 'Failed to reschedule booking. ' . $e->getMessage()]);
+        }
     }
 
-    public function cancel(Booking $booking)
-    {
-        $booking->update(['status' => 'cancelled']);
-
-        return redirect()
-            ->back()
-            ->with('success', 'Booking cancelled successfully.');
-    }
-
-    private function getStatusClass($status)
+    private function getStatusColor($status)
     {
         return [
-            'pending' => 'bg-yellow-100 text-yellow-800',
-            'confirmed' => 'bg-blue-100 text-blue-800',
-            'completed' => 'bg-green-100 text-green-800',
-            'cancelled' => 'bg-red-100 text-red-800',
-        ][$status] ?? 'bg-gray-100';
+            'pending' => '#fbbf24',    // Yellow
+            'confirmed' => '#60a5fa',   // Blue
+            'cancelled' => '#ef4444',   // Red
+            'completed' => '#34d399',   // Green
+        ][$status] ?? '#6b7280';        // Gray default
     }
 } 

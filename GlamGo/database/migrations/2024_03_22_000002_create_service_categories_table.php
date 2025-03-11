@@ -6,29 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('service_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('description')->nullable();
-            $table->string('image')->nullable();
             $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->string('icon')->nullable();
+            $table->string('image_url')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->integer('order')->default(0);
+            $table->integer('sort_order')->default(0);
+            $table->string('color_code', 7)->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index('slug');
+            $table->index(['is_active', 'sort_order']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('service_categories');
     }
-};
+}; 

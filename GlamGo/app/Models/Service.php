@@ -11,25 +11,32 @@ use App\Models\Category;
 use App\Models\Booking;
 use App\Models\Specialist;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class Service extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'category_id',
         'name',
+        'slug',
         'description',
-        'price',
         'duration',
-        'category',
-        'image',
-        'is_active'
+        'price',
+        'is_active',
+        'max_participants',
+        'image_url',
+        'color_code',
+        'sort_order'
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
         'duration' => 'integer',
-        'is_active' => 'boolean'
+        'price' => 'decimal:2',
+        'is_active' => 'boolean',
+        'max_participants' => 'integer',
+        'sort_order' => 'integer'
     ];
 
     /**
@@ -37,7 +44,7 @@ class Service extends Model
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(ServiceCategory::class, 'category_id');
     }
 
     /**
@@ -64,29 +71,67 @@ class Service extends Model
         return $this->hasMany(Appointment::class);
     }
 
-    /**
-     * Get the formatted price.
-     */
-    public function getFormattedPriceAttribute()
+    public function addons(): HasMany
     {
-        return number_format($this->price, 2);
+        return $this->hasMany(ServiceAddon::class);
     }
 
-    /**
-     * Get the formatted duration.
-     */
-    public function getFormattedDurationAttribute()
+    public function specialOffers(): HasMany
     {
-        $hours = floor($this->duration / 60);
-        $minutes = $this->duration % 60;
-        
-        if ($hours > 0 && $minutes > 0) {
-            return "{$hours}h {$minutes}m";
-        } elseif ($hours > 0) {
-            return "{$hours}h";
-        } else {
-            return "{$minutes}m";
+        return $this->hasMany(SpecialOffer::class);
+    }
+
+    public function getActiveSpecialOffer()
+    {
+        return $this->specialOffers()
+            ->where('start_date', '<=', Carbon::now())
+            ->where('end_date', '>=', Carbon::now())
+            ->where('is_active', true)
+            ->first();
+    }
+
+    public function getDiscountedPrice(): float
+    {
+        $specialOffer = $this->getActiveSpecialOffer();
+        if (!$specialOffer) {
+            return $this->price;
         }
+
+        if ($specialOffer->discount_type === 'percentage') {
+            return $this->price * (1 - ($specialOffer->discount_value / 100));
+        }
+
+        return max(0, $this->price - $specialOffer->discount_value);
+    }
+
+    public function getFormattedPrice(): string
+    {
+        return '$' . number_format($this->price, 2);
+    }
+
+    public function getFormattedDuration(): string
+    {
+        return $this->duration . ' minutes';
+    }
+
+    public function getFormattedDiscountedPrice(): string
+    {
+        return '$' . number_format($this->getDiscountedPrice(), 2);
+    }
+
+    public function hasActiveDiscount(): bool
+    {
+        return $this->getActiveSpecialOffer() !== null;
+    }
+
+    public function getDiscountPercentage(): ?int
+    {
+        $specialOffer = $this->getActiveSpecialOffer();
+        if (!$specialOffer || $specialOffer->discount_type !== 'percentage') {
+            return null;
+        }
+
+        return (int) $specialOffer->discount_value;
     }
 
     /**
@@ -135,5 +180,30 @@ class Service extends Model
               ->orWhere('description', 'like', "%{$search}%")
               ->orWhere('category_id', 'like', "%{$search}%");
         });
+    }
+
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', false);
+    }
+
+    public function scopeByCategory($query, $categoryId)
+    {
+        return $query->where('category_id', $categoryId);
+    }
+
+    public function scopeWithActiveDiscounts($query)
+    {
+        return $query->whereHas('specialOffers', function ($q) {
+            $q->where('start_date', '<=', Carbon::now())
+              ->where('end_date', '>=', Carbon::now())
+              ->where('is_active', true);
+        });
+    }
+
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('sort_order', 'asc')
+                    ->orderBy('name', 'asc');
     }
 }

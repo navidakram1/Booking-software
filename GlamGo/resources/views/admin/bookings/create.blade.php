@@ -1,135 +1,169 @@
-@extends('layouts.admin')
+@extends('admin.layouts.app')
 
-@section('title', 'New Booking - GlamGo Admin')
-@section('page-title', 'New Booking')
-
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
-@endpush
+@section('title', 'Create New Booking')
 
 @section('content')
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-2xl font-semibold text-gray-900">New Booking</h1>
-            <p class="mt-1 text-sm text-gray-600">Create a new booking for a customer</p>
-        </div>
-        <div>
-            <a href="{{ route('admin.bookings.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
-                <i class="fas fa-arrow-left mr-2"></i>
-                Back to List
-            </a>
-        </div>
+<div class="container mx-auto px-4 py-6">
+    <div class="mb-6">
+        <a href="{{ route('admin.bookings.index') }}" class="text-blue-600 hover:text-blue-800">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Bookings
+        </a>
     </div>
 
-    <!-- Booking Form -->
     <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h1 class="text-2xl font-semibold text-gray-900">Create New Booking</h1>
+        </div>
+
         <form action="{{ route('admin.bookings.store') }}" method="POST" class="p-6">
             @csrf
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Customer Details -->
+                <!-- Customer Selection -->
                 <div>
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Customer Information</h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label for="customer_name" class="block text-sm font-medium text-gray-700">Name</label>
-                            <input type="text" name="customer_details[name]" id="customer_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
-                        </div>
-                        <div>
-                            <label for="customer_email" class="block text-sm font-medium text-gray-700">Email</label>
-                            <input type="email" name="customer_details[email]" id="customer_email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
-                        </div>
-                        <div>
-                            <label for="customer_phone" class="block text-sm font-medium text-gray-700">Phone</label>
-                            <input type="tel" name="customer_details[phone]" id="customer_phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
-                        </div>
-                    </div>
+                    <label for="customer_id" class="block text-sm font-medium text-gray-700">Customer</label>
+                    <select name="customer_id" id="customer_id" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select Customer</option>
+                        @foreach($customers as $customer)
+                            <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                                {{ $customer->name }} ({{ $customer->email }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('customer_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <!-- Service Details -->
+                <!-- Service Selection -->
                 <div>
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Service Information</h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label for="service_id" class="block text-sm font-medium text-gray-700">Service</label>
-                            <select name="service_id" id="service_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
-                                <option value="">Select a service</option>
-                                @foreach($services as $service)
-                                <option value="{{ $service->id }}" data-duration="{{ $service->duration }}" data-price="{{ $service->price }}">
-                                    {{ $service->name }} - {{ $service->duration }}min - ${{ number_format($service->price, 2) }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label for="specialist_id" class="block text-sm font-medium text-gray-700">Specialist</label>
-                            <select name="specialist_id" id="specialist_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
-                                <option value="">Select a specialist</option>
-                                @foreach($specialists as $specialist)
-                                <option value="{{ $specialist->id }}">{{ $specialist->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label for="start_time" class="block text-sm font-medium text-gray-700">Date & Time</label>
-                            <input type="text" name="start_time" id="start_time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
-                        </div>
+                    <label for="service_id" class="block text-sm font-medium text-gray-700">Service</label>
+                    <select name="service_id" id="service_id" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select Service</option>
+                        @foreach($services as $service)
+                            <option value="{{ $service->id }}" 
+                                    data-duration="{{ $service->duration }}"
+                                    data-price="{{ $service->price }}"
+                                    {{ old('service_id') == $service->id ? 'selected' : '' }}>
+                                {{ $service->name }} ({{ $service->duration }} min - ${{ number_format($service->price, 2) }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('service_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Staff Selection -->
+                <div>
+                    <label for="staff_id" class="block text-sm font-medium text-gray-700">Staff Member</label>
+                    <select name="staff_id" id="staff_id" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select Staff Member</option>
+                        @foreach($staff as $member)
+                            <option value="{{ $member->id }}" {{ old('staff_id') == $member->id ? 'selected' : '' }}>
+                                {{ $member->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('staff_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Date and Time Selection -->
+                <div>
+                    <label for="start_time" class="block text-sm font-medium text-gray-700">Appointment Date & Time</label>
+                    <input type="datetime-local" name="start_time" id="start_time" required
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           value="{{ old('start_time') }}">
+                    @error('start_time')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Notes -->
+                <div class="md:col-span-2">
+                    <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
+                    <textarea name="notes" id="notes" rows="3"
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('notes') }}</textarea>
+                    @error('notes')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Booking Summary</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500">Duration</span>
+                        <span id="duration-display" class="block mt-1 text-sm text-gray-900">-</span>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500">End Time</span>
+                        <span id="end-time-display" class="block mt-1 text-sm text-gray-900">-</span>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-medium text-gray-500">Total Amount</span>
+                        <span id="price-display" class="block mt-1 text-sm text-gray-900">-</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Additional Details -->
-            <div class="mt-6">
-                <h2 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
-                        <textarea name="notes" id="notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm"></textarea>
-                    </div>
-                    <div>
-                        <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                        <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm" required>
-                            <option value="pending">Pending</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="mt-6">
-                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
                     Create Booking
                 </button>
             </div>
         </form>
     </div>
 </div>
+
 @endsection
 
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+@section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize datetime picker
-    flatpickr("#start_time", {
-        enableTime: true,
-        dateFormat: "Y-m-d H:i",
-        minDate: "today",
-        minuteIncrement: 15
-    });
-
-    // Handle service selection to update end time
     const serviceSelect = document.getElementById('service_id');
-    serviceSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const duration = selectedOption.dataset.duration;
-        // You can use the duration to calculate and display the end time
-        // based on the selected start time
-    });
+    const startTimeInput = document.getElementById('start_time');
+    const durationDisplay = document.getElementById('duration-display');
+    const endTimeDisplay = document.getElementById('end-time-display');
+    const priceDisplay = document.getElementById('price-display');
+
+    // Set minimum date to today
+    const today = new Date();
+    today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+    startTimeInput.min = today.toISOString().slice(0, 16);
+
+    function updateSummary() {
+        const selectedService = serviceSelect.options[serviceSelect.selectedIndex];
+        if (selectedService.value) {
+            const duration = parseInt(selectedService.dataset.duration);
+            const price = parseFloat(selectedService.dataset.price);
+            
+            durationDisplay.textContent = `${duration} minutes`;
+            priceDisplay.textContent = `$${price.toFixed(2)}`;
+
+            if (startTimeInput.value) {
+                const startTime = new Date(startTimeInput.value);
+                const endTime = new Date(startTime.getTime() + duration * 60000);
+                endTimeDisplay.textContent = endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        } else {
+            durationDisplay.textContent = '-';
+            endTimeDisplay.textContent = '-';
+            priceDisplay.textContent = '-';
+        }
+    }
+
+    serviceSelect.addEventListener('change', updateSummary);
+    startTimeInput.addEventListener('change', updateSummary);
+
+    // Initial update if there are pre-selected values
+    updateSummary();
 });
 </script>
-@endpush
+@endsection

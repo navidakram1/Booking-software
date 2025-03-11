@@ -4,15 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Database\Seeders\AdminSeeder;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\LandingPageSeeder;
-use Database\Seeders\ServiceSeeder;
-use Database\Seeders\SalonSeeder;
 use Database\Seeders\DashboardDemoSeeder;
-use Illuminate\Database\Seeder;
-use Database\Seeders\ServiceCategorySeeder;
-use Database\Seeders\SpecialistSeeder;
 use Database\Seeders\TestimonialSeeder;
+use Database\Seeders\BookingRulesSeeder;
+use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,10 +19,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminSeeder::class,
             DashboardDemoSeeder::class,
-            ServiceCategorySeeder::class,
-            ServiceSeeder::class,
-            SpecialistSeeder::class,
             TestimonialSeeder::class,
+            BookingRulesSeeder::class,
         ]);
     }
 }

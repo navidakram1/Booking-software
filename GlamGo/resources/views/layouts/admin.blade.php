@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Panel') - GlamGo</title>
+    <!-- Defer non-critical CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Optimize CSS transitions */
         .sidebar {
             position: fixed;
             top: 0;
@@ -15,21 +17,51 @@
             width: 280px;
             background: #2c3e50;
             padding: 20px;
-            transition: all 0.3s ease;
+            transition: width 0.2s ease;
             z-index: 1000;
             overflow-y: auto;
+            will-change: width;
+            transform: translateZ(0);
         }
         .sidebar.collapsed {
             width: 70px;
         }
         .main-content {
             margin-left: 280px;
-            transition: all 0.3s ease;
+            transition: margin-left 0.2s ease;
             min-height: 100vh;
             background: #f8f9fa;
+            will-change: margin-left;
+            transform: translateZ(0);
         }
         .main-content.expanded {
             margin-left: 70px;
+        }
+        /* Optimize animations */
+        .nav-link .fa-chevron-down {
+            transition: transform 0.2s ease;
+            will-change: transform;
+        }
+        [aria-expanded="true"] .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+        /* Use hardware acceleration for mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+                transition: transform 0.2s ease;
+                will-change: transform;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .main-content.expanded {
+                margin-left: 0;
+            }
         }
         .sidebar-brand {
             color: white;
@@ -76,13 +108,6 @@
         .nav-link span {
             white-space: nowrap;
             overflow: hidden;
-        }
-        .nav-link .fa-chevron-down {
-            transition: transform 0.3s ease;
-            font-size: 0.8rem;
-        }
-        [aria-expanded="true"] .fa-chevron-down {
-            transform: rotate(180deg);
         }
         .collapse.nav {
             padding-left: 2.5rem;
@@ -143,21 +168,6 @@
         }
         .user-dropdown .dropdown-item:hover {
             background: #f8f9fa;
-        }
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                width: 280px;
-            }
-            .sidebar.show {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .main-content.expanded {
-                margin-left: 0;
-            }
         }
         /* Custom Scrollbar for Sidebar */
         .sidebar::-webkit-scrollbar {
@@ -467,96 +477,153 @@
 
         <!-- Page Content -->
         <div class="container-fluid py-4">
+            @if(session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             @yield('content')
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Defer non-critical JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
     <script>
-        // Initialize Bootstrap tooltips and popovers
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-
-        // Sidebar Toggle
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('main-content');
-        const toggleBtn = document.getElementById('toggle-sidebar');
-        
-        function toggleSidebar() {
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
+        // Optimize JavaScript performance
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const toggleBtn = document.getElementById('toggle-sidebar');
             
-            // Store the state in localStorage
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        }
-        
-        toggleBtn.addEventListener('click', toggleSidebar);
-        
-        // Restore sidebar state from localStorage
-        if (localStorage.getItem('sidebarCollapsed') === 'true') {
-            sidebar.classList.add('collapsed');
-            mainContent.classList.add('expanded');
-        }
-        
-        // Handle submenu state
-        const submenuToggles = document.querySelectorAll('[data-bs-toggle="collapse"]');
-        submenuToggles.forEach(toggle => {
-            toggle.addEventListener('click', (e) => {
-                // Close other open submenus when opening a new one
-                if (!toggle.classList.contains('collapsed')) {
+            // Debounce function for performance
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+            
+            // Optimized sidebar toggle
+            const toggleSidebar = debounce(() => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            }, 100);
+            
+            // Event delegation for better performance
+            document.addEventListener('click', (e) => {
+                if (e.target === toggleBtn) {
+                    toggleSidebar();
+                }
+            });
+            
+            // Restore sidebar state
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+            }
+            
+            // Optimized submenu handling
+            const submenuToggles = document.querySelectorAll('[data-bs-toggle="collapse"]');
+            const submenuHandler = debounce((e) => {
+                const toggle = e.target.closest('[data-bs-toggle="collapse"]');
+                if (toggle && !toggle.classList.contains('collapsed')) {
                     submenuToggles.forEach(otherToggle => {
                         if (otherToggle !== toggle && !otherToggle.classList.contains('collapsed')) {
                             const submenu = document.querySelector(otherToggle.getAttribute('href'));
-                            bootstrap.Collapse.getInstance(submenu).hide();
+                            if (submenu) {
+                                bootstrap.Collapse.getInstance(submenu)?.hide();
+                            }
                         }
                     });
                 }
-            });
-        });
-        
-        // Keep submenu open for active items
-        const activeLinks = document.querySelectorAll('.nav-link.active');
-        activeLinks.forEach(link => {
-            const parentCollapse = link.closest('.collapse');
-            if (parentCollapse) {
-                const parentToggle = document.querySelector(`[href="#${parentCollapse.id}"]`);
-                if (parentToggle) {
-                    parentCollapse.classList.add('show');
-                    parentToggle.setAttribute('aria-expanded', 'true');
-                }
-            }
-        });
-        
-        // Mobile responsive handling
-        function handleMobileView() {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.add('collapsed');
-                mainContent.classList.add('expanded');
-                
-                // Add click outside listener to close sidebar on mobile
-                document.addEventListener('click', (e) => {
-                    if (window.innerWidth <= 768 && 
-                        !sidebar.contains(e.target) && 
-                        !toggleBtn.contains(e.target) && 
-                        !sidebar.classList.contains('collapsed')) {
-                        toggleSidebar();
+            }, 100);
+            
+            document.addEventListener('click', submenuHandler);
+            
+            // Keep submenu open for active items
+            const activeLinks = document.querySelectorAll('.nav-link.active');
+            activeLinks.forEach(link => {
+                const parentCollapse = link.closest('.collapse');
+                if (parentCollapse) {
+                    const parentToggle = document.querySelector(`[href="#${parentCollapse.id}"]`);
+                    if (parentToggle) {
+                        parentCollapse.classList.add('show');
+                        parentToggle.setAttribute('aria-expanded', 'true');
                     }
-                });
-            }
+                }
+            });
+            
+            // Optimized mobile handling
+            const handleMobileView = debounce(() => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.add('collapsed');
+                    mainContent.classList.add('expanded');
+                }
+            }, 100);
+            
+            // Initial check and window resize handler
+            handleMobileView();
+            window.addEventListener('resize', handleMobileView);
+            
+            // Optimize sidebar scroll
+            sidebar.addEventListener('wheel', (e) => {
+                if (sidebar.scrollHeight > sidebar.clientHeight) {
+                    e.stopPropagation();
+                }
+            }, { passive: true });
+        });
+
+        // Check session status every minute
+        const SESSION_CHECK_INTERVAL = 60000; // 1 minute
+        let sessionCheckTimer;
+
+        function checkSession() {
+            fetch('{{ route("admin.check-session") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.timeout || !data.authenticated) {
+                    clearInterval(sessionCheckTimer);
+                    alert('Your session has expired. You will be redirected to the login page.');
+                    window.location.href = '{{ route("admin.login") }}';
+                }
+            })
+            .catch(error => console.error('Session check failed:', error));
         }
-        
-        // Initial check and window resize handler
-        handleMobileView();
-        window.addEventListener('resize', handleMobileView);
-        
-        // Prevent sidebar scroll from affecting main content
-        sidebar.addEventListener('wheel', (e) => {
-            if (sidebar.scrollHeight > sidebar.clientHeight) {
-                e.stopPropagation();
-            }
+
+        // Start session checking when document loads
+        document.addEventListener('DOMContentLoaded', () => {
+            sessionCheckTimer = setInterval(checkSession, SESSION_CHECK_INTERVAL);
+        });
+
+        // Reset timer on user activity
+        document.addEventListener('click', () => {
+            fetch('{{ route("admin.check-session") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            });
         });
     </script>
     @stack('scripts')

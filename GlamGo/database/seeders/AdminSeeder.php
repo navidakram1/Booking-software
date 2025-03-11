@@ -16,8 +16,8 @@ class AdminSeeder extends Seeder
         Admin::create([
             'name' => 'Admin',
             'email' => 'admin@glamgo.com',
-            'password' => Hash::make('Admin@123'),
-            'email_verified_at' => now(),
+            'password' => Hash::make('admin123'),
+            'role' => 'admin'
         ]);
     }
 }
