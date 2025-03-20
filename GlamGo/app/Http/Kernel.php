@@ -40,7 +40,8 @@ class Kernel extends HttpKernel
 
         'admin' => [
             'web',
-            'auth',
+            'auth:admin',
+            \App\Http\Middleware\AdminMiddleware::class,
             \App\Http\Middleware\AdminSessionTimeout::class,
         ],
 
@@ -70,7 +71,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
-        'customer' => \App\Http\Middleware\CustomerMiddleware::class,
     ];
 
     /**
