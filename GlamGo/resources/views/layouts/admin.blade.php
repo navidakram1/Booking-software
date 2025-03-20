@@ -625,6 +625,53 @@
                 }
             });
         });
+
+        // Session timeout handling
+        const sessionTimeout = {{ config('session.admin_timeout', 120) * 60 * 1000 }}; // Convert minutes to milliseconds
+        let timeoutWarning;
+        let timeoutRedirect;
+
+        function resetSessionTimers() {
+            clearTimeout(timeoutWarning);
+            clearTimeout(timeoutRedirect);
+
+            // Warning 5 minutes before timeout
+            timeoutWarning = setTimeout(() => {
+                Swal.fire({
+                    title: 'Session Expiring',
+                    text: 'Your session will expire in 5 minutes. Would you like to continue?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, keep me signed in',
+                    cancelButtonText: 'No, log me out'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Refresh session
+                        fetch('{{ route("admin.check-session") }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        });
+                        resetSessionTimers();
+                    } else {
+                        window.location.href = '{{ route("admin.logout") }}';
+                    }
+                });
+            }, sessionTimeout - (5 * 60 * 1000)); // 5 minutes before timeout
+
+            // Redirect on timeout
+            timeoutRedirect = setTimeout(() => {
+                window.location.href = '{{ route("admin.login") }}?timeout=1';
+            }, sessionTimeout);
+        }
+
+        // Reset timers on page load and user activity
+        document.addEventListener('DOMContentLoaded', resetSessionTimers);
+        document.addEventListener('click', resetSessionTimers);
+        document.addEventListener('keypress', resetSessionTimers);
+        document.addEventListener('scroll', resetSessionTimers);
+        document.addEventListener('mousemove', resetSessionTimers);
     </script>
     @stack('scripts')
 </body>

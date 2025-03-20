@@ -72,4 +72,56 @@ class ServicesController extends Controller
         
         return view('services.show', compact('service'));
     }
+
+    public function filter(Request $request)
+    {
+        $query = Service::query()->where('is_active', true);
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('category')) {
+            $query->whereHas('category', function($q) use ($request) {
+                $q->where('slug', $request->category);
+            });
+        }
+
+        if ($request->filled('price')) {
+            switch ($request->price) {
+                case 'low':
+                    $query->where('price', '<', 50);
+                    break;
+                case 'medium':
+                    $query->whereBetween('price', [50, 100]);
+                    break;
+                case 'high':
+                    $query->where('price', '>', 100);
+                    break;
+            }
+        }
+
+        if ($request->filled('duration')) {
+            switch ($request->duration) {
+                case 'short':
+                    $query->where('duration', '<', 60);
+                    break;
+                case 'medium':
+                    $query->whereBetween('duration', [60, 120]);
+                    break;
+                case 'long':
+                    $query->where('duration', '>', 120);
+                    break;
+            }
+        }
+
+        $services = $query->latest()->paginate(9);
+
+        return view('components.services-grid', compact('services'))->render();
+    }
 }

@@ -173,11 +173,11 @@
                 <div class="stat-icon" style="background: rgba(52, 152, 219, 0.1); color: #3498db;">
                     <i class="fas fa-dollar-sign"></i>
                 </div>
-                <div class="stat-value">${{ number_format($totalRevenue, 2) }}</div>
+                <div class="stat-value">${{ number_format($revenue['total'], 2) }}</div>
                 <div class="stat-label">Total Revenue</div>
-                <div class="growth-indicator {{ $revenueGrowth >= 0 ? 'growth-positive' : 'growth-negative' }}">
-                    <i class="fas fa-{{ $revenueGrowth >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
-                    {{ abs($revenueGrowth) }}%
+                <div class="growth-indicator {{ $revenue['growth'] >= 0 ? 'growth-positive' : 'growth-negative' }}">
+                    <i class="fas fa-{{ $revenue['growth'] >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                    {{ abs($revenue['growth']) }}%
                 </div>
             </div>
         </div>
@@ -188,11 +188,11 @@
                 <div class="stat-icon" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71;">
                     <i class="fas fa-calendar-check"></i>
                 </div>
-                <div class="stat-value">{{ $totalBookings }}</div>
+                <div class="stat-value">{{ number_format($bookings['total']) }}</div>
                 <div class="stat-label">Total Bookings</div>
-                <div class="growth-indicator {{ $bookingsGrowth >= 0 ? 'growth-positive' : 'growth-negative' }}">
-                    <i class="fas fa-{{ $bookingsGrowth >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
-                    {{ abs($bookingsGrowth) }}%
+                <div class="growth-indicator {{ $bookings['growth'] >= 0 ? 'growth-positive' : 'growth-negative' }}">
+                    <i class="fas fa-{{ $bookings['growth'] >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                    {{ abs($bookings['growth']) }}%
                 </div>
             </div>
         </div>
@@ -203,11 +203,11 @@
                 <div class="stat-icon" style="background: rgba(155, 89, 182, 0.1); color: #9b59b6;">
                     <i class="fas fa-spa"></i>
                 </div>
-                <div class="stat-value">{{ $activeServices }}</div>
+                <div class="stat-value">{{ number_format($services['total']) }}</div>
                 <div class="stat-label">Active Services</div>
-                <div class="growth-indicator {{ $servicesGrowth >= 0 ? 'growth-positive' : 'growth-negative' }}">
-                    <i class="fas fa-{{ $servicesGrowth >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
-                    {{ abs($servicesGrowth) }}%
+                <div class="growth-indicator {{ $services['growth'] >= 0 ? 'growth-positive' : 'growth-negative' }}">
+                    <i class="fas fa-{{ $services['growth'] >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                    {{ abs($services['growth']) }}%
                 </div>
             </div>
         </div>
@@ -218,11 +218,11 @@
                 <div class="stat-icon" style="background: rgba(230, 126, 34, 0.1); color: #e67e22;">
                     <i class="fas fa-users"></i>
                 </div>
-                <div class="stat-value">{{ $totalCustomers }}</div>
+                <div class="stat-value">{{ number_format($customers['total']) }}</div>
                 <div class="stat-label">Total Customers</div>
-                <div class="growth-indicator {{ $customersGrowth >= 0 ? 'growth-positive' : 'growth-negative' }}">
-                    <i class="fas fa-{{ $customersGrowth >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
-                    {{ abs($customersGrowth) }}%
+                <div class="growth-indicator {{ $customers['growth'] >= 0 ? 'growth-positive' : 'growth-negative' }}">
+                    <i class="fas fa-{{ $customers['growth'] >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                    {{ abs($customers['growth']) }}%
                 </div>
             </div>
         </div>
@@ -252,16 +252,16 @@
                     <h5 class="mb-0">Popular Services</h5>
                 </div>
                 <div class="card-body">
-                    @foreach($popularServices as $service)
+                    @foreach($popular_services as $service)
                     <div class="service-card">
-                        <div class="service-icon" style="background: {{ $service->color_bg }}; color: {{ $service->color }};">
-                            <i class="fas fa-{{ $service->icon }}"></i>
+                        <div class="service-icon" style="background: rgba({{ $service['color'] }}, 0.1); color: {{ $service['color'] }};">
+                            <i class="fas fa-{{ $service['icon'] }}"></i>
                         </div>
                         <div class="flex-grow-1">
-                            <h6 class="mb-1">{{ $service->name }}</h6>
+                            <h6 class="mb-1">{{ $service['name'] }}</h6>
                             <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">{{ $service->bookings_count }} bookings</small>
-                                <span class="fw-bold">${{ number_format($service->price, 2) }}</span>
+                                <small class="text-muted">{{ $service['bookings_count'] }} bookings</small>
+                                <span class="fw-bold">${{ number_format($service['total_amount'] ?? 0, 2) }}</span>
                             </div>
                         </div>
                     </div>
@@ -294,41 +294,28 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($recentBookings as $booking)
+                                @foreach($recent_bookings as $booking)
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="avatar">
-                                                @if($booking->customer->avatar)
-                                                    <img src="{{ $booking->customer->avatar }}" alt="Avatar" class="rounded-circle" width="32">
-                                                @else
-                                                    <div class="avatar-initial rounded-circle bg-light text-dark">
-                                                        {{ substr($booking->customer->name, 0, 1) }}
-                                                    </div>
-                                                @endif
-                                            </div>
                                             <div>
-                                                <h6 class="mb-0">{{ $booking->customer->name }}</h6>
-                                                <small class="text-muted">{{ $booking->customer->email }}</small>
+                                                <h6 class="mb-0">{{ $booking['customer_name'] }}</h6>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{{ $booking->service->name }}</td>
-                                    <td>{{ $booking->scheduled_at->format('M d, Y h:i A') }}</td>
+                                    <td>{{ $booking['service_name'] }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($booking['created_at'])->format('M d, Y h:i A') }}</td>
                                     <td>
-                                        <span class="status-badge status-{{ strtolower($booking->status) }}">
-                                            {{ $booking->status }}
+                                        <span class="status-badge status-{{ strtolower($booking['status']) }}">
+                                            {{ $booking['status'] }}
                                         </span>
                                     </td>
-                                    <td>${{ number_format($booking->amount, 2) }}</td>
+                                    <td>${{ number_format($booking['total_amount'], 2) }}</td>
                                     <td>
                                         <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Edit">
+                                            <a href="{{ route('admin.bookings.edit', $booking['id']) }}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Edit">
                                                 <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -347,20 +334,19 @@
                     <h5 class="mb-0">Today's Schedule</h5>
                 </div>
                 <div class="card-body">
-                    @forelse($todaySchedule as $appointment)
+                    @forelse($today_schedule as $appointment)
                     <div class="d-flex align-items-center p-3 border-bottom">
                         <div class="me-3">
                             <div class="text-center">
-                                <div class="fw-bold">{{ $appointment->scheduled_at->format('h:i A') }}</div>
-                                <small class="text-muted">{{ $appointment->duration }} min</small>
+                                <div class="fw-bold">{{ \Carbon\Carbon::parse($appointment['scheduled_at'])->format('h:i A') }}</div>
                             </div>
                         </div>
                         <div class="flex-grow-1">
-                            <h6 class="mb-1">{{ $appointment->service->name }}</h6>
+                            <h6 class="mb-1">{{ $appointment['service_name'] }}</h6>
                             <div class="d-flex justify-content-between align-items-center">
-                                <small>{{ $appointment->customer->name }}</small>
-                                <span class="status-badge status-{{ strtolower($appointment->status) }}">
-                                    {{ $appointment->status }}
+                                <small>{{ $appointment['customer_name'] }}</small>
+                                <span class="status-badge status-{{ strtolower($appointment['status']) }}">
+                                    {{ $appointment['status'] }}
                                 </span>
                             </div>
                         </div>
@@ -386,10 +372,10 @@
     const revenueChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: {!! json_encode($revenueData['labels']) !!},
+            labels: {!! json_encode($revenue_chart['labels']) !!},
             datasets: [{
                 label: 'Revenue',
-                data: {!! json_encode($revenueData['values']) !!},
+                data: {!! json_encode($revenue_chart['values']) !!},
                 borderColor: '#3498db',
                 backgroundColor: 'rgba(52, 152, 219, 0.1)',
                 borderWidth: 2,

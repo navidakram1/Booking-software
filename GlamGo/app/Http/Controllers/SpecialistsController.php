@@ -2,56 +2,98 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Specialist;
 use Illuminate\Http\Request;
 
 class SpecialistsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Sample specialists data - later this will come from database
-        $specialists = [
-            [
-                'id' => 1,
-                'name' => 'Sarah Johnson',
-                'role' => 'Senior Hair Stylist',
-                'experience' => '8 years',
-                'specialties' => ['Haircuts', 'Coloring', 'Styling'],
-                'bio' => 'Sarah is our master stylist with expertise in modern cutting techniques and color trends.',
-                'image' => 'images/specialists/specialist1.jpg',
-                'rating' => 4.9
-            ],
-            [
-                'id' => 2,
-                'name' => 'Michael Chen',
-                'role' => 'Color Specialist',
-                'experience' => '6 years',
-                'specialties' => ['Balayage', 'Highlights', 'Color Correction'],
-                'bio' => 'Michael specializes in creating stunning, natural-looking color transformations.',
-                'image' => 'images/specialists/specialist2.jpg',
-                'rating' => 4.8
-            ],
-            [
-                'id' => 3,
-                'name' => 'Emily Rodriguez',
-                'role' => 'Nail Artist',
-                'experience' => '5 years',
-                'specialties' => ['Manicure', 'Pedicure', 'Nail Art'],
-                'bio' => 'Emily is our creative nail artist known for her intricate designs and attention to detail.',
-                'image' => 'images/specialists/specialist3.jpg',
-                'rating' => 4.9
-            ],
-            [
-                'id' => 4,
-                'name' => 'David Kim',
-                'role' => 'Skincare Expert',
-                'experience' => '7 years',
-                'specialties' => ['Facials', 'Skin Treatments', 'Anti-aging'],
-                'bio' => 'David is passionate about helping clients achieve their best skin through customized treatments.',
-                'image' => 'images/specialists/specialist4.jpg',
-                'rating' => 4.7
-            ]
-        ];
+        $query = Specialist::query()->where('is_active', true);
 
-        return view('specialists', compact('specialists'));
+        // Apply search filter
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('specialization', 'like', "%{$search}%")
+                  ->orWhere('bio', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply specialization filter
+        if ($request->has('specialization')) {
+            $query->where('specialization', $request->specialization);
+        }
+
+        // Apply rating filter
+        if ($request->has('rating')) {
+            $query->where('rating', '>=', $request->rating);
+        }
+
+        $specialists = $query->with(['services', 'reviews'])
+                           ->withCount('reviews')
+                           ->orderBy('rating', 'desc')
+                           ->paginate(8);
+
+        $specializations = Specialist::distinct('specialization')
+                                   ->pluck('specialization');
+
+        return view('specialists.index', compact('specialists', 'specializations'));
+    }
+
+    public function show(Specialist $specialist)
+    {
+        if (!$specialist->is_active) {
+            abort(404);
+        }
+
+        $specialist->load([
+            'services',
+            'reviews' => function($query) {
+                $query->latest()->with('user')->take(5);
+            }
+        ]);
+
+        return view('specialists.show', compact('specialist'));
+    }
+
+    public function filter(Request $request)
+    {
+        $query = Specialist::query()->where('is_active', true);
+
+        // Apply search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('specialization', 'like', "%{$search}%")
+                  ->orWhere('bio', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply specialization filter
+        if ($request->filled('specialization')) {
+            $query->where('specialization', $request->specialization);
+        }
+
+        // Apply rating filter
+        if ($request->filled('rating')) {
+            $query->where('rating', '>=', $request->rating);
+        }
+
+        // Apply service filter
+        if ($request->filled('service')) {
+            $query->whereHas('services', function($q) use ($request) {
+                $q->where('services.id', $request->service);
+            });
+        }
+
+        $specialists = $query->with(['services', 'reviews'])
+                           ->withCount('reviews')
+                           ->orderBy('rating', 'desc')
+                           ->paginate(8);
+
+        return view('components.specialists-grid', compact('specialists'))->render();
     }
 }

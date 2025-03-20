@@ -24,75 +24,17 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        try {
-            // Check rate limiting
-            if (!$this->checkRateLimiting($request)) {
-                return $this->handleError(
-                    $request,
-                    'Too many attempts',
-                    'rate_limit_exceeded',
-                    429
-                );
-            }
-
-            // Check authentication
-            if (!Auth::guard('admin')->check()) {
-                return $this->handleError(
-                    $request,
-                    'Please login to access the admin area',
-                    'unauthenticated',
-                    401
-                );
-            }
-
-            $admin = Auth::guard('admin')->user();
-
-            // Validate session
-            if (!$this->validateSession($request)) {
-                return $this->handleError(
-                    $request,
-                    'Your session has expired. Please login again',
-                    'session_expired',
-                    440
-                );
-            }
-
-            // Check role-based access
-            if (!$this->checkAccess($request, $admin)) {
-                return $this->handleError(
-                    $request,
-                    'You do not have permission to access this resource',
-                    'unauthorized',
-                    403
-                );
-            }
-
-            // Update last activity
-            session(['admin_last_activity' => time()]);
-
-            // Log successful access
-            $this->logAccessAttempt(
-                $this->getModuleFromRequest($request),
-                $request->method(),
-                true
-            );
-
+        // Allow access to login route
+        if ($request->routeIs('login') || $request->routeIs('login.submit')) {
             return $next($request);
-
-        } catch (\Exception $e) {
-            Log::error('Admin middleware error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
-            ]);
-
-            return $this->handleError(
-                $request,
-                'An unexpected error occurred',
-                'server_error',
-                500
-            );
         }
+
+        if (!Auth::guard('admin')->check()) {
+            return redirect()->route('admin.login')
+                ->with('error', 'Please login to access the admin area.');
+        }
+
+        return $next($request);
     }
 
     /**

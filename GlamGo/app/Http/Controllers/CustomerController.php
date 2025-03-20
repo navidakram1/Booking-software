@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use App\Models\Booking;
 use App\Models\Service;
 use App\Models\Staff;
+use App\Models\Activity;
 
 class CustomerController extends Controller
 {
@@ -208,32 +209,112 @@ class CustomerController extends Controller
 
     public function dashboard()
     {
-        $stats = [
-            'total_bookings' => Booking::count(),
-            'upcoming_appointments' => Booking::where('start_time', '>=', Carbon::today())->count(),
-            'completed_appointments' => Booking::where('start_time', '<', Carbon::today())->count(),
-            'favorite_services' => Service::take(3)->get(),
-            'recent_bookings' => Booking::with(['service', 'staff'])
-                ->orderBy('created_at', 'desc')
-                ->take(5)
-                ->get()
-        ];
+        $user = auth()->user();
 
-        return view('customer.dashboard', compact('stats'));
+        // Get upcoming bookings
+        $upcomingBookings = $user->bookings()
+            ->with(['service'])
+            ->where('scheduled_at', '>=', now())
+            ->orderBy('scheduled_at')
+            ->take(5)
+            ->get();
+
+        // Get total bookings count
+        $totalBookings = $user->bookings()->count();
+
+        // Get loyalty points
+        $loyaltyPoints = $user->loyaltyPoints()->sum('points');
+
+        // Get recent activity
+        $recentActivity = Activity::where('user_id', $user->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Get favorite services
+        $favoriteServices = $user->favorites()
+            ->with(['category'])
+            ->take(4)
+            ->get();
+
+        return view('customer.dashboard', compact(
+            'upcomingBookings',
+            'totalBookings',
+            'loyaltyPoints',
+            'recentActivity',
+            'favoriteServices'
+        ));
     }
 
     public function profile()
     {
-        return view('customer.profile');
+        $user = auth()->user();
+        return view('customer.profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
+            'gender' => ['nullable', 'in:male,female,other'],
+            'avatar' => ['nullable', 'image', 'max:2048'], // 2MB max
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $validated['avatar'] = basename($path);
+        }
+
+        $user->update($validated);
+
+        return back()->with('success', 'Profile updated successfully.');
+    }
+
+    public function bookings()
+    {
+        $user = auth()->user();
+        $bookings = $user->bookings()
+            ->with(['service', 'staff'])
+            ->latest()
+            ->paginate(10);
+
+        return view('customer.bookings', compact('bookings'));
     }
 
     public function reviews()
     {
-        return view('customer.reviews');
+        $user = auth()->user();
+        $reviews = $user->reviews()
+            ->with(['service', 'booking'])
+            ->latest()
+            ->paginate(10);
+
+        return view('customer.reviews', compact('reviews'));
     }
 
     public function favorites()
     {
-        return view('customer.favorites');
+        $user = auth()->user();
+        $favorites = $user->favorites()
+            ->with(['category'])
+            ->paginate(12);
+
+        return view('customer.favorites', compact('favorites'));
+    }
+
+    public function toggleFavorite(Service $service)
+    {
+        $user = auth()->user();
+        $user->favorites()->toggle($service);
+
+        return response()->json([
+            'success' => true,
+            'isFavorite' => $user->favorites()->where('service_id', $service->id)->exists()
+        ]);
     }
 }

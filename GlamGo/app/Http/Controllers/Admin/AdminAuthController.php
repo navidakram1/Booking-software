@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Log;
 use App\Models\Admin;
+use Carbon\Carbon;
 
 class AdminAuthController extends Controller
 {
@@ -148,14 +149,10 @@ class AdminAuthController extends Controller
 
     public function checkSession()
     {
-        $isAuthenticated = Auth::guard('admin')->check();
-        $lastActivity = session('admin_last_activity', 0);
-        $timeout = config('session.admin_timeout', 120) * 60;
-        $isExpired = time() - $lastActivity > $timeout;
-
-        return response()->json([
-            'authenticated' => $isAuthenticated && !$isExpired,
-            'timeout' => $isExpired
-        ]);
+        if (Auth::check() && Auth::user()->is_admin) {
+            session(['admin_last_activity' => Carbon::now()]);
+            return response()->json(['status' => 'active']);
+        }
+        return response()->json(['status' => 'expired'], 401);
     }
 } 

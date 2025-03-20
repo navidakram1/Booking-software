@@ -14,8 +14,8 @@ return new class extends Migration
             $table->text('description');
             $table->enum('discount_type', ['percentage', 'fixed']);
             $table->decimal('discount_value', 10, 2);
-            $table->timestamp('valid_from');
-            $table->timestamp('valid_until');
+            $table->timestamp('valid_from')->nullable();
+            $table->timestamp('valid_until')->nullable();
             $table->json('conditions')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

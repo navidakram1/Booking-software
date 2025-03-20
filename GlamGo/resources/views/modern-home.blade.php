@@ -157,10 +157,10 @@
         @include('components.faq-section')
 
         <!-- Gallery Section -->
-@include('components.gallery-section')
+        <x-gallery-section :galleryItems="$galleryItems" />
 
-<!-- Blog Section -->
-@include('components.blog-section')
+        <!-- Blog Section -->
+        @include('components.blog-section')
 @endsection
         
 @section('scripts')

@@ -20,17 +20,14 @@ class Booking extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'customer_id',
         'service_id',
-        'staff_id',
-        'start_time',
-        'end_time',
-        'status',
-        'total_amount',
-        'payment_status',
+        'customer_name',
+        'customer_email',
+        'customer_phone',
+        'booking_date',
+        'booking_time',
         'notes',
-        'cancellation_reason',
-        'rescheduled_from',
+        'status'
     ];
 
     protected $casts = [

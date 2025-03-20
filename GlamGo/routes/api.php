@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\BookingController as ApiBookingController;
 use App\Http\Controllers\Staff\ProfileController;
 use App\Http\Controllers\Api\SpecialistController;
 use App\Http\Controllers\Api\ServiceAddonController;
+use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\Api\ServiceAvailabilityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,3 +78,37 @@ Route::delete('/release-lock/{lockId}', [ApiBookingController::class, 'releaseLo
 Route::get('/bookings/check-availability', [BookingController::class, 'checkAvailability']);
 Route::post('/bookings/book', [BookingController::class, 'book']);
 Route::post('bookings', [ApiBookingController::class, 'createBooking']);
+
+// Availability routes
+Route::prefix('availability')->group(function () {
+    Route::get('specialist/{specialist}', [AvailabilityController::class, 'checkSpecialistAvailability']);
+    Route::get('service/{service}', [AvailabilityController::class, 'checkServiceAvailability']);
+    Route::get('next-available', [AvailabilityController::class, 'getNextAvailableSlot']);
+});
+
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+    // Booking routes
+    Route::prefix('bookings')->group(function () {
+        Route::post('/', [BookingController::class, 'store']);
+        Route::get('/{booking}', [BookingController::class, 'show']);
+        Route::post('/{booking}/cancel', [BookingController::class, 'cancel']);
+        Route::post('/{booking}/reschedule', [BookingController::class, 'reschedule']);
+    });
+
+    // User profile and preferences
+    Route::get('user/profile', 'UserController@profile');
+    Route::put('user/profile', 'UserController@updateProfile');
+    Route::get('user/bookings', 'UserController@bookings');
+    
+    // Reviews and ratings
+    Route::post('reviews', 'ReviewController@store');
+    Route::get('reviews/user', 'ReviewController@userReviews');
+    Route::get('reviews/service/{service}', 'ReviewController@serviceReviews');
+    Route::get('reviews/specialist/{specialist}', 'ReviewController@specialistReviews');
+});
+
+// Service Availability Routes
+Route::get('/services/{service}/availability', [ServiceAvailabilityController::class, 'check']);
+Route::post('/services/{service}/availability', [ServiceAvailabilityController::class, 'update'])
+    ->middleware('auth:sanctum');

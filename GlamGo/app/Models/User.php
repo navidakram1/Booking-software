@@ -22,8 +22,15 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'is_admin',
+        'phone',
+        'address',
+        'date_of_birth',
+        'gender',
+        'avatar',
+        'role',
         'email_verified_at',
+        'last_login_at',
+        'preferences',
     ];
 
     /**
@@ -43,8 +50,10 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
+        'date_of_birth' => 'date',
+        'preferences' => 'array',
         'password' => 'hashed',
-        'is_admin' => 'boolean',
     ];
 
     public function bookings()
@@ -64,7 +73,7 @@ class User extends Authenticatable
 
     public function favorites()
     {
-        return $this->hasMany(Favorite::class);
+        return $this->belongsToMany(Service::class, 'user_favorites');
     }
 
     public function reviews()
@@ -79,6 +88,59 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->is_admin === true;
+        return $this->role === 'admin';
+    }
+
+    public function scopeCustomers($query)
+    {
+        return $query->where('role', 'customer');
+    }
+
+    public function getAvatarUrlAttribute()
+    {
+        if ($this->avatar) {
+            return asset('storage/avatars/' . $this->avatar);
+        }
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
+    }
+
+    public function getFullAddressAttribute()
+    {
+        return $this->address ?? 'No address provided';
+    }
+
+    public function isCustomer()
+    {
+        return $this->role === 'customer';
+    }
+
+    public function hasVerifiedEmail()
+    {
+        return !is_null($this->email_verified_at);
+    }
+
+    public function getBookingCount()
+    {
+        return $this->bookings()->count();
+    }
+
+    public function getCompletedBookingCount()
+    {
+        return $this->bookings()->where('status', 'completed')->count();
+    }
+
+    public function getLastBooking()
+    {
+        return $this->bookings()->latest()->first();
+    }
+
+    public function getFavoriteServices()
+    {
+        return $this->favorites;
+    }
+
+    public function toggleFavorite(Service $service)
+    {
+        return $this->favorites()->toggle($service);
     }
 }

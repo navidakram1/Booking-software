@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Service;
 use App\Models\Specialist;
 use App\Models\Booking;
+use App\Models\GalleryItem;
 use Illuminate\Support\Facades\Mail;
 
 class HomeController extends Controller
@@ -14,7 +15,8 @@ class HomeController extends Controller
     {
         $services = Service::with('category')->take(6)->get();
         $specialists = Specialist::with('services')->take(4)->get();
-        return view('modern-home', compact('services', 'specialists'));
+        $galleryItems = GalleryItem::with('category')->take(6)->latest()->get();
+        return view('modern-home', compact('services', 'specialists', 'galleryItems'));
     }
 
     public function about()

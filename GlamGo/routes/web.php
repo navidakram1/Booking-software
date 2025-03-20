@@ -20,6 +20,7 @@ use App\Http\Controllers\ContentController;
 use App\Http\Controllers\BookingsController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 // Admin Controllers
 use App\Http\Controllers\Admin\AdminController;
@@ -44,37 +45,44 @@ use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\ContentPageController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\BookingsController as AdminBookingsController;
+use App\Http\Controllers\Admin\OfferController;
 
 // Authentication routes
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-// Admin Authentication Routes
-Route::prefix('admin')->name('admin.')->group(function () {
-    // Guest routes (login only)
-    Route::middleware(['web', 'guest:admin'])->group(function () {
-        Route::get('login', [AdminAuthController::class, 'showLoginForm'])->name('login');
-        Route::post('login', [AdminAuthController::class, 'login']);
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+    
+    // Admin Auth Routes
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
     });
+    
+    // Registration Routes
+    Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+    
+    // Password Reset Routes
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+});
 
-    // Authenticated admin routes
-    Route::middleware(['web', 'auth:admin'])->group(function () {
-        Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    
+    // Admin routes
+    Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-        
-        // Profile routes
-        Route::get('/profile', [AdminAuthController::class, 'profile'])->name('profile');
-        Route::put('/profile', [AdminAuthController::class, 'updateProfile'])->name('profile.update');
-        Route::put('/profile/password', [AdminAuthController::class, 'updatePassword'])->name('profile.password');
-        
-        // Session check
         Route::post('check-session', [AdminAuthController::class, 'checkSession'])->name('check-session');
-        
-        // Content Pages
-        Route::resource('content/pages', ContentPageController::class)->names('content.pages');
-        
-        // Bookings Management
+        Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+
+        // Admin Profile Routes
+        Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
+        Route::put('/profile', [AdminController::class, 'updateProfile'])->name('profile.update');
+
+        // Booking Management Routes
         Route::prefix('bookings')->name('bookings.')->group(function () {
             Route::get('/', [AdminBookingsController::class, 'index'])->name('index');
             Route::get('/calendar', [AdminBookingsController::class, 'calendar'])->name('calendar');
@@ -149,16 +157,56 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // API endpoints
         Route::get('/revenue-data', [DashboardController::class, 'getRevenueData'])->name('revenue-data');
+
+        // Special Offers
+        Route::resource('offers', OfferController::class);
+        Route::patch('offers/{offer}/toggle-status', [OfferController::class, 'toggleStatus'])->name('offers.toggle-status');
+
+        // Blog Posts
+        Route::resource('blog', BlogController::class);
+        Route::patch('blog/{post}/toggle-status', [BlogController::class, 'toggleStatus'])->name('blog.toggle-status');
     });
+
+    // Customer routes
+    Route::prefix('customer')->name('customer.')->middleware('customer')->group(function () {
+        Route::get('/dashboard', [CustomerController::class, 'dashboard'])->name('dashboard');
+        Route::get('/profile', [CustomerController::class, 'profile'])->name('profile');
+        Route::get('/bookings', [CustomerController::class, 'bookings'])->name('bookings');
+        Route::get('/reviews', [CustomerController::class, 'reviews'])->name('reviews');
+        Route::get('/favorites', [CustomerController::class, 'favorites'])->name('favorites');
+    });
+
+    // Booking Routes
+    Route::prefix('booking')->name('booking.')->group(function () {
+        Route::get('/', [BookingController::class, 'index'])->name('index');
+        Route::get('/create', [BookingController::class, 'create'])->name('create');
+        Route::post('/store', [BookingController::class, 'store'])->name('store');
+        Route::get('/confirmation/{booking}', [BookingController::class, 'confirmation'])->name('confirmation');
+    });
+
+    // Dashboard Route
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
-Route::get('/services', [ServicesController::class, 'index'])->name('services');
-Route::get('/services/{service}', [ServicesController::class, 'show'])->name('services.show');
-Route::get('/specialists', [SpecialistsController::class, 'index'])->name('specialists');
+
+// Services Routes
+Route::prefix('services')->name('services.')->group(function () {
+    Route::get('/', [ServicesController::class, 'index'])->name('index');
+    Route::get('/{service}', [ServicesController::class, 'show'])->name('show');
+    Route::get('/filter', [ServicesController::class, 'filter'])->name('filter');
+});
+
+// Specialists Routes
+Route::prefix('specialists')->name('specialists.')->group(function () {
+    Route::get('/', [SpecialistsController::class, 'index'])->name('index');
+    Route::get('/{specialist}', [SpecialistsController::class, 'show'])->name('show');
+    Route::get('/filter', [SpecialistsController::class, 'filter'])->name('filter');
+});
+
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog');
 Route::get('/help', [HelpController::class, 'index'])->name('help');
@@ -171,23 +219,6 @@ Route::get('/cookies', [HomeController::class, 'cookies'])->name('cookies');
 // Contact routes
 Route::prefix('contact')->name('contact.')->group(function () {
     Route::post('/send', [ContactController::class, 'sendContact'])->name('send');
-});
-
-// Customer routes
-Route::prefix('customer')->name('customer.')->group(function () {
-    Route::get('/dashboard', [CustomerController::class, 'dashboard'])->name('dashboard');
-    Route::get('/profile', [CustomerController::class, 'profile'])->name('profile');
-    Route::get('/bookings', [CustomerController::class, 'bookings'])->name('bookings');
-    Route::get('/reviews', [CustomerController::class, 'reviews'])->name('reviews');
-    Route::get('/favorites', [CustomerController::class, 'favorites'])->name('favorites');
-});
-
-// Booking routes
-Route::prefix('booking')->name('booking.')->group(function () {
-    Route::get('/', [BookingController::class, 'index'])->name('index');
-    Route::post('/', [BookingController::class, 'store'])->name('store');
-    Route::get('/specialists/{serviceId}', [BookingController::class, 'getSpecialists'])->name('specialists');
-    Route::get('/time-slots', [BookingController::class, 'getAvailableTimeSlots'])->name('timeSlots');
 });
 
 // Temporary debug route - REMOVE IN PRODUCTION

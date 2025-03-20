@@ -13,94 +13,33 @@ use App\Events\SlotAvailabilityChanged;
 use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 use App\Mail\BookingStatusChanged;
+use App\Models\Specialist;
+use App\Notifications\BookingConfirmation as BookingConfirmationNotification;
+use App\Notifications\BookingReminder;
+use Illuminate\Support\Facades\DB;
+use Stripe\Stripe;
+use Stripe\PaymentIntent;
 
 class BookingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $services = [
-            [
-                'id' => 1,
-                'category' => 'Salon',
-                'name' => 'Haircut & Styling',
-                'description' => 'Professional haircut and styling services for all hair types.',
-                'price' => 50.00,
-                'duration' => 60,
-                'image' => 'images/services/haircut.jpg'
-            ],
-            [
-                'id' => 2,
-                'category' => 'Salon',
-                'name' => 'Hair Coloring',
-                'description' => 'Full hair coloring service with premium products.',
-                'price' => 120.00,
-                'duration' => 120,
-                'image' => 'images/services/coloring.jpg'
-            ],
-            [
-                'id' => 3,
-                'category' => 'Massage',
-                'name' => 'Swedish Massage',
-                'description' => 'Relaxing full-body massage.',
-                'price' => 80.00,
-                'duration' => 60,
-                'image' => 'images/services/massage.jpg'
-            ],
-            [
-                'id' => 4,
-                'category' => 'Skincare',
-                'name' => 'Facial Treatment',
-                'description' => 'Deep cleansing facial with premium products.',
-                'price' => 90.00,
-                'duration' => 60,
-                'image' => 'images/services/facial.jpg'
-            ]
-        ];
-
-        $specialists = [
-            [
-                'id' => 1,
-                'name' => 'Sarah Johnson',
-                'role' => 'Senior Hair Stylist',
-                'experience' => '8 years',
-                'specialties' => ['Haircuts', 'Coloring', 'Styling'],
-                'services' => [1, 2], // Service IDs they can perform
-                'image' => 'images/specialists/specialist1.jpg',
-                'rating' => 4.9
-            ],
-            [
-                'id' => 2,
-                'name' => 'Michael Chen',
-                'role' => 'Color Specialist',
-                'experience' => '6 years',
-                'specialties' => ['Balayage', 'Highlights', 'Color Correction'],
-                'services' => [2], // Service IDs they can perform
-                'image' => 'images/specialists/specialist2.jpg',
-                'rating' => 4.8
-            ],
-            [
-                'id' => 3,
-                'name' => 'Emily Rodriguez',
-                'role' => 'Massage Therapist',
-                'experience' => '5 years',
-                'specialties' => ['Swedish Massage', 'Deep Tissue', 'Hot Stone'],
-                'services' => [3], // Service IDs they can perform
-                'image' => 'images/specialists/specialist3.jpg',
-                'rating' => 4.9
-            ],
-            [
-                'id' => 4,
-                'name' => 'David Kim',
-                'role' => 'Skincare Expert',
-                'experience' => '7 years',
-                'specialties' => ['Facials', 'Skin Treatments', 'Anti-aging'],
-                'services' => [4], // Service IDs they can perform
-                'image' => 'images/specialists/specialist4.jpg',
-                'rating' => 4.7
-            ]
-        ];
-
-        return view('book.create', compact('services', 'specialists'));
+        $services = Service::where('is_active', true)->get();
+        $timeSlots = $this->getTimeSlots();
+        
+        // Handle service pre-selection if passed
+        $selectedService = null;
+        if ($request->has('service')) {
+            $selectedService = Service::find($request->service);
+        }
+        
+        // Handle specialist pre-selection if passed
+        $selectedSpecialist = null;
+        if ($request->has('specialist')) {
+            $selectedSpecialist = Specialist::find($request->specialist);
+        }
+        
+        return view('booking.index', compact('services', 'timeSlots', 'selectedService', 'selectedSpecialist'));
     }
 
     public function getSpecialists($serviceId)
@@ -118,32 +57,82 @@ class BookingController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'service_id' => 'required|integer',
-            'specialist_id' => 'required|integer',
-            'service_name' => 'required|string',
-            'price' => 'required|numeric',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:20',
-            'date' => 'required|date|after_or_equal:today',
-            'time' => 'required|string',
-            'notes' => 'nullable|string|max:1000',
+            'service_id' => 'required|exists:services,id',
+            'specialist_id' => 'required|exists:specialists,id',
+            'date' => 'required|date|after:today',
+            'time_slot' => 'required|date_format:H:i',
+            'payment_method_id' => 'required|string'
         ]);
 
         try {
-            // For development, just return success without storing
+            DB::beginTransaction();
+
+            // Get the service and specialist
+            $service = Service::findOrFail($validated['service_id']);
+            $specialist = Specialist::findOrFail($validated['specialist_id']);
+
+            // Check availability
+            $availabilityController = new AvailabilityController();
+            $availability = $availabilityController->checkSpecialistAvailability(
+                new Request(['date' => $validated['date']]),
+                $specialist
+            )->original;
+
+            if (!in_array($validated['time_slot'], $availability['available_slots'])) {
+                throw new \Exception('Selected time slot is no longer available');
+            }
+
+            // Calculate booking duration and end time
+            $startTime = Carbon::parse($validated['date'] . ' ' . $validated['time_slot']);
+            $endTime = $startTime->copy()->addMinutes($service->duration);
+
+            // Process payment
+            Stripe::setApiKey(config('services.stripe.secret'));
+            
+            $paymentIntent = PaymentIntent::create([
+                'amount' => $service->price * 100, // Convert to cents
+                'currency' => 'usd',
+                'payment_method' => $validated['payment_method_id'],
+                'confirmation_method' => 'manual',
+                'confirm' => true,
+            ]);
+
+            // Create booking
+            $booking = Booking::create([
+                'user_id' => auth()->id(),
+                'service_id' => $service->id,
+                'specialist_id' => $specialist->id,
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'status' => 'confirmed',
+                'payment_intent_id' => $paymentIntent->id,
+                'amount_paid' => $service->price
+            ]);
+
+            // Send notifications
+            $user = User::find(auth()->id());
+            $user->notify(new BookingConfirmationNotification($booking));
+            
+            // Schedule reminder notification
+            $reminderTime = $startTime->copy()->subHours(24);
+            $user->notify((new BookingReminder($booking))->delay($reminderTime));
+
+            DB::commit();
+
             return response()->json([
-                'status' => 'success',
-                'message' => 'Booking confirmed successfully!',
-                'booking' => $validated
-            ], 201);
+                'message' => 'Booking confirmed successfully',
+                'booking' => $booking->load(['service', 'specialist']),
+                'payment' => [
+                    'status' => $paymentIntent->status,
+                    'client_secret' => $paymentIntent->client_secret
+                ]
+            ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
-                'status' => 'error',
-                'message' => 'Something went wrong. Please try again.',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'Booking failed: ' . $e->getMessage()
+            ], 422);
         }
     }
 
@@ -163,21 +152,13 @@ class BookingController extends Controller
         return response()->json($timeSlots);
     }
 
-    public function show($id)
+    public function show(Booking $booking)
     {
-        // Dummy booking data for development
-        $booking = [
-            'id' => $id,
-            'service_name' => 'Haircut & Styling',
-            'stylist_name' => 'Jane Smith',
-            'date' => '2025-02-25',
-            'time' => '14:00',
-            'status' => 'confirmed',
-            'price' => 50.00,
-            'notes' => 'No specific requirements'
-        ];
+        $this->authorize('view', $booking);
 
-        return view('bookings.show', compact('booking'));
+        return response()->json([
+            'booking' => $booking->load(['service', 'specialist', 'user'])
+        ]);
     }
 
     public function adminIndex(Request $request)
@@ -554,5 +535,141 @@ class BookingController extends Controller
             'completed' => '#60A5FA',   // Blue
             'cancelled' => '#F87171',   // Red
         ][$status] ?? '#9CA3AF';       // Gray (default)
+    }
+
+    public function cancel(Booking $booking)
+    {
+        $this->authorize('cancel', $booking);
+
+        try {
+            DB::beginTransaction();
+
+            // Check if booking can be cancelled (e.g., not too close to appointment time)
+            $startTime = Carbon::parse($booking->start_time);
+            if ($startTime->diffInHours(now()) < 24) {
+                throw new \Exception('Bookings can only be cancelled at least 24 hours before the appointment');
+            }
+
+            // Process refund if applicable
+            if ($booking->payment_intent_id) {
+                Stripe::setApiKey(config('services.stripe.secret'));
+                $refund = \Stripe\Refund::create([
+                    'payment_intent' => $booking->payment_intent_id
+                ]);
+            }
+
+            $booking->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+                'refund_id' => $refund->id ?? null
+            ]);
+
+            // Notify user and specialist
+            $booking->user->notify(new BookingCancellation($booking));
+            $booking->specialist->notify(new BookingCancellation($booking));
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Booking cancelled successfully',
+                'booking' => $booking->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Cancellation failed: ' . $e->getMessage()
+            ], 422);
+        }
+    }
+
+    public function reschedule(Request $request, Booking $booking)
+    {
+        $this->authorize('update', $booking);
+
+        $validated = $request->validate([
+            'date' => 'required|date|after:today',
+            'time_slot' => 'required|date_format:H:i'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Check new slot availability
+            $availabilityController = new AvailabilityController();
+            $availability = $availabilityController->checkSpecialistAvailability(
+                new Request(['date' => $validated['date']]),
+                $booking->specialist
+            )->original;
+
+            if (!in_array($validated['time_slot'], $availability['available_slots'])) {
+                throw new \Exception('Selected time slot is not available');
+            }
+
+            $startTime = Carbon::parse($validated['date'] . ' ' . $validated['time_slot']);
+            $endTime = $startTime->copy()->addMinutes($booking->service->duration);
+
+            $booking->update([
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'rescheduled_at' => now()
+            ]);
+
+            // Notify user and specialist
+            $booking->user->notify(new BookingRescheduled($booking));
+            $booking->specialist->notify(new BookingRescheduled($booking));
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Booking rescheduled successfully',
+                'booking' => $booking->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Rescheduling failed: ' . $e->getMessage()
+            ], 422);
+        }
+    }
+
+    public function create()
+    {
+        $services = Service::where('is_active', true)->get();
+        $timeSlots = $this->getTimeSlots();
+        
+        return view('booking', compact('services', 'timeSlots'));
+    }
+
+    private function getTimeSlots()
+    {
+        $slots = [];
+        $start = 9; // 9 AM
+        $end = 17; // 5 PM
+
+        for ($hour = $start; $hour <= $end; $hour++) {
+            $slots[] = sprintf('%02d:00', $hour);
+            $slots[] = sprintf('%02d:30', $hour);
+        }
+
+        return $slots;
+    }
+
+    private function sendConfirmationEmail($booking)
+    {
+        // Simple email notification
+        Mail::raw(
+            "Thank you for booking with us!\n\n" .
+            "Booking Details:\n" .
+            "Service: {$booking->service->name}\n" .
+            "Date: {$booking->date}\n" .
+            "Time: {$booking->time}\n\n" .
+            "We look forward to seeing you!",
+            function ($message) use ($booking) {
+                $message->to($booking->email)
+                    ->subject('Booking Confirmation - GlamGo');
+            }
+        );
     }
 }

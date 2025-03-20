@@ -11,13 +11,12 @@ return new class extends Migration
         Schema::create('booking_rules', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('type');
-            $table->json('conditions');
-            $table->json('actions');
-            $table->integer('priority')->default(0);
+            $table->string('rule_type');
+            $table->string('value');
+            $table->string('description');
             $table->boolean('is_active')->default(true);
-            $table->timestamp('start_date')->nullable();
-            $table->timestamp('end_date')->nullable();
+            $table->string('applies_to');
+            $table->integer('priority')->default(0);
             $table->timestamps();
         });
     }

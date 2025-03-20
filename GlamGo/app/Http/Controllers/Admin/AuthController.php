@@ -31,7 +31,8 @@ class AuthController extends Controller
 
         if (Auth::guard('admin')->attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->intended(route('admin.dashboard'))
+                ->with('success', 'Welcome back, Admin!');
         }
 
         return back()
@@ -47,7 +48,9 @@ class AuthController extends Controller
         Auth::guard('admin')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('admin.login');
+
+        return redirect()->route('admin.login')
+            ->with('success', 'You have been logged out successfully.');
     }
 
     /**
@@ -59,5 +62,10 @@ class AuthController extends Controller
             return response()->json(['timeout' => true]);
         }
         return response()->json(['timeout' => false]);
+    }
+
+    public function checkSession()
+    {
+        return response()->json(['authenticated' => Auth::guard('admin')->check()]);
     }
 } 

@@ -15,20 +15,12 @@ class AdminBookingsController extends Controller
 {
     public function index()
     {
-        $bookings = Booking::with(['customer', 'service', 'staff'])
-            ->latest()
-            ->paginate(10);
-            
-        return view('admin.bookings.index', compact('bookings'));
+        return view('admin.bookings.index');
     }
 
     public function calendar()
     {
-        $staff = Staff::all();
-        $services = Service::where('status', 'active')->get();
-        $customers = Customer::all();
-        
-        return view('admin.bookings.calendar', compact('staff', 'services', 'customers'));
+        return view('admin.bookings.calendar');
     }
 
     public function getCalendarEvents(Request $request)
@@ -102,21 +94,12 @@ class AdminBookingsController extends Controller
 
     public function list()
     {
-        $bookings = Booking::with(['customer', 'service', 'staff'])
-            ->latest()
-            ->paginate(15);
-            
-        return view('admin.bookings.list', compact('bookings'));
+        return view('admin.bookings.list');
     }
 
     public function pending()
     {
-        $bookings = Booking::with(['customer', 'service', 'staff'])
-            ->where('status', Booking::STATUS_PENDING)
-            ->latest()
-            ->paginate(15);
-            
-        return view('admin.bookings.pending', compact('bookings'));
+        return view('admin.bookings.pending');
     }
 
     public function create()

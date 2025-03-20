@@ -10,6 +10,9 @@ use App\Models\Service;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
@@ -243,29 +246,39 @@ class AdminController extends Controller
 
     public function profile()
     {
-        return view('admin.profile.index');
-    }
-
-    public function editProfile()
-    {
-        return view('admin.profile.edit');
+        $admin = Auth::guard('admin')->user();
+        return view('admin.profile', compact('admin'));
     }
 
     public function updateProfile(Request $request)
     {
-        $user = auth()->user();
-
+        $admin = Auth::guard('admin')->user();
+        
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:20',
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', Rule::unique('admins')->ignore($admin->id)],
+            'current_password' => ['nullable', 'required_with:new_password', 'current_password:admin'],
+            'new_password' => ['nullable', 'min:8', 'confirmed'],
+            'avatar' => ['nullable', 'image', 'max:2048'], // 2MB max
         ]);
 
-        $user->update($validated);
+        $updateData = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ];
 
-        return redirect()
-            ->route('admin.profile.index')
-            ->with('success', 'Profile updated successfully');
+        if ($request->filled('new_password')) {
+            $updateData['password'] = Hash::make($validated['new_password']);
+        }
+
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('admin/avatars', 'public');
+            $updateData['avatar'] = basename($path);
+        }
+
+        $admin->update($updateData);
+
+        return back()->with('success', 'Profile updated successfully.');
     }
 
     public function password()

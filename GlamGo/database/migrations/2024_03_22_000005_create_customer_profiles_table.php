@@ -47,7 +47,9 @@ return new class extends Migration
             $table->integer('points');
             $table->string('transaction_type');
             $table->string('description');
-            $table->morphs('transactionable');
+            $table->string('transactionable_type');
+            $table->unsignedBigInteger('transactionable_id');
+            $table->index(['transactionable_type', 'transactionable_id'], 'loyalty_trans_morph_idx');
             $table->timestamps();
         });
     }
